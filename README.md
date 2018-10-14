@@ -1,10 +1,11 @@
 # infoboard
 
-> Infoboard showing photos as a background, time, weather and Transport for London status updates.
-> Intended for Raspberry Pi, but should work on any machine.
+> Infoboard showing photos from local folder as the background, time, weather and Transport for London status updates.  
+> Intended for Raspberry Pi, but should work on any machine with NodeJS installed.
 
-![iPad Air landscape](/static/examples/ipad-air-1.jpg?raw=true)
-![Galaxy S5 portrait](/static/examples/phone-1.jpg?raw=true)
+## Examples
+![iPad Air landscape](/static/examples/ipad-air-1.jpg?raw=true "All options colapsed"){:height="50%" width="50%"}
+![Galaxy S5 portrait](/static/examples/phone-1.jpg?raw=true "All options colapsed")
 ![iPad Pro landscape](/static/examples/ipad-pro-2.jpg?raw=true "All options expanded")
 
 Note, more example screenshots in [/static/examples/](/static/examples/)
@@ -20,7 +21,7 @@ $ git clone https://github.com/SixBytesUnder/infoboard.git .
 # IMPORTANT! rename .env.example to .env
 $ cp .env.example .env
 
-# then edit it to provide all necessary variables
+# then edit it to provide all necessary variables and API keys
 $ vim.tiny .env
 
 # install dependencies
@@ -29,14 +30,14 @@ $ npm install
 # build production bundle
 $ npm run build
 
-# I use fantastic persistent app manager pm2
-# install persistent app manager
+# I use fantastic persistent app manager pm2, but you can use any other you wish
+# install pm2
 $ sudo npm i -g pm2
 
-# start persistent app manager, see below for detailed instructions on pm2
+# start pm2, see below for detailed instructions
 $ pm2 start npm --name "infoboard" -- start
 
-# setup nginx
+# configure nginx
 $ sudo vim.tiny /etc/nginx/sites-enabled/default
 
 server {
@@ -79,7 +80,7 @@ $ cd /var/www/html/
 # pull latest files from git
 $ git pull
 
-# check .env.example and compare to existing .env to see if new settings are needed
+# check .env.example and compare to existing .env to see if any new settings are needed
 $ vim.tiny .env.example
 $ vim.tiny .env
 
@@ -100,28 +101,25 @@ $ sudo /etc/init.d/nginx restart
 
 ``` bash
 # clone this repo
+$ git clone https://github.com/SixBytesUnder/infoboard.git .
 
 # install dependencies
 $ npm install
 
-# serve with hot reload at localhost:3000
-$ npm run dev
-
-# test production build
-$ npm run build
-$ npm start
+# serve with hot reload (including ExpressJS hot reload) on localhost:3000
+$ nodemon --watch api --exec "npm run dev"
 ```
 
-For detailed explanation on how things work, checkout the [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
+For full documentation on NuxtJS go to [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
 
-### Other helpful commands
+## Other helpful commands
 
 To make sure `pm2` restarts the service after your server restarts, run `pm2 startup` command. It should tell you exactly what you need to do next.
 
 ``` bash
-# make sure pm2 runs after restart
+# find out what to do to make sure pm2 runs after restart
 $ pm2 startup
-# above will ask you to run a command similar to this
+# above will ask you to run a commands similar to this
 $ sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u pi --hp /home/pi
 $ pm2 save
 
