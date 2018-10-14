@@ -1,35 +1,25 @@
 # infoboard
 
-> Infoboard showing photos as a background, time, weather and Transport for London status updates
+> Infoboard showing photos as a background, time, weather and Transport for London status updates.
+> Intended for Raspberry Pi, but should work on any machine.
 
-## Development setup
+![iPad Air landscape](/static/examples/ipad-air-1.jpg?raw=true)
+![Galaxy S5 portrait](/static/examples/phone-1.jpg?raw=true)
+![iPad Pro landscape](/static/examples/ipad-pro-2.jpg?raw=true "All options expanded")
 
-``` bash
-# clone this repo
+Note, more example screenshots in [/static/examples/](/static/examples/)
 
-# install dependencies
-$ npm install
-
-# serve with hot reload at localhost:3000
-$ npm run dev
-
-# test production build
-$ npm run build
-$ npm start
-```
-
-For detailed explanation on how things work, checkout the [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
-
-## Raspberry Pi deployment steps
+## Raspberry Pi production deployment steps
 ``` bash
 # go to project folder
 $ cd /var/www/html/
 
 # clone this repo
-$ git ...
+$ git clone https://github.com/SixBytesUnder/infoboard.git .
 
 # IMPORTANT! rename .env.example to .env
 $ cp .env.example .env
+
 # then edit it to provide all necessary variables
 $ vim.tiny .env
 
@@ -39,12 +29,11 @@ $ npm install
 # build production bundle
 $ npm run build
 
+# I use fantastic persistent app manager pm2
 # install persistent app manager
 $ sudo npm i -g pm2
 
-# start persistent app manager
-$ pm2 start infoboard
-# or even better, name your app on pm2 list
+# start persistent app manager, see below for detailed instructions on pm2
 $ pm2 start npm --name "infoboard" -- start
 
 # setup nginx
@@ -107,9 +96,35 @@ $ pm2 restart infoboard
 $ sudo /etc/init.d/nginx restart
 ```
 
-### Other helpful commands
+## Development setup
 
 ``` bash
+# clone this repo
+
+# install dependencies
+$ npm install
+
+# serve with hot reload at localhost:3000
+$ npm run dev
+
+# test production build
+$ npm run build
+$ npm start
+```
+
+For detailed explanation on how things work, checkout the [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
+
+### Other helpful commands
+
+To make sure `pm2` restarts the service after your server restarts, run `pm2 startup` command. It should tell you exactly what you need to do next.
+
+``` bash
+# make sure pm2 runs after restart
+$ pm2 startup
+# above will ask you to run a command similar to this
+$ sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u pi --hp /home/pi
+$ pm2 save
+
 # show apps managed by pm2
 pm2 status
 
@@ -118,3 +133,4 @@ pm2 list
 ```
 
 nginx setup on RPi: https://nuxtjs.org/faq/nginx-proxy/  
+Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.io/doc/en/runtime/overview/  
