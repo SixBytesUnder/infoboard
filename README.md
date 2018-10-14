@@ -4,9 +4,9 @@
 > Intended for Raspberry Pi, but should work on any machine with NodeJS installed.
 
 ## Examples
-![iPad Air landscape](/static/examples/ipad-air-1.jpg?raw=true "All options colapsed"){:height="50%" width="50%"}
-![Galaxy S5 portrait](/static/examples/phone-1.jpg?raw=true "All options colapsed")
-![iPad Pro landscape](/static/examples/ipad-pro-2.jpg?raw=true "All options expanded")
+![Desktop landscape](/static/examples/desktop-1.jpg?raw=true "Desktop landscape - all options colapsed")
+![Galaxy S5 portrait](/static/examples/phone-1.jpg?raw=true "Galaxy S5 portrait - all options colapsed")
+![iPad Pro landscape](/static/examples/ipad-pro-2.jpg?raw=true "iPad Pro landscape - all options expanded")
 
 Note, more example screenshots in [/static/examples/](/static/examples/)
 
@@ -132,3 +132,7 @@ pm2 list
 
 nginx setup on RPi: https://nuxtjs.org/faq/nginx-proxy/  
 Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.io/doc/en/runtime/overview/  
+
+## License
+
+[MIT](https://github.com/SixBytesUnder/custom-motd/blob/master/LICENSE)
