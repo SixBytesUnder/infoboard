@@ -70,7 +70,7 @@ server {
 $ sudo /etc/init.d/nginx restart
 ```
 
-If your Raspberry is accessible on local network, open your browser and navigate to your RPi's IP address. In this example `192.168.1.99`
+If your Raspberry is accessible on local network, open your browser and navigate to your RPi's IP address. In this example `http://192.168.1.99/`
 
 ## Updating to latest version
 ``` bash
