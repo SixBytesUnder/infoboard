@@ -1,0 +1,9 @@
+<svg enable-background="new 0 0 100 100" version="1.1" viewBox="0 0 100 125" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+<style type="text/css">
+	polygon, circle, path { fill:#FFFFFF; }
+</style>
+	<g>
+		<path d="M0,0v100h100V0H0z M95,95H5V5h90V95z"/>
+	</g>
+	<polygon points="70.264,35.022 64.977,29.736 50,44.713 35.022,29.736 29.736,35.022 44.713,50 29.736,64.977 35.022,70.264   50,55.286 64.977,70.264 70.264,64.977 55.286,50 "/>
+</svg>

@@ -1,0 +1,43 @@
+{
+  "name": "infoboard",
+  "version": "1.0.0",
+  "description": "Infoboard showing photos as the bacground, time, weather and Transport for London updates",
+  "author": "SixBytesUnder <wojtek@sixbytesunder.com>",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt build && nuxt start",
+    "precommit": "npm run lint",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
+  },
+  "dependencies": {
+    "@nuxtjs/dotenv": "^1.1.1",
+    "axios": "^0.16.2",
+    "bootstrap": "^4.1.1",
+    "cross-env": "^5.0.1",
+    "exif-js": "^2.3.0",
+    "express": "^4.15.3",
+    "glob": "^7.1.2",
+    "jquery": "^3.3.1",
+    "moment": "^2.22.2",
+    "nuxt-edge": "latest",
+    "popper.js": "^1.14.3",
+    "source-map-support": "^0.4.15"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "eslint": "^4.19.1",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-loader": "^1.9.0",
+    "eslint-plugin-html": "^3.1.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-prettier": "^2.6.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "eslint-plugin-vue": "^4.7.1",
+    "prettier": "^1.14.3"
+  }
+}
