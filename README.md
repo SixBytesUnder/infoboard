@@ -135,4 +135,4 @@ Production Process Manager for Node.js applications with a built-in Load Balance
 
 ## License
 
-[MIT](https://github.com/SixBytesUnder/custom-motd/blob/master/LICENSE)
+[MIT](https://github.com/SixBytesUnder/infoboard/blob/master/LICENSE)
