@@ -1,6 +1,6 @@
 {
   "name": "infoboard",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Infoboard showing photos as the bacground, time, weather and Transport for London updates",
   "author": "SixBytesUnder <wojtek@sixbytesunder.com>",
   "private": true,
