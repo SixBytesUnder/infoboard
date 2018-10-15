@@ -8,7 +8,7 @@
 ![Galaxy S5 portrait](/static/examples/phone-1.jpg?raw=true "Galaxy S5 portrait - all options colapsed")
 ![iPad Pro landscape](/static/examples/ipad-pro-2.jpg?raw=true "iPad Pro landscape - all options expanded")
 
-Note, more example screenshots in [/static/examples/](/static/examples/)
+More example screenshots in [/static/examples/](/static/examples/) or https://imgur.com/a/Odm4haP
 
 ## Raspberry Pi production deployment steps
 ``` bash

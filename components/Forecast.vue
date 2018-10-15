@@ -11,8 +11,8 @@
         <div class="col forecastIcon"><img 
           :src="'/images/'+day.icon+'.svg'" 
           :alt="day.summary"></div>
-        <div class="col">{{ roundValue(day.temperatureHigh) }} &deg;C</div>
-        <div class="col">{{ roundValue(day.temperatureLow) }} &deg;C</div>
+        <div class="col">{{ roundValue(day.temperatureHigh) }}&deg;{{ units }}</div>
+        <div class="col">{{ roundValue(day.temperatureLow) }}&deg;{{ units }}</div>
         <div class="col small px-0">{{ day.summary }}</div>
       </div>
     </div>
@@ -27,6 +27,7 @@ export default {
     return {
       enableWeather: process.env.WEATHER,
       tempRouded: process.env.WEATHER_ROUNDED === 'true' ? true : false,
+      units: process.env.WEATHER_UNITS === 'fahrenheit' ? 'F' : 'C',
       moment: moment
     }
   },

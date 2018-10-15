@@ -6,7 +6,8 @@ require('dotenv').config()
 router.get('/weather', (requ, resp) => {
 	let location = process.env.WEATHER_LOCATION
 	let apiKey = process.env.WEATHER_API_SECRET
-	https.get(`https://api.darksky.net/forecast/${apiKey}/${location}/?exclude=minutely,hourly&units=auto`, (res) => {
+	let units = process.env.WEATHER_UNITS === 'fahrenheit' ? 'us' : 'si'
+	https.get(`https://api.darksky.net/forecast/${apiKey}/${location}/?exclude=minutely,hourly&units=${units}`, (res) => {
 		const { statusCode } = res
 		const contentType = res.headers['content-type']
 

@@ -21,7 +21,7 @@
                 class="location-icon">
               {{ locationName == '' ? weather.timezone : locationName }}
             </p>
-            <p class="display-4">{{ roundValue(weather.currently.temperature) }}&deg;C</p>
+            <p class="display-4">{{ roundValue(weather.currently.temperature) }}&deg;{{ units }}</p>
             <p>{{ weather.currently.summary }}</p>
             <small class="float-left"><a 
               href="https://darksky.net/poweredby/" 
@@ -43,6 +43,7 @@ export default {
     return {
       enableWeather: process.env.WEATHER,
       locationName: process.env.WEATHER_LOCATION_NAME,
+      units: process.env.WEATHER_UNITS === 'fahrenheit' ? 'F' : 'C',
       tempRouded: false,
       weather: {},
       updated: '',
