@@ -28,8 +28,8 @@ export default {
   },
   methods: {
     updateTime () {
-      this.time = moment().format('HH:mm:ss')
-      this.date = moment().format('dddd, Do MMMM YYYY')
+      this.time = moment().format(process.env.TIME_FORMAT)
+      this.date = moment().format(process.env.DATE_FORMAT)
     }
   }
 }
