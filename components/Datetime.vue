@@ -15,8 +15,8 @@ import moment from 'moment'
 export default {
   data: function() {
     return {
-      time: moment().format('HH:mm:ss'),
-      date: moment().format('dddd, Do MMMM YYYY'),
+      time: moment().format(process.env.TIME_FORMAT),
+      date: moment().format(process.env.DATE_FORMAT),
       moment: moment
     }
   },
