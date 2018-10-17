@@ -23,10 +23,10 @@
             </p>
             <p class="display-4">{{ roundValue(weather.currently.temperature) }}&deg;{{ units }}</p>
             <p>{{ weather.currently.summary }}</p>
-            <small class="float-left"><a 
-              href="https://darksky.net/poweredby/" 
+            <small><a
+                href="https://darksky.net/poweredby/"
               target="_blank">Powered by Dark Sky</a></small>
-            <small class="float-right">Updated on: {{ updated }}</small>
+            <small>Updated on: {{ updated }}</small>
           </div>
         </div>
       </div>
@@ -88,6 +88,9 @@ export default {
 <style scoped>
 .weather {
   text-align: left;
+}
+.weather p {
+  margin-bottom: 0;
 }
 .weather small {
   font-size: 0.4rem;
