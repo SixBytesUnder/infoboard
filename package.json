@@ -1,6 +1,6 @@
 {
   "name": "infoboard",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Infoboard showing photos as the background, time, weather and Transport for London updates",
   "author": "SixBytesUnder <wojtek@sixbytesunder.com>",
   "repository": "https://github.com/SixBytesUnder/infoboard",
