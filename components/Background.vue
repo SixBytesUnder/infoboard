@@ -105,8 +105,7 @@ export default {
         this.getPexels()
         this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
       } else {
-        this.getBackground()
-        this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
+        this.getBackground(param)
       }
     },
     getBackground: function (param) {
