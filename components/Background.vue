@@ -8,16 +8,17 @@
       :style="background"/>
 
     <div 
-      v-if="enableButtons === true" 
+      v-if="showNavButtons === true"
       class="btn-group buttons">
       <button 
-        :disabled="disableButtons" 
-        class="btn btn-outline-dark" 
-        @click="getBackground('image')">{{ nextimage }}</button>
+        :disabled="disableButtons"
+        class="btn btn-outline-dark"
+        @click="getNext('image')">{{ nextimage }}</button>
       <button 
-        :disabled="disableButtons" 
-        class="btn btn-outline-dark" 
-        @click="getBackground('folder')">{{ nextfolder }}</button>
+        v-if="enableFolderButton === true"
+        :disabled="disableButtons"
+        class="btn btn-outline-dark"
+        @click="getNext('folder')">{{ nextfolder }}</button>
     </div>
   </section>
 </template>
@@ -25,18 +26,18 @@
 <script>
 import axios from 'axios'
 import EXIF from 'exif-js'
+import Unsplash, { toJson } from 'unsplash-js'
 
 export default {
   data: function() {
     return {
-      // TODO: display only one image proded in SINGLE_IMAGE - this should disable any intervals
-      singleImage: false,
       imageInterval: process.env.IMAGE_INTERVAL,
       nasa: false,
       background: '',
       imageSrc: '',
       imageList: [],
-      enableButtons: true,
+      showNavButtons: false,
+      enableFolderButton: true,
       disableButtons: false,
       nextimage: 'image',
       nextfolder: 'folder',
@@ -45,18 +46,27 @@ export default {
     }
   },
   mounted() {
-    this.singleImage = process.env.SINGLE_IMAGE === 'true' ? true : false
-    this.enableButtons = process.env.NAV_BUTTONS === 'true' ? true : false
-    this.nasa = process.env.NASA_APOD === 'true' ? true : false
-    if (this.singleImage === true) {
+    this.imagesSource = process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE
+    this.showNavButtons = process.env.NAV_BUTTONS === 'true' ? true : false
+    if (this.imagesSource === 'single') {
+      this.showNavButtons = false
       this.getBackground()
-    } else if (this.nasa === true) {
+    } else if (this.imagesSource === 'nasa') {
+      this.showNavButtons = false
       this.getNasaAPOD()
       this.interval = setInterval(this.getNasaAPOD, 1000 * 60 * 60)
+    } else if (this.imagesSource === 'unsplash') {
+      this.enableFolderButton = false
+      this.getUnsplash()
+      this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
+    } else if (this.imagesSource === 'pexels') {
+      this.enableFolderButton = false
+      this.getPexels()
+      this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
     } else {
       this.loadState()
-      this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
       this.getBackground()
+      this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
     }
   },
   beforeDestroy() {
@@ -86,6 +96,19 @@ export default {
         if (this.env == 'development') console.log(e)
       }
     },
+    getNext: function(param) {
+      clearInterval(this.interval)
+      if (this.imagesSource === 'unsplash') {
+        this.getUnsplash()
+        this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
+      } else if (this.imagesSource === 'pexels') {
+        this.getPexels()
+        this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+      } else {
+        this.getBackground()
+        this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
+      }
+    },
     getBackground: function (param) {
       if (param == 'image') {
         this.disableButtons = true
@@ -104,7 +127,6 @@ export default {
         .then(response => {
           this.imageList = response.data
           this.lastImage = this.imageList.shift()
-          // console.log(this.imageList)
           this.imageSrc = encodeURIComponent(this.lastImage)
           this.background = `background-image: url("/api/background/${this.imageSrc}")`
           this.getMeta()
@@ -143,6 +165,32 @@ export default {
       .catch(e => {
         if (this.env == 'development') console.log(e)
       })
+    },
+    getUnsplash: function() {
+      const unsplash = new Unsplash({
+        applicationId: process.env.UNSPLASH_ACCESS,
+        secret: process.env.UNSPLASH_SECRET,
+        callbackUrl: process.env.CALLBACK_URL
+      });
+      unsplash.photos.getRandomPhoto()
+        .then(toJson)
+        .then(unsplashResp => {
+          this.background = `background-image: url("${unsplashResp.urls.regular}")`
+        });
+    },
+    getPexels: function() {
+      //TODO still waiting for Pexels to grant me API key to test this out
+      const PexelsAPI = require('pexels-api-wrapper')
+      var pexelsClient = new PexelsAPI(process.env.PEXELS_KEY)
+      pexelsClient.getCuratedPhotos(40, 1)
+        .then(function(result) {
+          console.log(result)
+          // save image list to local storage and iterate through on "next" click
+          this.saveState()
+        }).
+        catch(function(e) {
+          console.err(e)
+        });
     },
     getMeta: function () {
       let imageElement = document.getElementById('backgroundImage')

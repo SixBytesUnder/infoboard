@@ -4,9 +4,9 @@
 > Intended for Raspberry Pi, but should work on any machine with NodeJS installed.
 
 ## Examples
-![Desktop landscape](/static/examples/desktop-1.jpg?raw=true "Desktop landscape - all options colapsed")
-![Galaxy S5 portrait](/static/examples/phone-1.jpg?raw=true "Galaxy S5 portrait - all options colapsed")
-![iPad Pro landscape](/static/examples/ipad-pro-2.jpg?raw=true "iPad Pro landscape - all options expanded")
+![Desktop landscape](https://i.imgur.com/iuyV0x9.jpg?raw=true "Desktop landscape - all options colapsed")
+![Galaxy S5 portrait](https://i.imgur.com/P5w1h0r.jpg?raw=true "Galaxy S5 portrait - all options colapsed")
+![iPad Pro landscape](https://i.imgur.com/Lfm25Uc.jpg?raw=true "iPad Pro landscape - all options expanded")
 
 More example screenshots in [/static/examples/](/static/examples/) or https://imgur.com/a/Odm4haP
 
@@ -15,7 +15,7 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 # go to project folder
 $ cd /var/www/html/
 
-# clone this repo
+# clone this repo to current folder
 $ git clone https://github.com/SixBytesUnder/infoboard.git .
 
 # IMPORTANT! rename .env.example to .env
