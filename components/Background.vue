@@ -48,6 +48,8 @@ export default {
   mounted() {
     this.imagesSource = process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE
     this.showNavButtons = process.env.NAV_BUTTONS === 'true' ? true : false
+    this.perPage = !isNaN(process.env.PEXELS_PERPAGE) ? process.env.PEXELS_PERPAGE : 40
+    this.page = !isNaN(process.env.PEXELS_PAGE) ? process.env.PEXELS_PAGE : 0
     if (this.imagesSource === 'single') {
       this.showNavButtons = false
       this.getBackground()
@@ -60,8 +62,9 @@ export default {
       this.getUnsplash()
       this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
     } else if (this.imagesSource === 'pexels') {
+      this.loadState()
       this.enableFolderButton = false
-      this.getPexels()
+      this.getPexels(this.perPage, this.page)
       this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
     } else {
       this.loadState()
@@ -102,7 +105,7 @@ export default {
         this.getUnsplash()
         this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
       } else if (this.imagesSource === 'pexels') {
-        this.getPexels()
+        this.getPexels(this.perPage, this.page)
         this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
       } else {
         this.getBackground(param)
@@ -178,18 +181,30 @@ export default {
         });
     },
     getPexels: function() {
-      //TODO still waiting for Pexels to grant me API key to test this out
-      const PexelsAPI = require('pexels-api-wrapper')
-      var pexelsClient = new PexelsAPI(process.env.PEXELS_KEY)
-      pexelsClient.getCuratedPhotos(40, 1)
-        .then(function(result) {
-          console.log(result)
-          // save image list to local storage and iterate through on "next" click
+      if (this.imageList.length == 0) {
+        this.page++
+        axios.get(`https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`, {
+          headers: { Authorization: process.env.PEXELS_KEY }
+        })
+        .then((response) => {
+          for (var i = 0; i < response.data.photos.length; i++) {
+            this.imageList.push(response.data.photos[i].src.medium)
+          }
+          this.lastImage = this.imageList.shift()
+          this.background = `background-image: url("${this.lastImage}")`
+        })
+        .catch((e) => {
+          if (this.env == 'development') console.log(e)
+        })
+        .then(() => {
+          // save current images array state
           this.saveState()
-        }).
-        catch(function(e) {
-          console.err(e)
-        });
+        })
+      } else {
+        // remove current image from array and display it
+        this.lastImage = this.imageList.shift()
+        this.background = `background-image: url("${this.lastImage}")`
+      }
     },
     getMeta: function () {
       let imageElement = document.getElementById('backgroundImage')
@@ -269,5 +284,6 @@ export default {
   position: fixed;
   bottom: 0.5rem;
   right: 0.5rem;
+  z-index: 10;
 }
 </style>
