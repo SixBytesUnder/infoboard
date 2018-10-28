@@ -1,5 +1,5 @@
 <template>
-  <div v-if="enable === 'true'">
+  <div v-if="enable === 'true'" class="col">
     <div class="row">
       <div class="item col mx-2">
         <div class="media px-2 py-2 withBackground">

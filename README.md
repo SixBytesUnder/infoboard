@@ -4,11 +4,24 @@
 > Intended for Raspberry Pi, but should work on any machine with NodeJS installed.
 
 ## Examples
+
 ![Desktop landscape](https://i.imgur.com/iuyV0x9.jpg?raw=true "Desktop landscape - all options colapsed")
 ![Galaxy S5 portrait](https://i.imgur.com/P5w1h0r.jpg?raw=true "Galaxy S5 portrait - all options colapsed")
 ![iPad Pro landscape](https://i.imgur.com/Lfm25Uc.jpg?raw=true "iPad Pro landscape - all options expanded")
 
 More example screenshots in [/static/examples/](/static/examples/) or https://imgur.com/a/Odm4haP
+
+## Features
+* Almost everything is configurable in `.env` file;
+* Show current time and date;
+* Background images, changing every 60 seconds. Source of images can be: a local folder, NASA Picture of the day, random image from Unsplash or curated images from Pexels;
+* Up to 10 upcoming events from Google Calendar;
+* Current weather and weekly forecast from DarkSky;
+* Transport for London status updates for tube, overground, dlr, tfl rail and tram;
+* Transport for London bus timetable for bus stops you choose;
+* Everyting, except for time can be folded or expanded by clicking on their icons;
+* Two buttons at the bottom right corner allow to skip to the next image or skip the entire folder to the next one (for local source only);
+* Runs as a responsive website therefore can be accessed on any device.
 
 ## Raspberry Pi production deployment steps
 ``` bash

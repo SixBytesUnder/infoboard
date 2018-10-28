@@ -5,9 +5,12 @@
 			<Datetime/>
 			<Weather/>
 		</div>
-
 		<Forecast/>
-		<Tfl/>
+
+		<div class="row py-2">
+			<Tfl/>
+			<Calendar/>
+		</div>
 	</div>
 </template>
 
@@ -16,6 +19,7 @@ import Background from '~/components/Background.vue'
 import Datetime from '~/components/Datetime.vue'
 import Weather from '~/components/Weather.vue'
 import Forecast from '~/components/Forecast.vue'
+import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
 
 export default {
@@ -24,6 +28,7 @@ export default {
 		Datetime,
 		Weather,
 		Forecast,
+		Calendar,
 		Tfl
 	}
 }

@@ -16,5 +16,7 @@ build
 # environment specific config file
 .env
 
-# Project resources
+# Other
 \!resources
+credentials.json
+token.json
