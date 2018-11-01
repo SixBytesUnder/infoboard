@@ -84,7 +84,7 @@ router.get('/calendar', (req, resp) => {
 			if (err) return console.log('The API returned an error: ' + err);
 			const events = res.data.items;
 			if (events.length) {
-				events.map((event, i) => {
+				events.map((event) => {
 					const start = event.start.dateTime || event.start.date;
 					const end = event.end.dateTime || '';
 					eventsList.push({time: start, end: end, summary: event.summary})

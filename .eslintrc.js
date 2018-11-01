@@ -20,7 +20,7 @@ module.exports = {
 	],
 	// add your custom rules here
 	rules: {
-		"indent": ["error", "tab"],
+		"indent": [2, "tab"],
 		"no-tabs": 0,
 		'no-console': 'off'
 	},
