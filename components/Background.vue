@@ -7,17 +7,20 @@
 			id="backgroundImage" 
 			:style="background"/>
 
-		<div 
-			v-if="showNavButtons === true"
-			class="btn-group buttons">
+		<div class="btn-group buttons">
 			<button
+				v-if="fullscreenEnabled === true"
+				class="btn btn-sm btn-outline-dark"
+				@click="fullscreen">fullscreen</button>
+			<button
+				v-if="showNavButtons === true"
 				:disabled="disableButtons"
-				class="btn btn-outline-dark"
+				class="btn btn-sm btn-outline-dark"
 				@click="getNext('image')">{{ nextimage }}</button>
 			<button 
-				v-if="enableFolderButton === true"
+				v-if="enableFolderButton === true && showNavButtons === true"
 				:disabled="disableButtons"
-				class="btn btn-outline-dark"
+				class="btn btn-sm btn-outline-dark"
 				@click="getNext('folder')">{{ nextfolder }}</button>
 		</div>
 	</section>
@@ -39,6 +42,8 @@ export default {
 			showNavButtons: false,
 			enableFolderButton: true,
 			disableButtons: false,
+			fullscreenElement: undefined,
+			fullscreenEnabled: false,
 			nextimage: 'image',
 			nextfolder: 'folder',
 			// used to tell the backend what to show next
@@ -46,6 +51,7 @@ export default {
 		}
 	},
 	mounted() {
+		this.fullscreenEnabled = document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled
 		this.imagesSource = process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE
 		this.showNavButtons = process.env.NAV_BUTTONS === 'true' ? true : false
 		this.perPage = !isNaN(process.env.PEXELS_PERPAGE) ? process.env.PEXELS_PERPAGE : 40
@@ -105,7 +111,33 @@ export default {
 				if (this.env == 'development') console.log(e)
 			}
 		},
-		getNext: function(param) {
+		fullscreen: function () {
+			if (this.fullscreenEnabled === true) {
+				this.fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement
+
+				if (this.fullscreenElement != undefined) {
+					if (document.exitFullscreen) {
+						document.exitFullscreen()
+					} else if (document.mozCancelFullScreen) {
+						document.mozCancelFullScreen()
+					} else if (document.webkitExitFullscreen) {
+						document.webkitExitFullscreen()
+					}
+				} else {
+					var element = document.documentElement
+					if (element.requestFullscreen) {
+						element.requestFullscreen()
+					} else if (element.mozRequestFullScreen) {
+						element.mozRequestFullScreen()
+					} else if (element.webkitRequestFullscreen) {
+						element.webkitRequestFullscreen()
+					} else if (element.msRequestFullscreen) {
+						element.msRequestFullscreen()
+					}
+				}
+			}
+		},
+		getNext: function (param) {
 			clearInterval(this.interval)
 			if (this.imagesSource === 'unsplash') {
 				this.getUnsplash()
