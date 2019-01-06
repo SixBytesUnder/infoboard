@@ -104,10 +104,13 @@ $ npm install
 $ npm run build
 
 # restart persistent app manager
+# note: no neet to run `npm run build`, pm2 will do it for you
 $ pm2 restart infoboard
 
-# sometimes nginx needs to be restarted as well
-$ sudo /etc/init.d/nginx restart
+# the app takes a minute to compile, to see the progress
+# run below command and watch "Global Logs" window
+# app will be ready when you see something similar to "Listening on http://localhost:3000"
+$ pm2 monit
 ```
 
 ## Development setup
