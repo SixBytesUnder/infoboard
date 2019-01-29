@@ -1,5 +1,7 @@
 <template>
-	<div v-if="enable === 'true'" class="col">
+	<div
+		v-if="enable === 'true'"
+		class="col">
 		<div class="row">
 			<div class="item col mx-2">
 				<div class="media px-2 py-2 withBackground">
@@ -13,14 +15,21 @@
 						v-if="showBuses" 
 						class="media-body mx-2">
 						<p 
-							v-for="(bus, index) in buses" 
-							:key="index">
-							<span class="badge badge-light mr-1">{{ index }}</span>
-							<span 
-								v-for="(time, index) in bus" 
-								:key="index" 
+							v-for="(bus, busNumber) in buses" 
+							:key="busNumber">
+							<span class="badge badge-light mr-1">
+								{{ busNumber }}
+							</span>
+							<span
+								v-for="(time, indexT) in bus" 
+								:key="indexT" 
 								class="align-self-middle">
-								<span>{{ time }}m</span><span v-if="index+1 < bus.length">, </span>
+								<span v-if="indexT+1 < bus.length">
+									{{ time }}m,
+								</span>
+								<span v-else>
+									{{ time }}m
+								</span>
 							</span>
 						</p>
 					</div>
@@ -51,7 +60,9 @@
 						<div class="col">
 							<span 
 								:class="line.id" 
-								class="badge w-100">{{ line.name }}</span>
+								class="badge w-100">
+								{{ line.name }}
+							</span>
 						</div>
 						<div 
 							class="col align-items-center" 
@@ -113,63 +124,63 @@ export default {
 		},
 		async getBus (busStop) {
 			await axios.get(`https://api.tfl.gov.uk/StopPoint/${busStop}/Arrivals?app_id=${this.appId}&app_key=${this.appKey}`)
-			.then((res) => {
-				if (res.data.length > 0 ) {
+				.then((res) => {
+					if (res.data.length > 0 ) {
 					// let bus = {}
-					for (var i = 0; i < res.data.length; i++) {
-						let timetable = ''
+						for (var i = 0; i < res.data.length; i++) {
+							let timetable = ''
 
-						if (typeof res.data[i].timeToStation == 'number') {
-							timetable = Math.round(res.data[i].timeToStation / 60)
-						} else if (res.data[i].timeToStation <= 0.2) {
-							timetable = 'Due'
-						} else {
-							timetable = res.data[i].timeToStation
-						}
+							if (typeof res.data[i].timeToStation == 'number') {
+								timetable = Math.round(res.data[i].timeToStation / 60)
+							} else if (res.data[i].timeToStation <= 0.2) {
+								timetable = 'Due'
+							} else {
+								timetable = res.data[i].timeToStation
+							}
 
-						if (this.busesTemp[res.data[i].lineName] == undefined) {
-							this.busesTemp[res.data[i].lineName] = []
+							if (this.busesTemp[res.data[i].lineName] == undefined) {
+								this.busesTemp[res.data[i].lineName] = []
+							}
+							this.busesTemp[res.data[i].lineName].push(timetable)
+							this.busesTemp[res.data[i].lineName].sort((a, b) => a - b)
 						}
-						this.busesTemp[res.data[i].lineName].push(timetable)
-						this.busesTemp[res.data[i].lineName].sort((a, b) => a - b)
-					}
 					// Note: Vue has problems updating parts of an array or object, that's why this is a returned local variable
 					// return bus
-				}
-			}).then(() => {
+					}
+				}).then(() => {
 				// console.log(this.busesTemp)
-				this.buses = this.busesTemp
+					this.buses = this.busesTemp
 				// if (this.busStops.length === Object.keys(data).length) {
 				//   this.buses = data
 				// }
-			}).catch(e => {
-				if (this.env == 'development') console.log(e)
-			})
+				}).catch(e => {
+					if (this.env == 'development') console.log(e)
+				})
 		},
 		async getTube () {
 			await axios.get(`https://api.tfl.gov.uk/line/mode/${this.statusLines}/status?app_id=${this.appId}&app_key=${this.appKey}`)
-			.then((res) => {
-				if (res.status === 200) {
-					for (var i = 0; i < res.data.length; i++) {
-						this.tube[res.data[i].id] = {
-							id: res.data[i].id,
-							name: res.data[i].name
-						}
-						// iterate through statuses
-						for (var j = 0; j < res.data[i].lineStatuses.length; j++) {
-							let lineStatus = res.data[i].lineStatuses[j]
-							this.tube[res.data[i].id].lineStatuses = {
-								statusSeverity: lineStatus.statusSeverity,
-								statusSeverityDescription: lineStatus.statusSeverityDescription
+				.then((res) => {
+					if (res.status === 200) {
+						for (var i = 0; i < res.data.length; i++) {
+							this.tube[res.data[i].id] = {
+								id: res.data[i].id,
+								name: res.data[i].name
+							}
+							// iterate through statuses
+							for (var j = 0; j < res.data[i].lineStatuses.length; j++) {
+								let lineStatus = res.data[i].lineStatuses[j]
+								this.tube[res.data[i].id].lineStatuses = {
+									statusSeverity: lineStatus.statusSeverity,
+									statusSeverityDescription: lineStatus.statusSeverityDescription
+								}
 							}
 						}
+					} else {
+						this.errors.push(`TfL API error: ${res.message}`)
 					}
-				} else {
-					this.errors.push(`TfL API error: ${res.message}`)
-				}
-			}).catch(e => {
-				if (this.env == 'development') console.log(e)
-			})
+				}).catch(e => {
+					if (this.env == 'development') console.log(e)
+				})
 		}
 	}
 }

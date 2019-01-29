@@ -1,15 +1,15 @@
 <template>
 	<div class="container-fluid pt-2">
-		<Background/>
+		<Background />
 		<div class="row mx-2 py-2">
-			<Datetime/>
-			<Weather/>
+			<Datetime />
+			<Weather />
 		</div>
-		<Forecast/>
+		<Forecast />
 
 		<div class="row py-2">
-			<Tfl/>
-			<Calendar/>
+			<Tfl />
+			<Calendar />
 		</div>
 	</div>
 </template>

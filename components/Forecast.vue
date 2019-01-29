@@ -7,13 +7,23 @@
 			:key="index" 
 			class="forecastWrapper col withBackground mx-2 mb-2">
 			<div class="forecast h-100 m-auto">
-				<div class="col">{{ moment.unix(day.time).format('dddd') }}</div>
-				<div class="col forecastIcon"><img 
-					:src="'/images/'+day.icon+'.svg'" 
-					:alt="day.summary"></div>
-				<div class="col">{{ roundValue(day.temperatureHigh) }}&deg;{{ units }}</div>
-				<div class="col">{{ roundValue(day.temperatureLow) }}&deg;{{ units }}</div>
-				<div class="col small px-0">{{ day.summary }}</div>
+				<div class="col">
+					{{ moment.unix(day.time).format('dddd') }}
+				</div>
+				<div class="col forecastIcon">
+					<img 
+						:src="'/images/'+day.icon+'.svg'" 
+						:alt="day.summary">
+				</div>
+				<div class="col">
+					{{ roundValue(day.temperatureHigh) }}&deg;{{ units }}
+				</div>
+				<div class="col">
+					{{ roundValue(day.temperatureLow) }}&deg;{{ units }}
+				</div>
+				<div class="col small px-0">
+					{{ day.summary }}
+				</div>
 			</div>
 		</div>
 	</div>

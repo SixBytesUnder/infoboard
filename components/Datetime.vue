@@ -1,10 +1,14 @@
 <template>
 	<div class="col">
 		<div>
-			<p class="row time display-1 px-2 withBackground">{{ time }}</p>
+			<p class="row time display-1 px-2 withBackground">
+				{{ time }}
+			</p>
 		</div>
 		<div class="row mt-2">
-			<p class="h4 px-2 py-1 withBackground">{{ date }}</p>
+			<p class="h4 px-2 py-1 withBackground">
+				{{ date }}
+			</p>
 		</div>
 	</div>
 </template>

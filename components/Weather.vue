@@ -21,11 +21,17 @@
 								class="location-icon">
 							{{ locationName == '' ? weather.timezone : locationName }}
 						</p>
-						<p class="display-4">{{ roundValue(weather.currently.temperature) }}&deg;{{ units }}</p>
+						<p class="display-4">
+							{{ roundValue(weather.currently.temperature) }}&deg;{{ units }}
+						</p>
 						<p>{{ weather.currently.summary }}</p>
-						<small><a
+						<small>
+							<a
 								href="https://darksky.net/poweredby/"
-							target="_blank">Powered by Dark Sky</a></small>
+								target="_blank">
+								Powered by Dark Sky
+							</a>
+						</small>
 						<small>Updated on: {{ updated }}</small>
 					</div>
 				</div>
@@ -65,14 +71,14 @@ export default {
 		getWeather() {
 			// get current weather
 			axios.get('/api/weather')
-			.then(response => {
-				this.weather = response.data
-				this.$store.commit('loadForecast', response.data.daily.data)
-				this.updated = moment.unix(response.data.currently.time).format('HH:mm:ss')
-			})
-			.catch(e => {
-				if (this.env == 'development') console.log(e)
-			})
+				.then(response => {
+					this.weather = response.data
+					this.$store.commit('loadForecast', response.data.daily.data)
+					this.updated = moment.unix(response.data.currently.time).format('HH:mm:ss')
+				})
+				.catch(e => {
+					if (this.env == 'development') console.log(e)
+				})
 		},
 		roundValue(val) {
 			if (this.tempRouded === true) {

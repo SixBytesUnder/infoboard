@@ -1,5 +1,7 @@
 <template>
-	<div v-if="enable === 'true'" class="col">
+	<div
+		v-if="enable === 'true'"
+		class="col">
 		<div class="row">
 			<div class="col mx-2">
 				<div
@@ -23,12 +25,19 @@
 							v-for="(events, day) in eventsList" 
 							:key="day"
 							class="col border-top">
-							<div class="col-12 px-0">{{ day === moment().format(dateFormat) ? 'Today' : day }}</div>
-							<div class="row"
-									v-for="(ev, index) in events"
-									:key="index">
-									<div class="col-3 border-right"><small>{{ ev.time }}</small></div>
-									<div class="col-9">{{ ev.summary }}</div>
+							<div class="col-12 px-0">
+								{{ day === moment().format(dateFormat) ? 'Today' : day }}
+							</div>
+							<div
+								v-for="(ev, index) in events"
+								:key="index"
+								class="row">
+								<div class="col-3 border-right">
+									<small>{{ ev.time }}</small>
+								</div>
+								<div class="col-9">
+									{{ ev.summary }}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -65,31 +74,31 @@ export default {
 	methods: {
 		getEvents() {
 			axios.get('/api/calendar')
-			.then(response => {
-				var eventsList = {},
-					date,
-					time,
-					end
-				response.data.map((item, i) => {
-					date = moment(item.time).format(this.dateFormat)
-					time = moment(item.time).format('HH:mm')
-					if (item.end == '') {
-						end = ''
-					} else {
-						end = moment(item.end).format('HH:mm')
-					}
-					if (typeof eventsList[date] === 'undefined') eventsList[date] = []
-					if (time === '00:00') {
-						eventsList[date].push({time: 'all-day', summary: item.summary})
-					} else {
-						eventsList[date].push({time: time + '-' + end, summary: item.summary})
-					}
+				.then(response => {
+					var eventsList = {},
+						date,
+						time,
+						end
+					response.data.map((item, i) => {
+						date = moment(item.time).format(this.dateFormat)
+						time = moment(item.time).format('HH:mm')
+						if (item.end == '') {
+							end = ''
+						} else {
+							end = moment(item.end).format('HH:mm')
+						}
+						if (typeof eventsList[date] === 'undefined') eventsList[date] = []
+						if (time === '00:00') {
+							eventsList[date].push({time: 'all-day', summary: item.summary})
+						} else {
+							eventsList[date].push({time: time + '-' + end, summary: item.summary})
+						}
+					})
+					this.eventsList = eventsList
 				})
-				this.eventsList = eventsList
-			})
-			.catch(e => {
-				if (this.env == 'development') console.log(e)
-			})
+				.catch(e => {
+					if (this.env == 'development') console.log(e)
+				})
 		},
 		toggleCalendar() {
 			this.showCalendar = !this.showCalendar

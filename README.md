@@ -122,8 +122,8 @@ $ git clone https://github.com/SixBytesUnder/infoboard.git .
 # install dependencies
 $ npm install
 
-# serve with hot reload (including ExpressJS hot reload) on localhost:3000
-$ nodemon --watch api --exec "npm run dev"
+# serve with hot reload at localhost:3000
+$ npm run dev
 ```
 
 For full documentation on NuxtJS go to [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
@@ -143,7 +143,10 @@ $ pm2 save
 pm2 status
 
 # check if your pm2 process is running
-pm2 list
+$ pm2 list
+
+# monitor your apps running on pm2
+$ pm2 monit
 ```
 
 nginx setup on RPi: https://nuxtjs.org/faq/nginx-proxy/  
