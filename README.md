@@ -102,10 +102,16 @@ $ npm install
 
 # build production bundle
 $ npm run build
+# Note, if you get build errors,
+# delete `node_modules` directory and run `npm install` again
+# if above doesn't help delete the whole app and run
+# pm2 stop infoboard
+# pm2 delete infoboard
+# and follow `production deployment steps` above
 
 # restart persistent app manager
 # note: no neet to run `npm run build`, pm2 will do it for you
-$ pm2 restart infoboard
+$ pm2 restart infoboard --update-env
 
 # the app takes a minute to compile, to see the progress
 # run below command and watch "Global Logs" window
