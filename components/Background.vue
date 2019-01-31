@@ -155,7 +155,18 @@ export default {
 				this.getBackground(param)
 			}
 		},
-		getBackground: function (param) {
+		pickImage: async function () {
+			// remove current image from array and display it
+			this.lastImage = this.imageList.shift()
+			this.imageSrc = encodeURIComponent(this.lastImage)
+			this.background = `background-image: url("/api/background/${this.imageSrc}")`
+			this.getMeta()
+			// get buttons back to normal
+			this.nextimage = 'image'
+			this.nextfolder = 'folder'
+			this.disableButtons = false
+		},
+		getBackground: async function (param) {
 			if (param == 'image') {
 				this.disableButtons = true
 				clearInterval(this.interval)
@@ -168,32 +179,28 @@ export default {
 			this.nextfolder = '...'
 
 			if (this.imageList.length == 0) {
-				// get a batch of images
-				axios.get(`/api/backgrounds/${this.lastImage}`)
+				// get new batch of images
+				await axios.get(`/api/backgrounds/${this.lastImage}`)
 					.then(response => {
 						this.imageList = response.data
-						this.lastImage = this.imageList.shift()
-						this.imageSrc = encodeURIComponent(this.lastImage)
-						this.background = `background-image: url("/api/background/${this.imageSrc}")`
-						this.getMeta()
-						// get buttons back to normal
-						this.nextimage = 'image'
-						this.nextfolder = 'folder'
-						this.disableButtons = false
+						this.pickImage()
 					})
 					.catch(e => {
 						if (this.env == 'development') console.log(e)
 					})
 			} else {
-				// remove current image from array and display it
-				this.lastImage = this.imageList.shift()
-				this.imageSrc = encodeURIComponent(this.lastImage)
-				this.background = `background-image: url("/api/background/${this.imageSrc}")`
-				this.getMeta()
-				// get buttons back to normal
-				this.nextimage = 'image'
-				this.nextfolder = 'folder'
-				this.disableButtons = false
+				this.pickImage()
+			}
+
+			if (this.imageList.length == 0) {
+				// get new batch of images
+				await axios.get(`/api/backgrounds/${this.lastImage}`)
+					.then(response => {
+						this.imageList = response.data
+					})
+					.catch(e => {
+						if (this.env == 'development') console.log(e)
+					})
 			}
 
 			// save current images array state
