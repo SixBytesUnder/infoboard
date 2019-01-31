@@ -200,7 +200,7 @@ export default {
 			this.saveState()
 
 			if (param == 'image' || param == 'folder') {
-				this.interval = setInterval(this.getBackground, 60000)
+				this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
 			}
 		},
 		getNasaAPOD: function() {
