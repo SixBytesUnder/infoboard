@@ -1,10 +1,10 @@
 <template>
 	<section class="container">
 		<div
-			id="backgroundImageBlur" 
+			id="backgroundImageBlur"
 			:style="background" />
-		<div 
-			id="backgroundImage" 
+		<div
+			id="backgroundImage"
 			:style="background" />
 
 		<div class="btn-group buttons">
@@ -21,7 +21,7 @@
 				@click="getNext('image')">
 				{{ nextimage }}
 			</button>
-			<button 
+			<button
 				v-if="enableFolderButton === true && showNavButtons === true"
 				:disabled="disableButtons"
 				class="btn btn-sm btn-outline-dark"
@@ -96,7 +96,7 @@ export default {
 				localStorage.removeItem('infoboardBgrState')
 				localStorage.setItem('infoboardBgrState', savedImageList)
 			} catch (err) {
-				if (this.env == 'development') console.log(e)
+				if (this.env == 'development') console.log(err)
 			}
 		},
 		loadState () {
@@ -114,7 +114,7 @@ export default {
 					}
 				}
 			} catch (err) {
-				if (this.env == 'development') console.log(e)
+				if (this.env == 'development') console.log(err)
 			}
 		},
 		fullscreen: function () {
@@ -185,8 +185,8 @@ export default {
 						this.imageList = response.data
 						this.pickImage()
 					})
-					.catch(e => {
-						if (this.env == 'development') console.log(e)
+					.catch(err => {
+						if (this.env == 'development') console.log(err)
 					})
 			} else {
 				this.pickImage()
@@ -198,8 +198,8 @@ export default {
 					.then(response => {
 						this.imageList = response.data
 					})
-					.catch(e => {
-						if (this.env == 'development') console.log(e)
+					.catch(err => {
+						if (this.env == 'development') console.log(err)
 					})
 			}
 
@@ -215,8 +215,8 @@ export default {
 				.then(response => {
 					this.background = `background-image: url("${response.data.hdurl}")`
 				})
-				.catch(e => {
-					if (this.env == 'development') console.log(e)
+				.catch(err => {
+					if (this.env == 'development') console.log(err)
 				})
 		},
 		getUnsplash: function() {
@@ -244,8 +244,8 @@ export default {
 						this.lastImage = this.imageList.shift()
 						this.background = `background-image: url("${this.lastImage}")`
 					})
-					.catch((e) => {
-						if (this.env == 'development') console.log(e)
+					.catch((err) => {
+						if (this.env == 'development') console.log(err)
 					})
 					.then(() => {
 					// save current images array state
