@@ -4,25 +4,25 @@
 		class="col">
 		<div class="row">
 			<div class="item col mx-2">
-				<div class="media px-2 py-2 withBackground">
-					<img 
-						id="bus-icon" 
-						class="align-self-start" 
-						src="/images/bus.svg" 
-						alt="Bus" 
+				<div class="media px-2 pt-2 withBackground">
+					<img
+						id="bus-icon"
+						class="align-self-start"
+						src="/images/bus.svg"
+						alt="Bus"
 						@click="toggleBuses">
-					<div 
-						v-if="showBuses" 
+					<div
+						v-if="showBuses"
 						class="media-body mx-2">
-						<p 
-							v-for="(bus, busNumber) in buses" 
+						<p
+							v-for="(bus, busNumber) in buses"
 							:key="busNumber">
 							<span class="badge badge-light mr-1">
 								{{ busNumber }}
 							</span>
 							<span
-								v-for="(time, indexT) in bus" 
-								:key="indexT" 
+								v-for="(time, indexT) in bus"
+								:key="indexT"
 								class="align-self-middle">
 								<span v-if="indexT+1 < bus.length">
 									{{ time }}m,
@@ -39,33 +39,33 @@
 
 		<div class="row">
 			<div class="item col mx-2 mt-2">
-				<div 
-					v-if="showTubeIcon" 
-					id="tube-icon" 
+				<div
+					v-if="showTubeIcon"
+					id="tube-icon"
 					class="px-2 py-2 withBackground">
-					<img 
-						class="bus-icon" 
-						src="/images/tube.svg" 
-						alt="Tube" 
+					<img
+						class="bus-icon"
+						src="/images/tube.svg"
+						alt="Tube"
 						@click="toggleTube">
 				</div>
-				<div 
-					v-if="showTube" 
-					class="tube-data px-2 py-2 withBackground" 
+				<div
+					v-if="showTube"
+					class="tube-data px-2 py-2 withBackground"
 					@click="toggleTube">
-					<div 
-						v-for="(line, idx) of tube" 
-						:key="idx" 
+					<div
+						v-for="(line, idx) of tube"
+						:key="idx"
 						class="row">
 						<div class="col">
-							<span 
-								:class="line.id" 
+							<span
+								:class="line.id"
 								class="badge w-100">
 								{{ line.name }}
 							</span>
 						</div>
-						<div 
-							class="col align-items-center" 
+						<div
+							class="col align-items-center"
 							style="white-space: nowrap">
 							{{ line.lineStatuses.statusSeverityDescription }}
 						</div>
@@ -91,6 +91,7 @@ export default {
 			showBuses: false,
 			showTube: false,
 			showTubeIcon: true,
+			// this.busesTemp is needed because updating this.buses directly causes display issues
 			busesTemp: {},
 			buses: {},
 			tube: {},
@@ -113,20 +114,26 @@ export default {
 			this.showTubeIcon = !this.showTubeIcon
 		},
 		getTfLStatus () {
-			// clear existing buses info
+			// clear existing buses timetable object
 			this.busesTemp = {}
 			this.buses = {}
-			for (let line of this.busStops) {
-				this.getBus(line)
+			if (this.busStops.length > 0) {
+				this.getBus()
+				// console.log(this.busStops[10])
+
+				// for (let line of this.busStops) {
+				// 	console.log(line)
+				// 	this.getBus(line)
+				// }
 			}
 			// tube line status
 			this.getTube()
 		},
-		async getBus (busStop) {
+		async getBus () {
+			const busStop = this.busStops.shift()
 			await axios.get(`https://api.tfl.gov.uk/StopPoint/${busStop}/Arrivals?app_id=${this.appId}&app_key=${this.appKey}`)
 				.then((res) => {
 					if (res.data.length > 0 ) {
-					// let bus = {}
 						for (var i = 0; i < res.data.length; i++) {
 							let timetable = ''
 
@@ -141,20 +148,23 @@ export default {
 							if (this.busesTemp[res.data[i].lineName] == undefined) {
 								this.busesTemp[res.data[i].lineName] = []
 							}
-							this.busesTemp[res.data[i].lineName].push(timetable)
+							// add only unique arrival times to array
+							if (this.busesTemp[res.data[i].lineName].indexOf(timetable) === -1) {
+								this.busesTemp[res.data[i].lineName].push(timetable)
+							}
 							this.busesTemp[res.data[i].lineName].sort((a, b) => a - b)
 						}
-					// Note: Vue has problems updating parts of an array or object, that's why this is a returned local variable
-					// return bus
 					}
 				}).then(() => {
-				// console.log(this.busesTemp)
-					this.buses = this.busesTemp
-				// if (this.busStops.length === Object.keys(data).length) {
-				//   this.buses = data
-				// }
-				}).catch(e => {
-					if (this.env == 'development') console.log(e)
+					if (this.busStops.length > 0) {
+						this.getBus()
+					} else {
+						this.buses = this.busesTemp
+						// reassign bus stops from configuration
+						this.busStops = process.env.TFL_BUS_STOPS.split(',')
+					}
+				}).catch(err => {
+					if (this.env == 'development') console.log(err)
 				})
 		},
 		async getTube () {
@@ -178,8 +188,8 @@ export default {
 					} else {
 						this.errors.push(`TfL API error: ${res.message}`)
 					}
-				}).catch(e => {
-					if (this.env == 'development') console.log(e)
+				}).catch(err => {
+					if (this.env == 'development') console.log(err)
 				})
 		}
 	}
