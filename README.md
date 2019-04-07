@@ -110,7 +110,7 @@ $ npm run build
 # and follow `production deployment steps` above
 
 # restart persistent app manager
-# note: no neet to run `npm run build`, pm2 will do it for you
+# note: no need to run `npm run build`, pm2 will do it for you
 $ pm2 restart infoboard --update-env
 
 # the app takes a minute to compile, to see the progress
