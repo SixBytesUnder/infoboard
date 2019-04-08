@@ -22,7 +22,7 @@
 					<div class="col-8 p-2 mr-3 withBackground">
 						<p>Upcoming calendar events:</p>
 						<div
-							v-for="(events, day) in eventsList" 
+							v-for="(events, day) in eventsList"
 							:key="day"
 							class="col border-top">
 							<div class="col-12 px-0">
@@ -52,7 +52,7 @@ import axios from 'axios'
 import moment from 'moment'
 
 export default {
-	data: function() {
+	data: function () {
 		return {
 			moment: moment,
 			env: process.env.NODE_ENV,
@@ -64,7 +64,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.dateFormat = process.env.CALENDAR_DATE_FORMAT == '' || process.env.CALENDAR_DATE_FORMAT === undefined ? 'YYYY-MM-DD' : process.env.CALENDAR_DATE_FORMAT
+		this.dateFormat = process.env.CALENDAR_DATE_FORMAT === '' || process.env.CALENDAR_DATE_FORMAT === undefined ? 'YYYY-MM-DD' : process.env.CALENDAR_DATE_FORMAT
 		this.getEvents()
 		this.interval = setInterval(this.getEvents, 1000 * 3600)
 	},
@@ -74,30 +74,28 @@ export default {
 	methods: {
 		getEvents() {
 			axios.get('/api/calendar')
-				.then(response => {
-					var eventsList = {},
-						date,
-						time,
-						end
+				.then((response) => {
+					const eventsList = {}
+					let end = ''
 					response.data.map((item, i) => {
-						date = moment(item.time).format(this.dateFormat)
-						time = moment(item.time).format('HH:mm')
-						if (item.end == '') {
+						const date = moment(item.time).format(this.dateFormat)
+						const time = moment(item.time).format('HH:mm')
+						if (item.end === '') {
 							end = ''
 						} else {
 							end = moment(item.end).format('HH:mm')
 						}
 						if (typeof eventsList[date] === 'undefined') eventsList[date] = []
 						if (time === '00:00') {
-							eventsList[date].push({time: 'all-day', summary: item.summary})
+							eventsList[date].push({ time: 'all-day', summary: item.summary })
 						} else {
-							eventsList[date].push({time: time + '-' + end, summary: item.summary})
+							eventsList[date].push({ time: time + '-' + end, summary: item.summary })
 						}
 					})
 					this.eventsList = eventsList
 				})
-				.catch(e => {
-					if (this.env == 'development') console.log(e)
+				.catch((err) => {
+					if (this.env === 'development') console.log(err)
 				})
 		},
 		toggleCalendar() {

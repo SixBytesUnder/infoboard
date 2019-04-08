@@ -98,11 +98,11 @@ export default {
 			errors: []
 		}
 	},
-	mounted () {
+	mounted() {
 		this.getTfLStatus()
 		this.interval = setInterval(this.getTfLStatus, 60000)
 	},
-	beforeDestroy () {
+	beforeDestroy() {
 		clearInterval(this.interval)
 	},
 	methods: {
@@ -113,7 +113,7 @@ export default {
 			this.showTube = !this.showTube
 			this.showTubeIcon = !this.showTubeIcon
 		},
-		getTfLStatus () {
+		getTfLStatus() {
 			// clear existing buses timetable object
 			this.busesTemp = {}
 			this.buses = {}
@@ -129,15 +129,15 @@ export default {
 			// tube line status
 			this.getTube()
 		},
-		async getBus () {
+		async getBus() {
 			const busStop = this.busStops.shift()
 			await axios.get(`https://api.tfl.gov.uk/StopPoint/${busStop}/Arrivals?app_id=${this.appId}&app_key=${this.appKey}`)
 				.then((res) => {
-					if (res.data.length > 0 ) {
-						for (var i = 0; i < res.data.length; i++) {
+					if (res.data.length > 0) {
+						for (let i = 0; i < res.data.length; i++) {
 							let timetable = ''
 
-							if (typeof res.data[i].timeToStation == 'number') {
+							if (typeof res.data[i].timeToStation === 'number') {
 								timetable = Math.round(res.data[i].timeToStation / 60)
 							} else if (res.data[i].timeToStation <= 0.2) {
 								timetable = 'Due'
@@ -145,7 +145,7 @@ export default {
 								timetable = res.data[i].timeToStation
 							}
 
-							if (this.busesTemp[res.data[i].lineName] == undefined) {
+							if (this.busesTemp[res.data[i].lineName] === undefined) {
 								this.busesTemp[res.data[i].lineName] = []
 							}
 							// add only unique arrival times to array
@@ -163,22 +163,22 @@ export default {
 						// reassign bus stops from configuration
 						this.busStops = process.env.TFL_BUS_STOPS.split(',')
 					}
-				}).catch(err => {
-					if (this.env == 'development') console.log(err)
+				}).catch((err) => {
+					if (this.env === 'development') console.log(err)
 				})
 		},
-		async getTube () {
+		async getTube() {
 			await axios.get(`https://api.tfl.gov.uk/line/mode/${this.statusLines}/status?app_id=${this.appId}&app_key=${this.appKey}`)
 				.then((res) => {
 					if (res.status === 200) {
-						for (var i = 0; i < res.data.length; i++) {
+						for (let i = 0; i < res.data.length; i++) {
 							this.tube[res.data[i].id] = {
 								id: res.data[i].id,
 								name: res.data[i].name
 							}
 							// iterate through statuses
-							for (var j = 0; j < res.data[i].lineStatuses.length; j++) {
-								let lineStatus = res.data[i].lineStatuses[j]
+							for (let j = 0; j < res.data[i].lineStatuses.length; j++) {
+								const lineStatus = res.data[i].lineStatuses[j]
 								this.tube[res.data[i].id].lineStatuses = {
 									statusSeverity: lineStatus.statusSeverity,
 									statusSeverityDescription: lineStatus.statusSeverityDescription
@@ -188,8 +188,8 @@ export default {
 					} else {
 						this.errors.push(`TfL API error: ${res.message}`)
 					}
-				}).catch(err => {
-					if (this.env == 'development') console.log(err)
+				}).catch((err) => {
+					if (this.env === 'development') console.log(err)
 				})
 		}
 	}

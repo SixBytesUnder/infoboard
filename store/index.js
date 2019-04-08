@@ -4,10 +4,10 @@ export const state = () => ({
 })
 
 export const mutations = {
-	showForecast (state, payload) {
+	showForecast(state, payload) {
 		state.showForecast = payload
 	},
-	loadForecast (state, payload) {
+	loadForecast(state, payload) {
 		state.forecast = payload
 	}
 }

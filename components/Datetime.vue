@@ -17,7 +17,7 @@
 import moment from 'moment'
 
 export default {
-	data: function() {
+	data: function () {
 		return {
 			time: moment().format(process.env.TIME_FORMAT),
 			date: moment().format(process.env.DATE_FORMAT),
@@ -31,7 +31,7 @@ export default {
 		clearInterval(this.interval)
 	},
 	methods: {
-		updateTime () {
+		updateTime() {
 			this.time = moment().format(process.env.TIME_FORMAT)
 			this.date = moment().format(process.env.DATE_FORMAT)
 		}

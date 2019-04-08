@@ -1,23 +1,23 @@
 <template>
-	<div 
-		v-if="enableWeather === 'true'" 
+	<div
+		v-if="enableWeather === 'true'"
 		class="col">
 		<div class="row">
-			<div 
-				v-if="weather.currently" 
+			<div
+				v-if="weather.currently"
 				class="col weather pr-0">
 				<div class="media px-2 float-right withBackground">
-					<img 
-						id="weather-icon" 
-						:src="weather.currently.icon ? '/images/'+weather.currently.icon+'.svg' : '/images/missing.svg'" 
-						:alt="weather.currently.summary" 
-						class="align-self-center mr-2" 
+					<img
+						id="weather-icon"
+						:src="weather.currently.icon ? '/images/'+weather.currently.icon+'.svg' : '/images/missing.svg'"
+						:alt="weather.currently.summary"
+						class="align-self-center mr-2"
 						@click="toggleForecast">
 					<div class="media-body my-2">
 						<p>
-							<img 
-								:alt="weather.timezone" 
-								src="/images/pin.svg" 
+							<img
+								:alt="weather.timezone"
+								src="/images/pin.svg"
 								class="location-icon">
 							{{ locationName == '' ? weather.timezone : locationName }}
 						</p>
@@ -45,7 +45,7 @@ import axios from 'axios'
 import moment from 'moment'
 
 export default {
-	data: function() {
+	data: function () {
 		return {
 			enableWeather: process.env.WEATHER,
 			locationName: process.env.WEATHER_LOCATION_NAME,
@@ -57,7 +57,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.tempRouded = process.env.WEATHER_ROUNDED === 'true' ? true : false
+		this.tempRouded = process.env.WEATHER_ROUNDED === 'true'
 		this.getWeather()
 		this.interval = setInterval(this.getWeather, 600000)
 	},
@@ -71,13 +71,13 @@ export default {
 		getWeather() {
 			// get current weather
 			axios.get('/api/weather')
-				.then(response => {
+				.then((response) => {
 					this.weather = response.data
 					this.$store.commit('loadForecast', response.data.daily.data)
 					this.updated = moment.unix(response.data.currently.time).format('HH:mm:ss')
 				})
-				.catch(e => {
-					if (this.env == 'development') console.log(e)
+				.catch((err) => {
+					if (this.env === 'development') console.log(err)
 				})
 		},
 		roundValue(val) {

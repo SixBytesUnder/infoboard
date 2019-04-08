@@ -38,7 +38,7 @@ import EXIF from 'exif-js'
 import Unsplash, { toJson } from 'unsplash-js'
 
 export default {
-	data: function() {
+	data: function () {
 		return {
 			imageInterval: process.env.IMAGE_INTERVAL,
 			nasa: false,
@@ -59,7 +59,7 @@ export default {
 	mounted() {
 		this.fullscreenEnabled = document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled
 		this.imagesSource = process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE
-		this.showNavButtons = process.env.NAV_BUTTONS === 'true' ? true : false
+		this.showNavButtons = process.env.NAV_BUTTONS === 'true'
 		this.perPage = !isNaN(process.env.PEXELS_PERPAGE) ? process.env.PEXELS_PERPAGE : 40
 		this.page = !isNaN(process.env.PEXELS_PAGE) ? process.env.PEXELS_PAGE : 0
 		if (this.imagesSource === 'single') {
@@ -88,7 +88,7 @@ export default {
 		clearInterval(this.interval)
 	},
 	methods: {
-		saveState () {
+		saveState() {
 			let savedImageList
 
 			try {
@@ -96,10 +96,10 @@ export default {
 				localStorage.removeItem('infoboardBgrState')
 				localStorage.setItem('infoboardBgrState', savedImageList)
 			} catch (err) {
-				if (this.env == 'development') console.log(err)
+				if (this.env === 'development') console.log(err)
 			}
 		},
-		loadState () {
+		loadState() {
 			let savedImageList
 
 			try {
@@ -114,14 +114,14 @@ export default {
 					}
 				}
 			} catch (err) {
-				if (this.env == 'development') console.log(err)
+				if (this.env === 'development') console.log(err)
 			}
 		},
 		fullscreen: function () {
 			if (this.fullscreenEnabled === true) {
 				this.fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement
 
-				if (this.fullscreenElement != undefined) {
+				if (this.fullscreenElement !== undefined) {
 					if (document.exitFullscreen) {
 						document.exitFullscreen()
 					} else if (document.mozCancelFullScreen) {
@@ -130,7 +130,7 @@ export default {
 						document.webkitExitFullscreen()
 					}
 				} else {
-					var element = document.documentElement
+					const element = document.documentElement
 					if (element.requestFullscreen) {
 						element.requestFullscreen()
 					} else if (element.mozRequestFullScreen) {
@@ -155,7 +155,7 @@ export default {
 				this.getBackground(param)
 			}
 		},
-		pickImage: async function () {
+		pickImage: function () {
 			// remove current image from array and display it
 			this.lastImage = this.imageList.shift()
 			this.imageSrc = encodeURIComponent(this.lastImage)
@@ -167,10 +167,10 @@ export default {
 			this.disableButtons = false
 		},
 		getBackground: async function (param) {
-			if (param == 'image') {
+			if (param === 'image') {
 				this.disableButtons = true
 				clearInterval(this.interval)
-			} else if (param == 'folder') {
+			} else if (param === 'folder') {
 				this.disableButtons = true
 				this.imageList = []
 				clearInterval(this.interval)
@@ -178,74 +178,74 @@ export default {
 			this.nextimage = '...'
 			this.nextfolder = '...'
 
-			if (this.imageList.length == 0) {
+			if (this.imageList.length === 0) {
 				// get new batch of images
 				await axios.get(`/api/backgrounds/${this.lastImage}`)
-					.then(response => {
+					.then((response) => {
 						this.imageList = response.data
 						this.pickImage()
 					})
-					.catch(err => {
-						if (this.env == 'development') console.log(err)
+					.catch((err) => {
+						if (this.env === 'development') console.log(err)
 					})
 			} else {
 				this.pickImage()
 			}
 
-			if (this.imageList.length == 0) {
+			if (this.imageList.length === 0) {
 				// get new batch of images
 				await axios.get(`/api/backgrounds/${this.lastImage}`)
-					.then(response => {
+					.then((response) => {
 						this.imageList = response.data
 					})
-					.catch(err => {
-						if (this.env == 'development') console.log(err)
+					.catch((err) => {
+						if (this.env === 'development') console.log(err)
 					})
 			}
 
 			// save current images array state
 			this.saveState()
 
-			if (param == 'image' || param == 'folder') {
+			if (param === 'image' || param === 'folder') {
 				this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
 			}
 		},
-		getNasaAPOD: function() {
+		getNasaAPOD: function () {
 			axios.get('/api/nasa')
-				.then(response => {
+				.then((response) => {
 					this.background = `background-image: url("${response.data.hdurl}")`
 				})
-				.catch(err => {
-					if (this.env == 'development') console.log(err)
+				.catch((err) => {
+					if (this.env === 'development') console.log(err)
 				})
 		},
-		getUnsplash: function() {
+		getUnsplash: function () {
 			const unsplash = new Unsplash({
 				applicationId: process.env.UNSPLASH_ACCESS,
 				secret: process.env.UNSPLASH_SECRET,
 				callbackUrl: process.env.CALLBACK_URL
-			});
+			})
 			unsplash.photos.getRandomPhoto()
 				.then(toJson)
-				.then(unsplashResp => {
+				.then((unsplashResp) => {
 					this.background = `background-image: url("${unsplashResp.urls.regular}")`
-				});
+				})
 		},
-		getPexels: function() {
-			if (this.imageList.length == 0) {
+		getPexels: function () {
+			if (this.imageList.length === 0) {
 				this.page++
 				axios.get(`https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`, {
 					headers: { Authorization: process.env.PEXELS_KEY }
 				})
 					.then((response) => {
-						for (var i = 0; i < response.data.photos.length; i++) {
+						for (let i = 0; i < response.data.photos.length; i++) {
 							this.imageList.push(response.data.photos[i].src.medium)
 						}
 						this.lastImage = this.imageList.shift()
 						this.background = `background-image: url("${this.lastImage}")`
 					})
 					.catch((err) => {
-						if (this.env == 'development') console.log(err)
+						if (this.env === 'development') console.log(err)
 					})
 					.then(() => {
 					// save current images array state
@@ -258,15 +258,15 @@ export default {
 			}
 		},
 		getMeta: function () {
-			let imageElement = document.getElementById('backgroundImage')
+			const imageElement = document.getElementById('backgroundImage')
 			// let imageBlur = document.getElementById('backgroundImageBlur')
-			let img = new Image()
+			const img = new Image()
 			let degr = 0
-			img.addEventListener("load", function() {
-				EXIF.getData(this, function() {
-					var orientation = EXIF.getTag(this, "Orientation")
+			img.addEventListener('load', function () {
+				EXIF.getData(this, function () {
+					const orientation = EXIF.getTag(this, 'Orientation')
 
-					switch(orientation) {
+					switch (orientation) {
 					case 1:
 					case 2:
 						degr = 0
