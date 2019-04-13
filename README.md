@@ -5,8 +5,8 @@
 
 ## Examples
 
-![Desktop landscape](https://i.imgur.com/iuyV0x9.jpg?raw=true "Desktop landscape - all options colapsed")
-![Galaxy S5 portrait](https://i.imgur.com/P5w1h0r.jpg?raw=true "Galaxy S5 portrait - all options colapsed")
+![Desktop landscape](https://i.imgur.com/iuyV0x9.jpg?raw=true "Desktop landscape - all options collapsed")
+![Galaxy S5 portrait](https://i.imgur.com/P5w1h0r.jpg?raw=true "Galaxy S5 portrait - all options collapsed")
 ![iPad Pro landscape](https://i.imgur.com/Lfm25Uc.jpg?raw=true "iPad Pro landscape - all options expanded")
 
 More example screenshots in [/static/examples/](/static/examples/) or https://imgur.com/a/Odm4haP
@@ -19,9 +19,11 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 * Current weather and weekly forecast from DarkSky;
 * Transport for London status updates for tube, overground, dlr, tfl rail and tram;
 * Transport for London bus timetable for bus stops you choose;
-* Everyting, except for time can be folded or expanded by clicking on their icons;
-* Two buttons at the bottom right corner allow to skip to the next image or skip the entire folder to the next one (for local source only);
-* Runs as a responsive website therefore can be accessed on any device.
+* Everything, except for time can be folded or expanded by clicking on their icons;
+* Two buttons at the bottom right corner allow skipping to the next image or skip the entire folder to the next one (for local source only);
+* If your browser supports programmatic fullscreen mode, a third button will appear to switch browser to fullscreen;
+* Runs as a responsive website therefore can be accessed on any device;
+* Now also available as PWA (Progressive Web Application) - install infoboard as an app on your phone or tablet and don't bother using a browser.
 
 ## Raspberry Pi production deployment steps
 ``` bash
@@ -102,15 +104,13 @@ $ npm install
 
 # build production bundle
 $ npm run build
-# Note, if you get build errors,
-# delete `node_modules` directory and run `npm install` again
-# if above doesn't help delete the whole app and run
-# pm2 stop infoboard
-# pm2 delete infoboard
+# Note, if you get build errors, delete `node_modules` directory and run `npm install` again
+# if above doesn't help, make a backup copy of your .env file, then delete the whole app and run
+pm2 stop infoboard
+pm2 delete infoboard
 # and follow `production deployment steps` above
 
 # restart persistent app manager
-# note: no need to run `npm run build`, pm2 will do it for you
 $ pm2 restart infoboard --update-env
 
 # the app takes a minute to compile, to see the progress
@@ -122,7 +122,7 @@ $ pm2 monit
 ## Development setup
 
 ``` bash
-# clone this repo
+# clone this repo to current directory
 $ git clone https://github.com/SixBytesUnder/infoboard.git .
 
 # install dependencies
@@ -136,7 +136,7 @@ For full documentation on NuxtJS go to [Nuxt.js docs](https://github.com/nuxt/nu
 
 ## Other helpful commands
 
-To make sure `pm2` restarts the service after your server restarts, run `pm2 startup` command. It should tell you exactly what you need to do next.
+To make sure `pm2` restarts the service after your server (Raspberry) restarts, run `pm2 startup` command. It should tell you exactly what you need to do next.
 
 ``` bash
 # find out what to do to make sure pm2 runs after restart
