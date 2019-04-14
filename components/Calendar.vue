@@ -20,7 +20,23 @@
 					class="row justify-content-end"
 					@click="toggleCalendar">
 					<div class="col-8 p-2 mr-3 withBackground">
-						<p>Upcoming calendar events:</p>
+						<p>
+							Upcoming calendar events:
+							<a
+								v-if="!authorized"
+								href="#"
+								class="badge badge-dark"
+								@click.prevent="handleAuth">
+								Sign In
+							</a>
+							<a
+								v-if="authorized"
+								href="#"
+								class="badge badge-dark"
+								@click.prevent="handleSignout">
+								Sign Out
+							</a>
+						</p>
 						<div
 							v-for="(events, day) in eventsList"
 							:key="day"
@@ -48,8 +64,8 @@
 </template>
 
 <script>
-import axios from 'axios'
 import moment from 'moment'
+// import { google } from 'googleapis'
 
 export default {
 	data: function () {
@@ -60,43 +76,122 @@ export default {
 			dateFormat: 'YYYY-MM-DD',
 			eventsList: {},
 			showCalendar: false,
-			showCalendarIcon: true
+			showCalendarIcon: true,
+			API_KEY: process.env.API_KEY,
+			CLIENT_ID: process.env.CLIENT_ID,
+			DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
+			SCOPES: 'https://www.googleapis.com/auth/calendar.readonly',
+			authToken: undefined,
+			api: undefined,
+			authorized: false
 		}
 	},
 	mounted() {
+		// eslint-disable-next-line no-undef
+		this.api = gapi
+		this.handleClientLoad()
 		this.dateFormat = process.env.CALENDAR_DATE_FORMAT === '' || process.env.CALENDAR_DATE_FORMAT === undefined ? 'YYYY-MM-DD' : process.env.CALENDAR_DATE_FORMAT
-		this.getEvents()
 		this.interval = setInterval(this.getEvents, 1000 * 3600)
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
 	},
 	methods: {
+		saveAuthToken() {
+			let saving
+
+			try {
+				saving = JSON.stringify(this.authToken)
+				localStorage.removeItem('infoboardGCState')
+				localStorage.setItem('infoboardGCState', saving)
+			} catch (err) {
+				if (this.env === 'development') console.log(err)
+			}
+		},
+		loadAuthToken() {
+			let loading
+
+			try {
+				loading = localStorage.getItem('infoboardGCState')
+				if (loading !== null) {
+					this.authToken = JSON.parse(loading)
+				}
+			} catch (err) {
+				if (this.env === 'development') console.log(err)
+			}
+		},
+		handleClientLoad() {
+			this.api.load('client:auth2', this.initClient)
+		},
+		initClient() {
+			const apiParams = {
+				apiKey: this.API_KEY,
+				clientId: this.CLIENT_ID,
+				discoveryDocs: this.DISCOVERY_DOCS,
+				scope: this.SCOPES
+			}
+
+			this.api.client.init(apiParams).then(() => {
+				this.loadAuthToken()
+			}).then(() => {
+				// Listen for sign-in state changes.
+				this.api.auth2.getAuthInstance().isSignedIn.listen(this.authorized)
+				if (this.authToken !== undefined) {
+					this.authorized = true
+					this.getEvents()
+				}
+			}, (err) => {
+				if (this.env === 'development') console.log(JSON.stringify(err))
+			})
+		},
+		handleAuth(event) {
+			Promise.resolve(this.api.auth2.getAuthInstance().signIn())
+				.then((token) => {
+					this.authToken = token
+					this.saveAuthToken()
+					this.authorized = true
+					this.getEvents()
+					this.toggleCalendar()
+				})
+		},
+		handleSignout(event) {
+			Promise.resolve(this.api.auth2.getAuthInstance().signOut())
+				.then(() => {
+					localStorage.removeItem('infoboardGCState')
+					this.authorized = false
+					this.eventsList = {}
+				})
+		},
 		getEvents() {
-			axios.get('/api/calendar')
-				.then((response) => {
+			if (this.authorized === true) {
+				this.api.client.calendar.events.list({
+					'calendarId': 'primary',
+					'timeMin': (new Date()).toISOString(),
+					'showDeleted': false,
+					'singleEvents': true,
+					'maxResults': 10,
+					'orderBy': 'startTime'
+				}).then((response) => {
 					const eventsList = {}
-					let end = ''
-					response.data.map((item, i) => {
-						const date = moment(item.time).format(this.dateFormat)
-						const time = moment(item.time).format('HH:mm')
-						if (item.end === '') {
-							end = ''
-						} else {
-							end = moment(item.end).format('HH:mm')
-						}
-						if (typeof eventsList[date] === 'undefined') eventsList[date] = []
-						if (time === '00:00') {
-							eventsList[date].push({ time: 'all-day', summary: item.summary })
-						} else {
-							eventsList[date].push({ time: time + '-' + end, summary: item.summary })
-						}
-					})
+					if (response.result.items.length > 0) {
+						response.result.items.map((event) => {
+							const startTime = event.start.dateTime || event.start.date
+							const endTime = moment(event.end.dateTime).format('HH:mm') || ''
+							const date = moment(startTime).format(this.dateFormat)
+							const time = moment(startTime).format('HH:mm')
+							if (typeof eventsList[date] === 'undefined') eventsList[date] = []
+							if (time === '00:00') {
+								eventsList[date].push({ time: 'all-day', summary: event.summary })
+							} else {
+								eventsList[date].push({ time: time + '-' + endTime, summary: event.summary })
+							}
+						})
+					} else {
+						eventsList.push('No upcoming events found.')
+					}
 					this.eventsList = eventsList
 				})
-				.catch((err) => {
-					if (this.env === 'development') console.log(err)
-				})
+			}
 		},
 		toggleCalendar() {
 			this.showCalendar = !this.showCalendar

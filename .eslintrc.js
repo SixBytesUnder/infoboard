@@ -4,6 +4,9 @@ module.exports = {
     browser: true,
     node: true
   },
+	'globals': {
+		'gapi': false
+	},
   parserOptions: {
     parser: 'babel-eslint'
   },
