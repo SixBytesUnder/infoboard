@@ -1,28 +1,28 @@
-const {Router} = require('express')
-const router = Router()
 const path = require('path')
 const url = require('url')
-const glob = require('glob')
 const fs = require('fs')
+const glob = require('glob')
+const { Router } = require('express')
+const router = Router()
 require('dotenv').config()
 const mainDir = process.env.IMAGES_DIR
 
-function findNextDir (startPath, lastDir) {
+function findNextDir(startPath, lastDir) {
 	let files = []
 	let dirList = fs.readdirSync(startPath)
-	let ignoreDirs = []
-	let normalizedMainDir = path.normalize(mainDir)
-	
+	const ignoreDirs = []
+	const normalizedMainDir = path.normalize(mainDir)
+
 	// if last dir is provided and exists in the list exclude all directiries up to this one from glob
 	if (lastDir !== '') {
-		for (let dirToIgnore of dirList) {
+		for (const dirToIgnore of dirList) {
 			ignoreDirs.push(dirToIgnore)
 			if (dirToIgnore === lastDir) {
 				break
 			}
 		}
 		// if ignore list contains all dirs, means we're starting from first dir
-		let dirListFiltered = dirList.filter(function (val) {
+		const dirListFiltered = dirList.filter(function (val) {
 			return (ignoreDirs.indexOf(val) === -1)
 		})
 		if (dirListFiltered.length !== 0) {
@@ -30,8 +30,8 @@ function findNextDir (startPath, lastDir) {
 		}
 	}
 
-	for (let asset of dirList) {
-		let fullPath = path.join(startPath, asset)
+	for (const asset of dirList) {
+		const fullPath = path.join(startPath, asset)
 		if (fs.statSync(fullPath).isDirectory()) {
 			files = glob.sync('**/*.+(jpg|jpeg)', {
 				cwd: fullPath,
@@ -40,7 +40,7 @@ function findNextDir (startPath, lastDir) {
 			})
 			if (files.length > 0) {
 				// clean paths to be relative
-				let filesShort = files.map(function (x) { return x.replace(normalizedMainDir, '') })
+				const filesShort = files.map(function (x) { return x.replace(normalizedMainDir, '') })
 				return filesShort
 			}
 		} else {
@@ -53,12 +53,11 @@ function findNextDir (startPath, lastDir) {
 
 router.get('/backgrounds/*', (req, res) => {
 	let files = []
-	let reqPath = url.parse(req.url).pathname
 	let lastPath = ''
 	// split on first / then match this to only folder
-	preLastPath = decodeURIComponent(reqPath.replace('/backgrounds/', ''))
+	const preLastPath = decodeURIComponent(req.url.replace('/backgrounds/', ''))
 	lastPath = preLastPath.substring(0, preLastPath.indexOf('/'))
-	if (lastPath == '') {
+	if (lastPath === '') {
 		lastPath = preLastPath
 	}
 	files = findNextDir(mainDir, lastPath)
@@ -67,8 +66,8 @@ router.get('/backgrounds/*', (req, res) => {
 
 // path to get the file from outside of root project directory
 router.get('/background/:file(*)', (req, res) => {
-	var fullPath = path.join(mainDir, req.params.file)
-	var s = fs.createReadStream(fullPath)
+	const fullPath = path.join(mainDir, req.params.file)
+	const s = fs.createReadStream(fullPath)
 	s.on('open', function () {
 		res.set('Content-Type', 'image/jpeg')
 		s.pipe(res)

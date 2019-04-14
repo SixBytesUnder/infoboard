@@ -1,10 +1,10 @@
-const {Router} = require('express')
-const router = Router()
 const https = require('https')
+const { Router } = require('express')
+const router = Router()
 require('dotenv').config()
 
 router.get('/nasa', (requ, resp) => {
-	let apiKey = process.env.NASA_KEY
+	const apiKey = process.env.NASA_KEY
 	https.get(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}&hd=true`, (res) => {
 		const { statusCode } = res
 		const contentType = res.headers['content-type']
@@ -30,7 +30,7 @@ router.get('/nasa', (requ, resp) => {
 		res.on('data', (chunk) => { rawData += chunk })
 		res.on('end', () => {
 			try {
-				let parsedData = JSON.parse(rawData)
+				const parsedData = JSON.parse(rawData)
 				resp.json(parsedData)
 			} catch (e) {
 				console.error(e.message)

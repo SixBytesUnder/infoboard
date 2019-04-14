@@ -1,12 +1,12 @@
-const {Router} = require('express')
-const router = Router()
 const https = require('https')
+const { Router } = require('express')
+const router = Router()
 require('dotenv').config()
 
 router.get('/weather', (requ, resp) => {
-	let location = process.env.WEATHER_LOCATION
-	let apiKey = process.env.WEATHER_API_SECRET
-	let units = process.env.WEATHER_UNITS === 'fahrenheit' ? 'us' : 'si'
+	const location = process.env.WEATHER_LOCATION
+	const apiKey = process.env.WEATHER_API_SECRET
+	const units = process.env.WEATHER_UNITS === 'fahrenheit' ? 'us' : 'si'
 	https.get(`https://api.darksky.net/forecast/${apiKey}/${location}/?exclude=minutely,hourly&units=${units}`, (res) => {
 		const { statusCode } = res
 		const contentType = res.headers['content-type']
@@ -32,7 +32,7 @@ router.get('/weather', (requ, resp) => {
 		res.on('data', (chunk) => { rawData += chunk })
 		res.on('end', () => {
 			try {
-				let parsedData = JSON.parse(rawData)
+				const parsedData = JSON.parse(rawData)
 				resp.json(parsedData)
 			} catch (e) {
 				console.error(e.message)
