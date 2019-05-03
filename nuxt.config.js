@@ -13,7 +13,7 @@ module.exports = {
 		title: pkg.name,
 		meta: [
 			{ charset: 'utf-8' },
-			{ name: 'viewport', content: 'width=device-width, initial-scale=1' },
+			{ name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' },
 			{ hid: 'description', name: 'description', content: pkg.description }
 		],
 		script: [
@@ -23,6 +23,19 @@ module.exports = {
 			{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
 			{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Cousine:400,500,700' }
 		]
+	},
+
+	/*
+	** PWA manifest file
+	*/
+	manifest: {
+		name: pkg.name,
+		short_name: pkg.name,
+		lang: 'en-GB',
+		background_color: '#292929',
+		theme_color: '#292929',
+		description: pkg.description,
+		display: 'standalone'
 	},
 
 	/*
