@@ -111,7 +111,7 @@ pm2 delete infoboard
 # and follow `production deployment steps` above
 
 # restart persistent app manager
-$ pm2 restart infoboard --update-env
+$ pm2 restart infoboard
 
 # the app takes a minute to compile, to see the progress
 # run below command and watch "Global Logs" window

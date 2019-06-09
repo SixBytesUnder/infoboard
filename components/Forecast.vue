@@ -12,7 +12,7 @@
 				</div>
 				<div class="col forecastIcon">
 					<img
-						:src="'/images/'+day.icon+'.svg'"
+						:src="loadImage('images/'+day.icon+'.svg')"
 						:alt="day.summary">
 				</div>
 				<div class="col">
@@ -42,6 +42,9 @@ export default {
 		}
 	},
 	methods: {
+		loadImage(path) {
+			return require(`~/assets/${path}`)
+		},
 		roundValue(val) {
 			if (this.tempRouded === true) {
 				return Math.round(val)
