@@ -9,7 +9,7 @@
 				<div class="media px-2 float-right withBackground">
 					<img
 						id="weather-icon"
-						:src="weather.currently.icon ? '/images/'+weather.currently.icon+'.svg' : '/images/missing.svg'"
+						:src="weather.currently.icon ? loadImage('images/'+weather.currently.icon+'.svg') : loadImage('images/missing.svg')"
 						:alt="weather.currently.summary"
 						class="align-self-center mr-2"
 						@click="toggleForecast">
@@ -17,7 +17,7 @@
 						<p>
 							<img
 								:alt="weather.timezone"
-								src="/images/pin.svg"
+								src="~/assets/images/pin.svg"
 								class="location-icon">
 							{{ locationName == '' ? weather.timezone : locationName }}
 						</p>
@@ -29,7 +29,7 @@
 							<a
 								href="https://darksky.net/poweredby/"
 								target="_blank">
-								Powered by Dark Sky
+								Powered by DarkSky
 							</a>
 						</small>
 						<small>Updated on: {{ updated }}</small>
@@ -65,6 +65,9 @@ export default {
 		clearInterval(this.interval)
 	},
 	methods: {
+		loadImage(path) {
+			return require(`~/assets/${path}`)
+		},
 		toggleForecast() {
 			this.$store.commit('showForecast', !this.$store.state.showForecast)
 		},

@@ -10,7 +10,7 @@
 					<div class="p-2 mr-2 withBackground">
 						<img
 							id="calendar-icon"
-							src="/images/calendar.svg"
+							src="~/assets/images/calendar.svg"
 							alt="Calendar"
 							@click="toggleCalendar">
 					</div>

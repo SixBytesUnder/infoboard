@@ -8,7 +8,7 @@
 					<img
 						id="bus-icon"
 						class="align-self-start"
-						src="/images/bus.svg"
+						src="~/assets/images/bus.svg"
 						alt="Bus"
 						@click="toggleBuses">
 					<div
@@ -45,7 +45,7 @@
 					class="px-2 py-2 withBackground">
 					<img
 						class="bus-icon"
-						src="/images/tube.svg"
+						src="~/assets/images/tube.svg"
 						alt="Tube"
 						@click="toggleTube">
 				</div>
