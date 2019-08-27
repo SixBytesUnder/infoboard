@@ -1,7 +1,7 @@
 # infoboard
 
 > Infoboard showing photos from local folder as the background, time, weather and Transport for London status updates.  
-> Intended for Raspberry Pi, but should work on any machine with NodeJS installed.
+> Intended for Raspberry Pi, but should work on any machine with NodeJS v8 or newer available.
 
 ## Examples
 
@@ -14,16 +14,16 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 ## Features
 * Almost everything is configurable in `.env` file;
 * Show current time and date;
-* Background images, changing every 60 seconds. Source of images can be: a local folder, NASA Picture of the day, random image from Unsplash or curated images from Pexels;
+* Background images, changing every 60 seconds. Source of images can be: a local folder, [NASA Picture of the day](https://apod.nasa.gov/apod/astropix.html), random image from [Unsplash](https://unsplash.com/) or curated images from [Pexels](https://www.pexels.com/);
 * Up to 10 upcoming events from Google Calendar;
-* Current weather and weekly forecast from DarkSky;
+* Current weather and weekly forecast from [DarkSky](https://darksky.net);
 * Transport for London status updates for tube, overground, dlr, tfl rail and tram;
 * Transport for London bus timetable for bus stops you choose;
 * Everything, except for time can be folded or expanded by clicking on their icons;
 * Two buttons at the bottom right corner allow skipping to the next image or skip the entire folder to the next one (for local source only);
 * If your browser supports programmatic fullscreen mode, a third button will appear to switch browser to fullscreen;
 * Runs as a responsive website therefore can be accessed on any device;
-* Now also available as PWA (Progressive Web Application) - install infoboard as an app on your phone or tablet and don't bother using a browser.
+* Available as [PWA](https://developers.google.com/web/progressive-web-apps/) (Progressive Web Application) - add a shortcut to infoboard that looks just like an app on your phone or tablet and don't bother using a browser.
 
 ## Raspberry Pi production deployment steps
 ``` bash
