@@ -36,6 +36,7 @@
     "glob": "^7.1.4",
     "googleapis": "^39.2.0",
     "moment": "^2.24.0",
+    "node-dht-sensor": "^0.4.1",
     "nuxt": "^2.8.1",
     "unsplash-js": "^5.0.0"
   },
