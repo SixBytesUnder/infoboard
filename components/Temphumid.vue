@@ -4,19 +4,22 @@
 		class="col">
 		<div class="row">
 			<div class="col mx-2">
-				<div
-					class="px-2 py-2 withBackground"
-					@click="toggleDetails">
-					<p>{{ temperature }}°C</p>
-					<p>{{ humidity }}%</p>
-					<div
-						v-if="showDetails"
-						class="media-body mx-2">
-						<p>
-							<span class="badge badge-light mr-1">
-								data graph
-							</span>
-						</p>
+				<div class="row px-3 pb-2 justify-content-end">
+					<div class="d-flex flex-wrap p-2 withBackground">
+						<img
+							id="icon-temp"
+							src="~/assets/images/temperature.svg"
+							class="mr-2">
+						<p>{{ temperature }}°C</p>
+					</div>
+				</div>
+				<div class="row px-3 justify-content-end">
+					<div class="d-flex flex-wrap p-2 withBackground">
+						<img
+							id="icon-humidity"
+							src="~/assets/images/humidity.svg"
+							class="align-self-center mr-2">
+						<p>{{ humidity }}%</p>
 					</div>
 				</div>
 			</div>
@@ -26,12 +29,15 @@
 
 <script>
 import axios from 'axios'
+import moment from 'moment'
 
 export default {
 	data: function () {
 		return {
 			env: process.env.NODE_ENV,
 			enable: process.env.TEMPHUMID,
+			activeFrom: moment(process.env.TH_ACTIVE_FROM, process.env.TIME_FORMAT).valueOf(),
+			activeTo: moment(process.env.TH_ACTIVE_TO, process.env.TIME_FORMAT).valueOf(),
 			showDetails: false,
 			temperature: 0,
 			humidity: 0,
@@ -40,7 +46,7 @@ export default {
 	},
 	mounted() {
 		this.getData()
-		this.interval = setInterval(this.getData, 60000)
+		this.interval = setInterval(this.getData, process.env.TH_FREQUENCY * 1000)
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
@@ -50,19 +56,27 @@ export default {
 			this.showDetails = !this.showDetails
 		},
 		getData() {
-			axios.get('/api/dht')
-				.then((response) => {
-					this.temperature = response.data.temp
-					this.humidity = response.data.humidity
-					console.log(response.data)
-				})
-				.catch((err) => {
-					if (this.env === 'development') console.log(err)
-				})
+			// check if current time is between working hours
+			if (moment().isBetween(this.activeFrom, this.activeTo)) {
+				axios.get('/api/dht')
+					.then((response) => {
+						this.temperature = response.data.temp
+						this.humidity = response.data.humidity
+					})
+					.catch((err) => {
+						if (this.env === 'development') console.log(err)
+					})
+			}
 		}
 	}
 }
 </script>
 
 <style scoped>
+#icon-temp {
+	width: 1rem;
+}
+#icon-humidity {
+	width: 1.8rem;
+}
 </style>

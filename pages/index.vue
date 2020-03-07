@@ -8,10 +8,8 @@
 		<Forecast />
 
 		<div class="row py-2">
-			<Temphumid />
-		</div>
-		<div class="row py-2">
 			<Tfl />
+			<Temphumid />
 			<Calendar />
 		</div>
 	</div>
