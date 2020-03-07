@@ -1,5 +1,4 @@
 const path = require('path')
-const url = require('url')
 const fs = require('fs')
 const glob = require('glob')
 const { Router } = require('express')
@@ -22,8 +21,8 @@ function findNextDir(startPath, lastDir) {
 			}
 		}
 		// if ignore list contains all dirs, means we're starting from first dir
-		const dirListFiltered = dirList.filter(function (val) {
-			return (ignoreDirs.indexOf(val) === -1)
+		const dirListFiltered = dirList.filter(function(val) {
+			return (!ignoreDirs.includes(val))
 		})
 		if (dirListFiltered.length !== 0) {
 			dirList = dirListFiltered
@@ -40,7 +39,7 @@ function findNextDir(startPath, lastDir) {
 			})
 			if (files.length > 0) {
 				// clean paths to be relative
-				const filesShort = files.map(function (x) { return x.replace(normalizedMainDir, '') })
+				const filesShort = files.map(function(x) { return x.replace(normalizedMainDir, '') })
 				return filesShort
 			}
 		} else {
@@ -68,11 +67,11 @@ router.get('/backgrounds/*', (req, res) => {
 router.get('/background/:file(*)', (req, res) => {
 	const fullPath = path.join(mainDir, req.params.file)
 	const s = fs.createReadStream(fullPath)
-	s.on('open', function () {
+	s.on('open', function() {
 		res.set('Content-Type', 'image/jpeg')
 		s.pipe(res)
 	})
-	s.on('error', function () {
+	s.on('error', function() {
 		res.set('Content-Type', 'text/plain')
 		// res.send(fullPath)
 		res.status(404).end(`File: ${fullPath} counld not be found`)
