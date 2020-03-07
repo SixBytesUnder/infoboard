@@ -38,7 +38,7 @@ import EXIF from 'exif-js'
 import Unsplash, { toJson } from 'unsplash-js'
 
 export default {
-	data: function () {
+	data() {
 		return {
 			imageInterval: process.env.IMAGE_INTERVAL,
 			nasa: false,
@@ -96,7 +96,7 @@ export default {
 				localStorage.removeItem('infoboardBgrState')
 				localStorage.setItem('infoboardBgrState', savedImageList)
 			} catch (err) {
-				if (this.env === 'development') console.log(err)
+				if (this.env === 'development') { console.log(err) }
 			}
 		},
 		loadState() {
@@ -114,10 +114,10 @@ export default {
 					}
 				}
 			} catch (err) {
-				if (this.env === 'development') console.log(err)
+				if (this.env === 'development') { console.log(err) }
 			}
 		},
-		fullscreen: function () {
+		fullscreen() {
 			if (this.fullscreenEnabled === true) {
 				this.fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement
 
@@ -143,7 +143,7 @@ export default {
 				}
 			}
 		},
-		getNext: function (param) {
+		getNext(param) {
 			clearInterval(this.interval)
 			if (this.imagesSource === 'unsplash') {
 				this.getUnsplash()
@@ -155,7 +155,7 @@ export default {
 				this.getBackground(param)
 			}
 		},
-		pickImage: function () {
+		pickImage() {
 			// remove current image from array and display it
 			this.lastImage = this.imageList.shift()
 			this.imageSrc = encodeURIComponent(this.lastImage)
@@ -166,7 +166,7 @@ export default {
 			this.nextfolder = 'folder'
 			this.disableButtons = false
 		},
-		getBackground: async function (param) {
+		async getBackground(param) {
 			if (param === 'image') {
 				this.disableButtons = true
 				clearInterval(this.interval)
@@ -186,7 +186,7 @@ export default {
 						this.pickImage()
 					})
 					.catch((err) => {
-						if (this.env === 'development') console.log(err)
+						if (this.env === 'development') { console.log(err) }
 					})
 			} else {
 				this.pickImage()
@@ -199,7 +199,7 @@ export default {
 						this.imageList = response.data
 					})
 					.catch((err) => {
-						if (this.env === 'development') console.log(err)
+						if (this.env === 'development') { console.log(err) }
 					})
 			}
 
@@ -210,16 +210,16 @@ export default {
 				this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
 			}
 		},
-		getNasaAPOD: function () {
+		getNasaAPOD() {
 			axios.get('/api/nasa')
 				.then((response) => {
 					this.background = `background-image: url("${response.data.hdurl}")`
 				})
 				.catch((err) => {
-					if (this.env === 'development') console.log(err)
+					if (this.env === 'development') { console.log(err) }
 				})
 		},
-		getUnsplash: function () {
+		getUnsplash() {
 			const unsplash = new Unsplash({
 				applicationId: process.env.UNSPLASH_ACCESS,
 				secret: process.env.UNSPLASH_SECRET,
@@ -231,7 +231,7 @@ export default {
 					this.background = `background-image: url("${unsplashResp.urls.regular}")`
 				})
 		},
-		getPexels: function () {
+		getPexels() {
 			if (this.imageList.length === 0) {
 				this.page++
 				axios.get(`https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`, {
@@ -245,7 +245,7 @@ export default {
 						this.background = `background-image: url("${this.lastImage}")`
 					})
 					.catch((err) => {
-						if (this.env === 'development') console.log(err)
+						if (this.env === 'development') { console.log(err) }
 					})
 					.then(() => {
 					// save current images array state
@@ -257,13 +257,13 @@ export default {
 				this.background = `background-image: url("${this.lastImage}")`
 			}
 		},
-		getMeta: function () {
+		getMeta() {
 			const imageElement = document.getElementById('backgroundImage')
 			// let imageBlur = document.getElementById('backgroundImageBlur')
 			const img = new Image()
 			let degr = 0
-			img.addEventListener('load', function () {
-				EXIF.getData(this, function () {
+			img.addEventListener('load', function() {
+				EXIF.getData(this, function() {
 					const orientation = EXIF.getTag(this, 'Orientation')
 
 					switch (orientation) {

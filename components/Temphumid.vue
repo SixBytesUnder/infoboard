@@ -10,7 +10,7 @@
 							id="icon-temp"
 							src="~/assets/images/temperature.svg"
 							class="mr-2">
-						<p>{{ temperature }}°C</p>
+						<p>{{ temperature }}&deg;C</p>
 					</div>
 				</div>
 				<div class="row px-3 justify-content-end">
@@ -32,7 +32,7 @@ import axios from 'axios'
 import moment from 'moment'
 
 export default {
-	data: function () {
+	data() {
 		return {
 			env: process.env.NODE_ENV,
 			enable: process.env.TEMPHUMID,
@@ -64,7 +64,7 @@ export default {
 						this.humidity = response.data.humidity
 					})
 					.catch((err) => {
-						if (this.env === 'development') console.log(err)
+						if (this.env === 'development') { console.log(err) }
 					})
 			}
 		}

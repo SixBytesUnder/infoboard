@@ -33,12 +33,12 @@
 import moment from 'moment'
 
 export default {
-	data: function () {
+	data() {
 		return {
 			enableWeather: process.env.WEATHER,
 			tempRouded: process.env.WEATHER_ROUNDED === 'true',
 			units: process.env.WEATHER_UNITS === 'fahrenheit' ? 'F' : 'C',
-			moment: moment
+			moment
 		}
 	},
 	methods: {

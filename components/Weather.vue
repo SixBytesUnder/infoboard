@@ -45,7 +45,7 @@ import axios from 'axios'
 import moment from 'moment'
 
 export default {
-	data: function () {
+	data() {
 		return {
 			enableWeather: process.env.WEATHER,
 			locationName: process.env.WEATHER_LOCATION_NAME,
@@ -53,7 +53,7 @@ export default {
 			tempRouded: false,
 			weather: {},
 			updated: '',
-			moment: moment
+			moment
 		}
 	},
 	mounted() {
@@ -80,7 +80,7 @@ export default {
 					this.updated = moment.unix(response.data.currently.time).format('HH:mm:ss')
 				})
 				.catch((err) => {
-					if (this.env === 'development') console.log(err)
+					if (this.env === 'development') { console.log(err) }
 				})
 		},
 		roundValue(val) {

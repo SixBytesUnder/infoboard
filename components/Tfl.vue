@@ -80,7 +80,7 @@
 import axios from 'axios'
 
 export default {
-	data: function () {
+	data() {
 		return {
 			env: process.env.NODE_ENV,
 			enable: process.env.TFL,
@@ -147,7 +147,7 @@ export default {
 								this.busesTemp[res.data[i].lineName] = []
 							}
 							// add only unique arrival times to array
-							if (this.busesTemp[res.data[i].lineName].indexOf(timetable) === -1) {
+							if (!this.busesTemp[res.data[i].lineName].includes(timetable)) {
 								this.busesTemp[res.data[i].lineName].push(timetable)
 							}
 							this.busesTemp[res.data[i].lineName].sort((a, b) => a - b)
@@ -162,7 +162,7 @@ export default {
 						this.busStops = process.env.TFL_BUS_STOPS.split(',')
 					}
 				}).catch((err) => {
-					if (this.env === 'development') console.log(err)
+					if (this.env === 'development') { console.log(err) }
 				})
 		},
 		async getTube() {
@@ -187,7 +187,7 @@ export default {
 						this.errors.push(`TfL API error: ${res.message}`)
 					}
 				}).catch((err) => {
-					if (this.env === 'development') console.log(err)
+					if (this.env === 'development') { console.log(err) }
 				})
 		}
 	}

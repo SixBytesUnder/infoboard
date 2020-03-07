@@ -17,7 +17,7 @@
 import moment from 'moment'
 
 export default {
-	data: function () {
+	data() {
 		return {
 			time: moment().format(process.env.TIME_FORMAT),
 			date: moment().format(process.env.DATE_FORMAT)

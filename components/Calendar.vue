@@ -68,9 +68,8 @@ import moment from 'moment'
 // import { google } from 'googleapis'
 
 export default {
-	data: function () {
+	data() {
 		return {
-			moment: moment,
 			env: process.env.NODE_ENV,
 			enable: process.env.CALENDAR_ENABLE,
 			dateFormat: 'YYYY-MM-DD',
@@ -104,7 +103,7 @@ export default {
 				localStorage.removeItem('infoboardGCState')
 				localStorage.setItem('infoboardGCState', saving)
 			} catch (err) {
-				if (this.env === 'development') console.log(err)
+				if (this.env === 'development') { console.log(err) }
 			}
 		},
 		loadAuthToken() {
@@ -116,7 +115,7 @@ export default {
 					this.authToken = JSON.parse(loading)
 				}
 			} catch (err) {
-				if (this.env === 'development') console.log(err)
+				if (this.env === 'development') { console.log(err) }
 			}
 		},
 		handleClientLoad() {
@@ -140,7 +139,7 @@ export default {
 					this.getEvents()
 				}
 			}, (err) => {
-				if (this.env === 'development') console.log(JSON.stringify(err))
+				if (this.env === 'development') { console.log(JSON.stringify(err)) }
 			})
 		},
 		handleAuth(event) {
@@ -164,12 +163,12 @@ export default {
 		getEvents() {
 			if (this.authorized === true) {
 				this.api.client.calendar.events.list({
-					'calendarId': 'primary',
-					'timeMin': (new Date()).toISOString(),
-					'showDeleted': false,
-					'singleEvents': true,
-					'maxResults': 10,
-					'orderBy': 'startTime'
+					calendarId: 'primary',
+					timeMin: (new Date()).toISOString(),
+					showDeleted: false,
+					singleEvents: true,
+					maxResults: 10,
+					orderBy: 'startTime'
 				}).then((response) => {
 					const eventsList = {}
 					if (response.result.items.length > 0) {
@@ -178,7 +177,9 @@ export default {
 							const endTime = moment(event.end.dateTime).format('HH:mm') || ''
 							const date = moment(startTime).format(this.dateFormat)
 							const time = moment(startTime).format('HH:mm')
-							if (typeof eventsList[date] === 'undefined') eventsList[date] = []
+							if (typeof eventsList[date] === 'undefined') {
+								eventsList[date] = []
+							}
 							if (time === '00:00') {
 								eventsList[date].push({ time: 'all-day', summary: event.summary })
 							} else {

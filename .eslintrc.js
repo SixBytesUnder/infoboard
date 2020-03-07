@@ -26,6 +26,7 @@ module.exports = {
 		'vue/html-indent': ['error', 'tab'],
 		'vue/html-closing-bracket-newline': 'off',
 		'indent': [2, 'tab'],
-		'no-tabs': 'off'
+		'no-tabs': 'off',
+		'space-before-function-paren': ['error', 'never'],
 	}
 }
