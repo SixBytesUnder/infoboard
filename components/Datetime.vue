@@ -20,8 +20,7 @@ export default {
 	data: function () {
 		return {
 			time: moment().format(process.env.TIME_FORMAT),
-			date: moment().format(process.env.DATE_FORMAT),
-			moment: moment
+			date: moment().format(process.env.DATE_FORMAT)
 		}
 	},
 	mounted() {
