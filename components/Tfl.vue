@@ -40,7 +40,7 @@
 		<div class="row">
 			<div class="item col mx-2 mt-2">
 				<div
-					v-if="showTubeIcon"
+					v-if="!showTube"
 					id="tube-icon"
 					class="px-2 py-2 withBackground">
 					<img
@@ -90,7 +90,6 @@ export default {
 			statusLines: process.env.TFL_STATUS,
 			showBuses: false,
 			showTube: false,
-			showTubeIcon: true,
 			// this.busesTemp is needed because updating this.buses directly causes display issues
 			busesTemp: {},
 			buses: {},
@@ -111,7 +110,6 @@ export default {
 		},
 		toggleTube() {
 			this.showTube = !this.showTube
-			this.showTubeIcon = !this.showTubeIcon
 		},
 		getTfLStatus() {
 			// clear existing buses timetable object

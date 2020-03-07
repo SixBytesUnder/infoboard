@@ -95,9 +95,6 @@ export default {
 </script>
 
 <style scoped>
-.weather {
-	text-align: left;
-}
 .weather p {
 	margin-bottom: 0;
 }

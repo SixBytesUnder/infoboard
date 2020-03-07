@@ -5,7 +5,7 @@
 		<div class="row">
 			<div class="col mx-2">
 				<div
-					v-if="showCalendarIcon"
+					v-if="!showCalendar"
 					class="row justify-content-end p-2">
 					<div class="p-2 mr-2 withBackground">
 						<img
@@ -76,7 +76,6 @@ export default {
 			dateFormat: 'YYYY-MM-DD',
 			eventsList: {},
 			showCalendar: false,
-			showCalendarIcon: true,
 			API_KEY: process.env.CALENDAR_API_KEY,
 			CLIENT_ID: process.env.CALENDAR_CLIENT_ID,
 			DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
@@ -195,7 +194,6 @@ export default {
 		},
 		toggleCalendar() {
 			this.showCalendar = !this.showCalendar
-			this.showCalendarIcon = !this.showCalendarIcon
 		}
 	}
 }
