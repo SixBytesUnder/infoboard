@@ -2,6 +2,8 @@ const { Router } = require('express')
 const router = Router()
 const sensor = require('node-dht-sensor')
 require('dotenv').config()
+const sensorType = process.env.TH_SENSOR_TYPE
+const pinNo = process.env.TH_GPIO_PIN
 
 router.get('/dht', (requ, resp) => {
 	// sensor.initialize({
@@ -12,7 +14,7 @@ router.get('/dht', (requ, resp) => {
 	// 		}
 	// 	}
 	// })
-	sensor.read(22, 4, function(err, temperature, humidity) {
+	sensor.read(sensorType, pinNo, function(err, temperature, humidity) {
 		if (!err) {
 			resp.json({
 				temperature,

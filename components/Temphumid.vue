@@ -39,8 +39,8 @@ export default {
 			activeFrom: moment(process.env.TH_ACTIVE_FROM, process.env.TIME_FORMAT).valueOf(),
 			activeTo: moment(process.env.TH_ACTIVE_TO, process.env.TIME_FORMAT).valueOf(),
 			showDetails: false,
-			temperature: 0,
-			humidity: 0,
+			temperature: '~',
+			humidity: '~',
 			errors: []
 		}
 	},
@@ -60,8 +60,8 @@ export default {
 			if (moment().isBetween(this.activeFrom, this.activeTo)) {
 				axios.get('/api/dht')
 					.then((response) => {
-						this.temperature = response.data.temperature
-						this.humidity = response.data.humidity
+						this.temperature = response.data.temperature.toFixed(0)
+						this.humidity = response.data.humidity.toFixed(0)
 					})
 					.catch((err) => {
 						if (this.env === 'development') { console.log(err) }
