@@ -60,7 +60,7 @@ export default {
 			if (moment().isBetween(this.activeFrom, this.activeTo)) {
 				axios.get('/api/dht')
 					.then((response) => {
-						this.temperature = response.data.temp
+						this.temperature = response.data.temperature
 						this.humidity = response.data.humidity
 					})
 					.catch((err) => {

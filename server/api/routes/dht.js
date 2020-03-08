@@ -12,16 +12,16 @@ router.get('/dht', (requ, resp) => {
 	// 		}
 	// 	}
 	// })
-	sensor.read(11, 4, function(err, temperature, humidity) {
+	sensor.read(22, 4, function(err, temperature, humidity) {
 		if (!err) {
 			resp.json({
-				temp: temperature,
+				temperature,
 				humidity
 			})
 		} else {
 			console.error(err.message)
 			resp.json({
-				temp: '~',
+				temperature: '~',
 				humidity: '~'
 			})
 		}
