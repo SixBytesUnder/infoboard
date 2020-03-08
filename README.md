@@ -156,7 +156,7 @@ $ pm2 monit
 ```
 
 nginx setup on RPi: https://nuxtjs.org/faq/nginx-proxy/  
-Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.io/doc/en/runtime/overview/  
+Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.keymetrics.io/docs/usage/quick-start/  
 
 ## License
 
