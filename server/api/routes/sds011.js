@@ -23,7 +23,6 @@ router.get('/sds', (requ, resp) => {
 				.query()
 				.then((data) => {
 					resp.json({
-						full: data,
 						pm25: data['PM2.5'],
 						pm10: data.PM10
 					})

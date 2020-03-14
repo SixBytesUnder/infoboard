@@ -6,11 +6,12 @@
 			<div class="col mx-2">
 				<div class="row px-3 pb-2 justify-content-end">
 					<div class="d-flex flex-wrap p-2 withBackground">
+						<p>Air quality</p>
 						<img
 							id="icon"
 							src="~/assets/images/sds_smile.svg"
 							class="mr-2">
-						<p>{{ quality }}</p>
+						<p>{{ pm25 }} / {{ pm10 }}</p>
 					</div>
 				</div>
 			</div>
@@ -27,6 +28,8 @@ export default {
 			env: process.env.NODE_ENV,
 			enable: process.env.SDS011,
 			showDetails: false,
+			pm25: 0,
+			pm10: 0,
 			quality: '~',
 			errors: []
 		}
@@ -45,6 +48,8 @@ export default {
 		getData() {
 			axios.get('/api/sds')
 				.then((response) => {
+					this.pm25 = response.data.pm25
+					this.pm10 = response.data.pm10
 					this.quality = response.data
 				})
 				.catch((err) => {
@@ -57,6 +62,6 @@ export default {
 
 <style scoped>
 #icon {
-	width: 1rem;
+	width: 3rem;
 }
 </style>
