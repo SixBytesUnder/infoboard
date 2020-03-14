@@ -8,7 +8,7 @@
 					<div class="d-flex flex-wrap p-2 withBackground">
 						<img
 							id="icon"
-							src="~/assets/images/smile1.svg"
+							src="~/assets/images/sds_smile.svg"
 							class="mr-2">
 						<p>{{ quality }}</p>
 					</div>

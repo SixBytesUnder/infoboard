@@ -1,8 +1,3 @@
-const express = require('express')
-
-// Create express instnace
-const app = express()
-
 // Require API routes
 const background = require('./routes/background')
 const weather = require('./routes/weather')
@@ -10,6 +5,10 @@ const nasa = require('./routes/nasa')
 const calendar = require('./routes/calendar')
 const dht = require('./routes/dht')
 const sds = require('./routes/sds011')
+const express = require('express')
+
+// Create express instnace
+const app = express()
 
 // Import API Routes
 app.use(background)
