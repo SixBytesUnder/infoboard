@@ -1,20 +1,14 @@
 <template>
 	<div
 		v-if="enable === 'true'"
-		class="col">
-		<div class="row">
-			<div class="col mx-2">
-				<div class="row px-3 pb-2 justify-content-end">
-					<div class="d-flex flex-wrap p-2 withBackground">
-						<p>Air quality</p>
-						<img
-							id="icon"
-							src="~/assets/images/sds_smile.svg"
-							class="mr-2">
-						<p>{{ pm25 }} / {{ pm10 }}</p>
-					</div>
-				</div>
-			</div>
+		class="d-inline-flex align-items-center withBackground p-2 mr-3">
+		<img
+			id="icon"
+			:src="loadImage(quality)"
+			class="mr-2">
+		<div>
+			<div>PM2.5: {{ pm25 }}</div>
+			<div>PM10: {{ pm10 }}</div>
 		</div>
 	</div>
 </template>
@@ -30,7 +24,7 @@ export default {
 			showDetails: false,
 			pm25: 0,
 			pm10: 0,
-			quality: '~',
+			quality: 'sds_smile',
 			errors: []
 		}
 	},
@@ -42,15 +36,46 @@ export default {
 		clearInterval(this.interval)
 	},
 	methods: {
+		loadImage(name) {
+			return require(`~/assets/images/${name}.svg`)
+		},
 		toggleDetails() {
 			this.showDetails = !this.showDetails
 		},
 		getData() {
+			let quality25 = 0
+			let quality10 = 0
+			const icon = {
+				1: 'sds_smile',
+				2: 'sds_neutral',
+				3: 'sds_sad',
+				4: 'sds_dead'
+			}
 			axios.get('/api/sds')
 				.then((response) => {
 					this.pm25 = response.data.pm25
 					this.pm10 = response.data.pm10
-					this.quality = response.data
+					// Determine quality of PM2.5 particles
+					if (this.pm25 <= 35) {
+						quality25 = 1
+					} else if (this.pm25 >= 35 && this.pm25 <= 53) {
+						quality25 = 2
+					} else if (this.pm25 > 53 && this.pm25 <= 70) {
+						quality25 = 3
+					} else if (this.pm25 > 70) {
+						quality25 = 4
+					}
+					// Determine quality of PM10 particles
+					if (this.pm10 <= 50) {
+						quality10 = 1
+					} else if (this.pm10 > 51 && this.pm10 <= 75) {
+						quality10 = 2
+					} else if (this.pm10 > 75 && this.pm10 <= 100) {
+						quality10 = 3
+					} else if (this.pm10 > 100) {
+						quality10 = 4
+					}
+					this.quality = icon[Math.max(quality25, quality10)]
 				})
 				.catch((err) => {
 					if (this.env === 'development') { console.log(err) }
@@ -62,6 +87,9 @@ export default {
 
 <style scoped>
 #icon {
-	width: 3rem;
+	width: 2rem;
+}
+.withBackground {
+	font-size: .8rem;
 }
 </style>
