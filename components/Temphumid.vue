@@ -38,6 +38,7 @@ export default {
 			enable: process.env.TEMPHUMID,
 			activeFrom: moment(process.env.TH_ACTIVE_FROM, process.env.TIME_FORMAT).valueOf(),
 			activeTo: moment(process.env.TH_ACTIVE_TO, process.env.TIME_FORMAT).valueOf(),
+			timer: process.env.TH_TIMER,
 			showDetails: false,
 			temperature: '~',
 			humidity: '~',
@@ -46,7 +47,7 @@ export default {
 	},
 	mounted() {
 		this.getData()
-		this.interval = setInterval(this.getData, process.env.TH_FREQUENCY * 1000)
+		this.interval = setInterval(this.getData, this.timer * 1000)
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
