@@ -30,20 +30,51 @@
 </template>
 
 <script>
+import axios from 'axios'
 import moment from 'moment'
 
 export default {
 	data() {
 		return {
 			enableWeather: process.env.WEATHER,
+			apiKey: process.env.WEATHER_API_KEY,
+			lat: process.env.WEATHER_LAT,
+			lon: process.env.WEATHER_LON,
+			locationName: process.env.WEATHER_LOCATION_NAME,
+			units: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
 			tempRouded: process.env.WEATHER_ROUNDED === 'true',
-			units: process.env.WEATHER_UNITS === 'fahrenheit' ? 'F' : 'C',
+			forecast: {},
 			moment
 		}
+	},
+	mounted() {
+		this.getForecast()
+		this.interval = setInterval(this.getForecast, 600000)
+	},
+	beforeDestroy() {
+		clearInterval(this.interval)
 	},
 	methods: {
 		loadImage(path) {
 			return require(`~/assets/${path}`)
+		},
+		getForecast() {
+			const params = {
+				lat: this.lat,
+				lon: this.lon,
+				unit_system: this.units,
+				fields: 'temp,feels_like,humidity,wind_speed,wind_direction,baro_pressure,precipitation,precipitation_probability,weather_code',
+				apikey: this.apiKey
+			}
+			axios.get('https://api.climacell.co/v3/weather/forecast/daily', {
+				params
+			})
+				.then(function(response) {
+					console.log(response.data)
+				})
+				.catch(function(error) {
+					console.log(error)
+				})
 		},
 		roundValue(val) {
 			if (this.tempRouded === true) {

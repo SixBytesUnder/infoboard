@@ -48,16 +48,18 @@ export default {
 	data() {
 		return {
 			enableWeather: process.env.WEATHER,
+			apiKey: process.env.WEATHER_API_KEY,
+			lat: process.env.WEATHER_LAT,
+			lon: process.env.WEATHER_LON,
 			locationName: process.env.WEATHER_LOCATION_NAME,
-			units: process.env.WEATHER_UNITS === 'fahrenheit' ? 'F' : 'C',
-			tempRouded: false,
+			units: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
+			tempRouded: process.env.WEATHER_ROUNDED === 'true',
 			weather: {},
 			updated: '',
 			moment
 		}
 	},
 	mounted() {
-		this.tempRouded = process.env.WEATHER_ROUNDED === 'true'
 		this.getWeather()
 		this.interval = setInterval(this.getWeather, 600000)
 	},
@@ -73,6 +75,23 @@ export default {
 		},
 		getWeather() {
 			// get current weather
+			const params = {
+				lat: this.lat,
+				lon: this.lon,
+				unit_system: this.units,
+				fields: 'temp,feels_like,humidity,wind_speed,wind_direction,wind_gust,baro_pressure,precipitation,precipitation_type,surface_shortwave_radiation,moon_phase,weather_code,pm25,pm10,o3,no2,co,so2,epa_health_concern,pollen_weed,pollen_grass',
+				apikey: this.apiKey
+			}
+			axios.get('https://api.climacell.co/v3/weather/realtime', {
+				params
+			})
+				.then(function(response) {
+					console.log(response.data)
+				})
+				.catch(function(error) {
+					console.log(error)
+				})
+			/*
 			axios.get('/api/weather')
 				.then((response) => {
 					this.weather = response.data
@@ -82,6 +101,7 @@ export default {
 				.catch((err) => {
 					if (this.env === 'development') { console.log(err) }
 				})
+			*/
 		},
 		roundValue(val) {
 			if (this.tempRouded === true) {
