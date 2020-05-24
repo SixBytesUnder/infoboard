@@ -16,10 +16,6 @@ router.get('/dht', (requ, resp) => {
 	// })
 	sensor.read(sensorType, pinNo, (err, temperature, humidity) => {
 		if (!err) {
-			console.log({
-				temperature,
-				humidity
-			})
 			resp.json({
 				temperature,
 				humidity
