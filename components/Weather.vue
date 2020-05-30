@@ -61,7 +61,7 @@ export default {
 	},
 	mounted() {
 		this.getWeather()
-		this.interval = setInterval(this.getWeather, 600000)
+		this.interval = setInterval(this.getWeather, 300000)
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
