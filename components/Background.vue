@@ -286,7 +286,7 @@ export default {
 					default:
 						degr = 0
 					}
-					imageElement.style.transform = `rotate(${degr}deg)`
+					// imageElement.style.transform = `rotate(${degr}deg)`
 					// rotating blurred bgr makes it the same size, and "CSS: cover" doesn't seem to work as expected
 					// imageBlur.style.transform = "rotate("+degr+"deg)"
 				})
@@ -304,6 +304,7 @@ export default {
 	left: 0;
 	width: 100vw;
 	height: 100vh;
+	image-orientation: from-image;
 }
 
 #backgroundImageBlur {
