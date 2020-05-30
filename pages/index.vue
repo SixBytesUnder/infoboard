@@ -9,7 +9,6 @@
 
 		<div class="row py-2">
 			<Tfl />
-			<Temphumid />
 			<Calendar />
 		</div>
 	</div>
@@ -22,8 +21,6 @@ import Weather from '~/components/Weather.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
-import Temphumid from '~/components/Temphumid.vue'
-// import Airquality from '~/components/Airquality.vue'
 
 export default {
 	components: {
@@ -32,9 +29,7 @@ export default {
 		Weather,
 		Forecast,
 		Calendar,
-		Tfl,
-		Temphumid
-		// Airquality
+		Tfl
 	}
 }
 </script>
