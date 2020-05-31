@@ -34,7 +34,6 @@
 
 <script>
 import axios from 'axios'
-import EXIF from 'exif-js'
 import Unsplash, { toJson } from 'unsplash-js'
 
 export default {
@@ -160,7 +159,6 @@ export default {
 			this.lastImage = this.imageList.shift()
 			this.imageSrc = encodeURIComponent(this.lastImage)
 			this.background = `background-image: url("/api/background/${this.imageSrc}")`
-			this.getMeta()
 			// get buttons back to normal
 			this.nextimage = 'image'
 			this.nextfolder = 'folder'
@@ -256,42 +254,6 @@ export default {
 				this.lastImage = this.imageList.shift()
 				this.background = `background-image: url("${this.lastImage}")`
 			}
-		},
-		getMeta() {
-			const imageElement = document.getElementById('backgroundImage')
-			// let imageBlur = document.getElementById('backgroundImageBlur')
-			const img = new Image()
-			let degr = 0
-			img.addEventListener('load', function() {
-				EXIF.getData(this, function() {
-					const orientation = EXIF.getTag(this, 'Orientation')
-
-					switch (orientation) {
-					case 1:
-					case 2:
-						degr = 0
-						break
-					case 3:
-					case 4:
-						degr = 180
-						break
-					case 5:
-					case 6:
-						degr = 90
-						break
-					case 7:
-					case 8:
-						degr = 270
-						break
-					default:
-						degr = 0
-					}
-					// imageElement.style.transform = `rotate(${degr}deg)`
-					// rotating blurred bgr makes it the same size, and "CSS: cover" doesn't seem to work as expected
-					// imageBlur.style.transform = "rotate("+degr+"deg)"
-				})
-			})
-			img.src = `/api/background/${this.imageSrc}`
 		}
 	}
 }
@@ -317,9 +279,6 @@ export default {
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
-	/*
-	image-orientation: from-image;
-	*/
 }
 
 #backgroundImage {
