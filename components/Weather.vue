@@ -4,35 +4,63 @@
 		class="col">
 		<div class="row">
 			<div
-				v-if="weather.currently"
+				v-if="weather && weather.temp"
 				class="col weather pr-0">
 				<div class="media px-2 float-right withBackground">
 					<img
 						id="weather-icon"
-						:src="weather.currently.icon ? loadImage('images/'+weather.currently.icon+'.svg') : loadImage('images/missing.svg')"
-						:alt="weather.currently.summary"
+						:src="weather.weather_code ? loadImage(`images/${weather.weather_code.value}.svg`) : loadImage('images/missing.svg')"
+						:alt="weather.weather_code.value"
 						class="align-self-center mr-2"
 						@click="toggleForecast">
 					<div class="media-body my-2">
 						<p>
 							<img
-								:alt="weather.timezone"
+								:alt="locationName"
 								src="~/assets/images/pin.svg"
 								class="location-icon">
-							{{ locationName == '' ? weather.timezone : locationName }}
+							{{ locationName }}
 						</p>
 						<p class="display-4">
-							{{ roundValue(weather.currently.temperature) }}&deg;{{ units }}
+							{{ roundValue(weather.temp.value) }}&deg;{{ weather.temp.units }}
 						</p>
-						<p>{{ weather.currently.summary }}</p>
+						<p class="smaller">
+							Feels like
+							{{ roundValue(weather.feels_like.value) }}&deg;{{ weather.feels_like.units }}
+						</p>
+						<p>
+							{{ weather.weather_code.value }}
+							<button
+								class="btn btn-sm btn-dark"
+								@click="toggleMoreInfo">
+								more
+							</button>
+						</p>
 						<small>
 							<a
-								href="https://darksky.net/poweredby/"
+								href="https://www.climacell.co/"
 								target="_blank">
-								Powered by DarkSky
+								Powered by ClimaCell
 							</a>
 						</small>
 						<small>Updated on: {{ updated }}</small>
+					</div>
+				</div>
+				<div
+					v-if="moreInfo"
+					class="smaller withBackground">
+					<div
+						v-for="(name, slug) in fieldsMore"
+						:key="slug"
+						class="row">
+						<div
+							v-if="weather && weather[slug]"
+							class="col">
+							{{ name }}
+						</div>
+						<div class="col text-center">
+							{{ weather[slug].value }} {{ weather[slug].units }}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -54,6 +82,26 @@ export default {
 			locationName: process.env.WEATHER_LOCATION_NAME,
 			units: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
 			tempRouded: process.env.WEATHER_ROUNDED === 'true',
+			fields: process.env.WEATHER_FIELDS,
+			fieldsMore: {
+				humidity: 'Humidity',
+				wind_speed: 'Wind speed',
+				wind_gust: 'Wind gust speed',
+				baro_pressure: 'Barometric pressure',
+				surface_shortwave_radiation: 'Solar radiation reaching the surface',
+				moon_phase: 'Moon phase',
+				pm25: 'Particulate Matter &lt; 2.5 μm',
+				pm10: 'Particulate Matter &lt; 10 μm',
+				o3: 'Ozone',
+				no2: 'Nitrogen Dioxide',
+				co: 'Carbon Monoxide',
+				so2: 'Sulfur Dioxide',
+				epa_health_concern: 'Air quality index per US EPA standard',
+				pollen_tree: 'ClimaCell pollen index for trees',
+				pollen_weed: 'ClimaCell pollen index for weeds',
+				pollen_grass: 'ClimaCell pollen index for grass'
+			},
+			moreInfo: false,
 			weather: {},
 			updated: '',
 			moment
@@ -73,35 +121,29 @@ export default {
 		toggleForecast() {
 			this.$store.commit('showForecast', !this.$store.state.showForecast)
 		},
+		toggleMoreInfo() {
+			this.moreInfo = !this.moreInfo
+		},
 		getWeather() {
 			// get current weather
 			const params = {
 				lat: this.lat,
 				lon: this.lon,
 				unit_system: this.units,
-				fields: 'temp,feels_like,humidity,wind_speed,wind_direction,wind_gust,baro_pressure,precipitation,precipitation_type,surface_shortwave_radiation,moon_phase,weather_code,pm25,pm10,o3,no2,co,so2,epa_health_concern,pollen_weed,pollen_grass',
+				fields: this.fields,
 				apikey: this.apiKey
 			}
 			axios.get('https://api.climacell.co/v3/weather/realtime', {
 				params
 			})
-				.then(function(response) {
-					console.log(response.data)
-				})
-				.catch(function(error) {
-					console.log(error)
-				})
-			/*
-			axios.get('/api/weather')
 				.then((response) => {
 					this.weather = response.data
-					this.$store.commit('loadForecast', response.data.daily.data)
-					this.updated = moment.unix(response.data.currently.time).format('HH:mm:ss')
+					this.updated = moment(response.data.observation_time.value).format('HH:mm:ss')
+					console.log(this.weather)
 				})
 				.catch((err) => {
-					if (this.env === 'development') { console.log(err) }
+					console.log(err)
 				})
-			*/
 		},
 		roundValue(val) {
 			if (this.tempRouded === true) {
@@ -130,6 +172,9 @@ export default {
 }
 #weather-icon {
 	width: 10rem;
+}
+.smaller {
+	font-size: 0.6rem;
 }
 
 .forecast {

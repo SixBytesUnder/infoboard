@@ -104,7 +104,7 @@ $ npm install
 
 # build production bundle
 $ npm run build
-# Note, if you get build errors, delete `node_modules` directory and run `npm install` again
+# Note, if you get build errors, delete `node_modules` and `.nuxt` directories, then run `npm install` and `npm run build` again
 # if above doesn't help, make a backup copy of your .env file, then delete the whole app and run
 pm2 stop infoboard
 pm2 delete infoboard
