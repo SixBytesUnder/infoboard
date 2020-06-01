@@ -22,11 +22,11 @@
 							{{ locationName }}
 						</p>
 						<p class="display-4">
-							{{ roundValue(weather.temp.value) }}&deg;{{ weather.temp.units }}
+							{{ weather.temp.value }}&deg;{{ weather.temp.units }}
 						</p>
 						<p class="smaller">
 							Feels like
-							{{ roundValue(weather.feels_like.value) }}&deg;{{ weather.feels_like.units }}
+							{{ weather.feels_like.value }}&deg;{{ weather.feels_like.units }}
 						</p>
 						<p>
 							{{ weather.weather_code.value }}
@@ -76,13 +76,8 @@ export default {
 	data() {
 		return {
 			enableWeather: process.env.WEATHER,
-			apiKey: process.env.WEATHER_API_KEY,
-			lat: process.env.WEATHER_LAT,
-			lon: process.env.WEATHER_LON,
 			locationName: process.env.WEATHER_LOCATION_NAME,
-			units: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
-			tempRouded: process.env.WEATHER_ROUNDED === 'true',
-			fields: process.env.WEATHER_FIELDS,
+			timeFormat: process.env.TIME_FORMAT,
 			fieldsMore: {
 				humidity: 'Humidity',
 				wind_speed: 'Wind speed',
@@ -127,30 +122,22 @@ export default {
 		getWeather() {
 			// get current weather
 			const params = {
-				lat: this.lat,
-				lon: this.lon,
-				unit_system: this.units,
-				fields: this.fields,
-				apikey: this.apiKey
+				lat: process.env.WEATHER_LAT,
+				lon: process.env.WEATHER_LON,
+				unit_system: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
+				fields: process.env.WEATHER_FIELDS,
+				apikey: process.env.WEATHER_API_KEY
 			}
 			axios.get('https://api.climacell.co/v3/weather/realtime', {
 				params
 			})
 				.then((response) => {
 					this.weather = response.data
-					this.updated = moment(response.data.observation_time.value).format('HH:mm:ss')
-					console.log(this.weather)
+					this.updated = moment(response.data.observation_time.value).format(this.timeFormat)
 				})
 				.catch((err) => {
 					console.log(err)
 				})
-		},
-		roundValue(val) {
-			if (this.tempRouded === true) {
-				return Math.round(val)
-			} else {
-				return val
-			}
 		}
 	}
 }

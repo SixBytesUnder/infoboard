@@ -106,9 +106,10 @@ $ npm install
 $ npm run build
 # Note, if you get build errors, delete `node_modules` and `.nuxt` directories, then run `npm install` and `npm run build` again
 # if above doesn't help, make a backup copy of your .env file, then delete the whole app and run
-pm2 stop infoboard
-pm2 delete infoboard
+$ pm2 stop infoboard
+$ pm2 delete infoboard
 # and follow `production deployment steps` above
+# If this still does not resolve the issue, run `npm run build` on your dev machine and just plain copy `.nuxt` to your RaspberryPi web directory
 
 # restart persistent app manager
 $ pm2 restart infoboard
