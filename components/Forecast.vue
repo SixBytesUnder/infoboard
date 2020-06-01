@@ -1,28 +1,28 @@
 <template>
 	<div
-		v-if="$store.state.forecast && $store.state.showForecast && enableWeather === 'true'"
+		v-if="forecast && $store.state.showForecast && enableWeather === 'true'"
 		class="row mx-0 py-2">
 		<div
-			v-for="(day, index) of $store.state.forecast"
+			v-for="(day, index) of forecast"
 			:key="index"
 			class="forecastWrapper col withBackground mx-2 mb-2">
 			<div class="forecast h-100 m-auto">
 				<div class="col">
-					{{ moment.unix(day.time).format('dddd') }}
+					{{ moment(day.observation_time.value).format('dddd') }}
 				</div>
 				<div class="col forecastIcon">
 					<img
-						:src="loadImage('images/'+day.icon+'.svg')"
-						:alt="day.summary">
+						:src="day.weather_code ? loadImage(`images/${day.weather_code.value}.svg`) : loadImage('images/missing.svg')"
+						:alt="day.weather_code.value">
 				</div>
 				<div class="col">
-					{{ roundValue(day.temperatureHigh) }}&deg;{{ units }}
+					{{ day.temp[1].max.value }}&deg;{{ day.temp[1].max.units }}
 				</div>
 				<div class="col">
-					{{ roundValue(day.temperatureLow) }}&deg;{{ units }}
+					{{ day.temp[0].min.value }}&deg;{{ day.temp[0].min.units }}
 				</div>
 				<div class="col small px-0">
-					{{ day.summary }}
+					{{ day.weather_code.value.split('_').join(' ') }}
 				</div>
 			</div>
 		</div>
@@ -37,12 +37,6 @@ export default {
 	data() {
 		return {
 			enableWeather: process.env.WEATHER,
-			apiKey: process.env.WEATHER_API_KEY,
-			lat: process.env.WEATHER_LAT,
-			lon: process.env.WEATHER_LON,
-			locationName: process.env.WEATHER_LOCATION_NAME,
-			units: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
-			tempRouded: process.env.WEATHER_ROUNDED === 'true',
 			forecast: {},
 			moment
 		}
@@ -60,28 +54,21 @@ export default {
 		},
 		getForecast() {
 			const params = {
-				lat: this.lat,
-				lon: this.lon,
-				unit_system: this.units,
-				fields: 'temp,feels_like,humidity,wind_speed,wind_direction,baro_pressure,precipitation,precipitation_probability,weather_code',
-				apikey: this.apiKey
+				lat: process.env.WEATHER_LAT,
+				lon: process.env.WEATHER_LON,
+				unit_system: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
+				fields: 'temp,weather_code',
+				apikey: process.env.WEATHER_API_KEY
 			}
 			axios.get('https://api.climacell.co/v3/weather/forecast/daily', {
 				params
 			})
-				.then(function(response) {
-					// console.log(response.data)
+				.then((response) => {
+					this.forecast = response.data.slice(0, 7)
 				})
-				.catch(function(error) {
-					console.log(error)
+				.catch((err) => {
+					console.log(err)
 				})
-		},
-		roundValue(val) {
-			if (this.tempRouded === true) {
-				return Math.round(val)
-			} else {
-				return val
-			}
 		}
 	}
 }
