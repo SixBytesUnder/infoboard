@@ -1,74 +1,96 @@
 <template>
-	<div
-		v-if="enable === 'true'"
-		class="col">
-		<div class="row">
-			<div class="item col mx-2">
-				<div class="media px-2 py-2 withBackground">
-					<img
-						id="bus-icon"
-						class="align-self-start"
-						src="~/assets/images/bus.svg"
-						alt="Bus"
-						@click="toggleBuses">
+	<div class="row py-2">
+		<div
+			v-if="enable === 'true'"
+			class="col-12 col-sm-6">
+			<div class="row">
+				<div class="item col mx-2">
+					<div class="media px-2 py-2 withBackground">
+						<img
+							id="bus-icon"
+							class="align-self-start"
+							src="~/assets/images/bus.svg"
+							alt="Bus"
+							@click="toggleBuses">
+						<div
+							v-if="showBuses"
+							class="media-body mx-2">
+							<p
+								v-for="(bus, busNumber) in buses"
+								:key="busNumber">
+								<span class="badge badge-light mr-1">
+									{{ busNumber }}
+								</span>
+								<span
+									v-for="(time, indexT) in bus"
+									:key="indexT"
+									class="align-self-middle">
+									<span v-if="indexT+1 < bus.length">
+										{{ time }}m,
+									</span>
+									<span v-else>
+										{{ time }}m
+									</span>
+								</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="item col m-2">
 					<div
-						v-if="showBuses"
-						class="media-body mx-2">
-						<p
-							v-for="(bus, busNumber) in buses"
-							:key="busNumber">
-							<span class="badge badge-light mr-1">
-								{{ busNumber }}
-							</span>
-							<span
-								v-for="(time, indexT) in bus"
-								:key="indexT"
-								class="align-self-middle">
-								<span v-if="indexT+1 < bus.length">
-									{{ time }}m,
+						v-if="!showTube"
+						id="tube-icon"
+						class="px-2 py-2 withBackground">
+						<img
+							class="bus-icon"
+							src="~/assets/images/tube.svg"
+							alt="Tube"
+							@click="toggleTube">
+					</div>
+					<div
+						v-if="showTube"
+						class="tube-data px-2 py-2 withBackground"
+						@click="toggleTube">
+						<div
+							v-for="(line, idx) of tube"
+							:key="idx"
+							class="row">
+							<div class="col">
+								<span
+									:class="line.id"
+									class="badge w-100">
+									{{ line.name }}
 								</span>
-								<span v-else>
-									{{ time }}m
-								</span>
-							</span>
-						</p>
+							</div>
+							<div
+								class="col align-items-center"
+								style="white-space: nowrap">
+								{{ line.lineStatuses.statusSeverityDescription }}
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="row">
-			<div class="item col mx-2 mt-2">
+		<div
+			v-if="showMore && weather"
+			class="col-12 col-sm-6 pr-4">
+			<div class="ml-auto p-2 smaller withBackground">
 				<div
-					v-if="!showTube"
-					id="tube-icon"
-					class="px-2 py-2 withBackground">
-					<img
-						class="bus-icon"
-						src="~/assets/images/tube.svg"
-						alt="Tube"
-						@click="toggleTube">
-				</div>
-				<div
-					v-if="showTube"
-					class="tube-data px-2 py-2 withBackground"
-					@click="toggleTube">
+					v-for="(name, slug) in fieldsMore"
+					:key="slug"
+					class="row px-2">
 					<div
-						v-for="(line, idx) of tube"
-						:key="idx"
-						class="row">
-						<div class="col">
-							<span
-								:class="line.id"
-								class="badge w-100">
-								{{ line.name }}
-							</span>
-						</div>
-						<div
-							class="col align-items-center"
-							style="white-space: nowrap">
-							{{ line.lineStatuses.statusSeverityDescription }}
-						</div>
+						v-if="weather && weather[slug]"
+						class="col pl-2 pr-3 border-bottom border-right">
+						{{ name }}
+					</div>
+					<div class="col px-2 border-bottom text-center">
+						{{ weather[slug].value }} {{ weather[slug].units }}
 					</div>
 				</div>
 			</div>
@@ -80,6 +102,21 @@
 import axios from 'axios'
 
 export default {
+	name: 'Weathermore',
+	props: {
+		showMore: {
+			type: Boolean,
+			default() {
+				return false
+			}
+		},
+		weather: {
+			type: Object,
+			default() {
+				return {}
+			}
+		}
+	},
 	data() {
 		return {
 			env: process.env.NODE_ENV,
@@ -94,6 +131,24 @@ export default {
 			busesTemp: {},
 			buses: {},
 			tube: {},
+			fieldsMore: {
+				humidity: 'Humidity',
+				wind_speed: 'Wind speed',
+				wind_gust: 'Wind gust speed',
+				baro_pressure: 'Barometric pressure',
+				surface_shortwave_radiation: 'Solar radiation reaching the surface',
+				moon_phase: 'Moon phase',
+				pm25: 'Particulate Matter < 2.5 μm',
+				pm10: 'Particulate Matter < 10 μm',
+				o3: 'Ozone',
+				no2: 'Nitrogen Dioxide',
+				co: 'Carbon Monoxide',
+				so2: 'Sulfur Dioxide',
+				epa_health_concern: 'Air quality index per US EPA standard',
+				pollen_tree: 'ClimaCell pollen index for trees',
+				pollen_weed: 'ClimaCell pollen index for weeds',
+				pollen_grass: 'ClimaCell pollen index for grass'
+			},
 			errors: []
 		}
 	},
@@ -262,6 +317,10 @@ export default {
 .waterloo-city {
 	background-color: #70C3CE;
 	color: #113892;
+}
+
+.smaller {
+	font-size: 0.75rem;
 }
 
 @media (max-width: 575.98px) {

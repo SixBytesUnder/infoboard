@@ -1,5 +1,5 @@
 <template>
-	<div class="col">
+	<div class="col-12 col-sm-6">
 		<div>
 			<p class="row time display-1 px-2 withBackground">
 				{{ time }}

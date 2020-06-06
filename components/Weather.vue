@@ -1,7 +1,7 @@
 <template>
 	<div
 		v-if="enableWeather === 'true'"
-		class="col">
+		class="col-12 col-sm-6">
 		<div class="row">
 			<div
 				v-if="weather && weather.temp"

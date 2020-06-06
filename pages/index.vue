@@ -9,14 +9,11 @@
 				@weather-more-show="onWeatherMoreShow" />
 		</div>
 		<Forecast :show-forecast="showForecast" />
-		<Weathermore
+
+		<Tfl
 			:show-more="weatherMoreInfo"
 			:weather="weather" />
-
-		<div class="row py-2">
-			<Tfl />
-			<Calendar />
-		</div>
+		<Calendar />
 	</div>
 </template>
 
@@ -24,7 +21,6 @@
 import Background from '~/components/Background.vue'
 import Datetime from '~/components/Datetime.vue'
 import Weather from '~/components/Weather.vue'
-import Weathermore from '~/components/Weathermore.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
@@ -34,7 +30,6 @@ export default {
 		Background,
 		Datetime,
 		Weather,
-		Weathermore,
 		Forecast,
 		Calendar,
 		Tfl
