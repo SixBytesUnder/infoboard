@@ -28,10 +28,10 @@
 							Feels like
 							{{ weather.feels_like.value }}&deg;{{ weather.feels_like.units }}
 						</p>
-						<p>
+						<p class="d-flex justify-content-between align-items-center">
 							{{ weather.weather_code.value }}
 							<button
-								class="btn btn-sm btn-dark"
+								class="btn btn-sm btn-outline-light"
 								@click="toggleMoreInfo">
 								more
 							</button>
@@ -44,23 +44,6 @@
 							</a>
 						</small>
 						<small>Updated on: {{ updated }}</small>
-					</div>
-				</div>
-				<div
-					v-if="moreInfo"
-					class="smaller withBackground">
-					<div
-						v-for="(name, slug) in fieldsMore"
-						:key="slug"
-						class="row">
-						<div
-							v-if="weather && weather[slug]"
-							class="col">
-							{{ name }}
-						</div>
-						<div class="col text-center">
-							{{ weather[slug].value }} {{ weather[slug].units }}
-						</div>
 					</div>
 				</div>
 			</div>
@@ -85,8 +68,8 @@ export default {
 				baro_pressure: 'Barometric pressure',
 				surface_shortwave_radiation: 'Solar radiation reaching the surface',
 				moon_phase: 'Moon phase',
-				pm25: 'Particulate Matter &lt; 2.5 μm',
-				pm10: 'Particulate Matter &lt; 10 μm',
+				pm25: 'Particulate Matter < 2.5 μm',
+				pm10: 'Particulate Matter < 10 μm',
 				o3: 'Ozone',
 				no2: 'Nitrogen Dioxide',
 				co: 'Carbon Monoxide',
@@ -117,7 +100,7 @@ export default {
 			this.$store.commit('showForecast', !this.$store.state.showForecast)
 		},
 		toggleMoreInfo() {
-			this.moreInfo = !this.moreInfo
+			this.$emit('weather-more-show')
 		},
 		getWeather() {
 			// get current weather
@@ -133,6 +116,7 @@ export default {
 			})
 				.then((response) => {
 					this.weather = response.data
+					this.$emit('weather-more', response.data)
 					this.updated = moment(response.data.observation_time.value).format(this.timeFormat)
 				})
 				.catch((err) => {

@@ -3,9 +3,14 @@
 		<Background />
 		<div class="row mx-2 py-2">
 			<Datetime />
-			<Weather />
+			<Weather
+				@weather-more="onWeatherMore"
+				@weather-more-show="onWeatherMoreShow" />
 		</div>
 		<Forecast />
+		<Weathermore
+			:show-more="weatherMoreInfo"
+			:weather="weather" />
 
 		<div class="row py-2">
 			<Tfl />
@@ -18,6 +23,7 @@
 import Background from '~/components/Background.vue'
 import Datetime from '~/components/Datetime.vue'
 import Weather from '~/components/Weather.vue'
+import Weathermore from '~/components/Weathermore.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
@@ -27,9 +33,24 @@ export default {
 		Background,
 		Datetime,
 		Weather,
+		Weathermore,
 		Forecast,
 		Calendar,
 		Tfl
+	},
+	data() {
+		return {
+			weather: {},
+			weatherMoreInfo: false
+		}
+	},
+	methods: {
+		onWeatherMoreShow(value) {
+			this.weatherMoreInfo = !this.weatherMoreInfo
+		},
+		onWeatherMore(value) {
+			this.weather = value
+		}
 	}
 }
 </script>
