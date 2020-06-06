@@ -29,7 +29,7 @@
 							{{ weather.feels_like.value }}&deg;{{ weather.feels_like.units }}
 						</p>
 						<p class="d-flex justify-content-between align-items-center">
-							{{ weather.weather_code.value }}
+							{{ weather.weather_code.value.split('_').join(' ') }}
 							<button
 								class="btn btn-sm btn-outline-light"
 								@click="toggleMoreInfo">
