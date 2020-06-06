@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="forecast && $store.state.showForecast && enableWeather === 'true'"
+		v-if="forecast && showForecast && enableWeather === 'true'"
 		class="row mx-0 py-2">
 		<div
 			v-for="(day, index) of forecast"
@@ -34,6 +34,15 @@ import axios from 'axios'
 import moment from 'moment'
 
 export default {
+	name: 'Forecast',
+	props: {
+		showForecast: {
+			type: Boolean,
+			default() {
+				return false
+			}
+		}
+	},
 	data() {
 		return {
 			enableWeather: process.env.WEATHER,

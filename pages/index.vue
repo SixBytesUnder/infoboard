@@ -4,10 +4,11 @@
 		<div class="row mx-2 py-2">
 			<Datetime />
 			<Weather
+				@show-forecast="onShowForecast"
 				@weather-more="onWeatherMore"
 				@weather-more-show="onWeatherMoreShow" />
 		</div>
-		<Forecast />
+		<Forecast :show-forecast="showForecast" />
 		<Weathermore
 			:show-more="weatherMoreInfo"
 			:weather="weather" />
@@ -41,10 +42,14 @@ export default {
 	data() {
 		return {
 			weather: {},
+			showForecast: false,
 			weatherMoreInfo: false
 		}
 	},
 	methods: {
+		onShowForecast(value) {
+			this.showForecast = !this.showForecast
+		},
 		onWeatherMoreShow(value) {
 			this.weatherMoreInfo = !this.weatherMoreInfo
 		},

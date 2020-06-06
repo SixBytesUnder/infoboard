@@ -61,25 +61,7 @@ export default {
 			enableWeather: process.env.WEATHER,
 			locationName: process.env.WEATHER_LOCATION_NAME,
 			timeFormat: process.env.TIME_FORMAT,
-			fieldsMore: {
-				humidity: 'Humidity',
-				wind_speed: 'Wind speed',
-				wind_gust: 'Wind gust speed',
-				baro_pressure: 'Barometric pressure',
-				surface_shortwave_radiation: 'Solar radiation reaching the surface',
-				moon_phase: 'Moon phase',
-				pm25: 'Particulate Matter < 2.5 μm',
-				pm10: 'Particulate Matter < 10 μm',
-				o3: 'Ozone',
-				no2: 'Nitrogen Dioxide',
-				co: 'Carbon Monoxide',
-				so2: 'Sulfur Dioxide',
-				epa_health_concern: 'Air quality index per US EPA standard',
-				pollen_tree: 'ClimaCell pollen index for trees',
-				pollen_weed: 'ClimaCell pollen index for weeds',
-				pollen_grass: 'ClimaCell pollen index for grass'
-			},
-			moreInfo: false,
+			showForecast: false,
 			weather: {},
 			updated: '',
 			moment
@@ -97,7 +79,7 @@ export default {
 			return require(`~/assets/${path}`)
 		},
 		toggleForecast() {
-			this.$store.commit('showForecast', !this.$store.state.showForecast)
+			this.$emit('show-forecast', !this.showForecast)
 		},
 		toggleMoreInfo() {
 			this.$emit('weather-more-show')
