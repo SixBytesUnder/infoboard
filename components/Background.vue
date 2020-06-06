@@ -211,7 +211,9 @@ export default {
 		getNasaAPOD() {
 			axios.get('/api/nasa')
 				.then((response) => {
-					this.background = `background-image: url("${response.data.hdurl}")`
+					// this.background = `background-image: url("${response.data.hdurl}")`
+					const filePath = require(`@/assets/nasa/${response.data}`)
+					this.background = `background-image: url("${filePath}")`
 				})
 				.catch((err) => {
 					if (this.env === 'development') { console.log(err) }
