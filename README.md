@@ -3,6 +3,9 @@
 > Infoboard showing photos from local folder as the background, time, weather and Transport for London status updates.  
 > Intended for Raspberry Pi, but should work on any machine with NodeJS v8 or newer available.
 
+## Live demo
+Using NASA picture of the day https://infoboard.sixbytesunder.com/
+
 ## Examples
 
 ![Desktop landscape](https://i.imgur.com/iuyV0x9.jpg?raw=true "Desktop landscape - all options collapsed")
@@ -15,12 +18,17 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 * Almost everything is configurable in `.env` file;
 * Show current time and date;
 * Background images, changing every 60 seconds. Source of images can be: a local folder, [NASA Picture of the day](https://apod.nasa.gov/apod/astropix.html), random image from [Unsplash](https://unsplash.com/) or curated images from [Pexels](https://www.pexels.com/);
-* Up to 10 upcoming events from Google Calendar;
-* Current weather and weekly forecast from [DarkSky](https://darksky.net);
+* Current weather and weekly forecast from [ClimaCell](https://www.climacell.co/);
+* Additional weather details include:
+  * humidity,
+  * wind speed,
+  * barometric pressure,
+  * air quality (PM2.5 and PM10),
+  * many more.
 * Transport for London status updates for tube, overground, dlr, tfl rail and tram;
 * Transport for London bus timetable for bus stops you choose;
 * Everything, except for time can be folded or expanded by clicking on their icons;
-* Two buttons at the bottom right corner allow skipping to the next image or skip the entire folder to the next one (for local source only);
+* Two buttons at the bottom right corner allow skipping to the next image or skip the entire folder to the next one (for local images source only);
 * If your browser supports programmatic fullscreen mode, a third button will appear to switch browser to fullscreen;
 * Runs as a responsive website therefore can be accessed on any device;
 * Available as [PWA](https://developers.google.com/web/progressive-web-apps/) (Progressive Web Application) - add a shortcut to infoboard that looks just like an app on your phone or tablet and don't bother using a browser.
@@ -33,7 +41,7 @@ $ cd /var/www/html/
 # clone this repo to current folder
 $ git clone https://github.com/SixBytesUnder/infoboard.git .
 
-# IMPORTANT! rename .env.example to .env
+# IMPORTANT! copy or rename file .env.example to .env
 $ cp .env.example .env
 
 # then edit it to provide all necessary variables and API keys
@@ -44,8 +52,9 @@ $ npm install
 
 # build production bundle
 $ npm run build
+# Note, if you get build errors, scroll down for workarounds
 
-# I use fantastic persistent app manager pm2, but you can use any other you wish
+# I recommend a fantastic persistent app manager pm2, but you can use any other you wish
 # install pm2
 $ sudo npm i -g pm2
 
@@ -81,8 +90,11 @@ server {
     }
 }
 
-# restart nginx
-$ sudo /etc/init.d/nginx restart
+# test new nginx configuration
+$ sudo nginx -t
+
+# reload nginx with new configuration
+$ sudo nginx -s reload
 ```
 
 If your Raspberry is accessible on local network, open your browser and navigate to your RPi's IP address. In this example `http://192.168.1.99/`
@@ -92,10 +104,10 @@ If your Raspberry is accessible on local network, open your browser and navigate
 # go to project folder
 $ cd /var/www/html/
 
-# pull latest files from git
+# pull latest files from GitHub
 $ git pull
 
-# check .env.example and compare to existing .env to see if any new settings are needed
+# check .env.example file and compare to existing .env to see if any new settings are needed
 $ vim.tiny .env.example
 $ vim.tiny .env
 
@@ -105,11 +117,11 @@ $ npm install
 # build production bundle
 $ npm run build
 # Note, if you get build errors, delete `node_modules` and `.nuxt` directories, then run `npm install` and `npm run build` again
-# if above doesn't help, make a backup copy of your .env file, then delete the whole app and run
+# if above doesn't help, make a backup copy of your .env file, then delete the whole app and remove persistent pm2 process
 $ pm2 stop infoboard
 $ pm2 delete infoboard
 # and follow `production deployment steps` above
-# If this still does not resolve the issue, run `npm run build` on your dev machine and just plain copy `.nuxt` to your RaspberryPi web directory
+# If this still does not resolve the issue, run `npm run build` on your dev machine (i.e. your laptop) and just simply copy `.nuxt` directory to your RaspberryPi web directory. Leave all the other project files there
 
 # restart persistent app manager
 $ pm2 restart infoboard
@@ -146,13 +158,12 @@ $ pm2 startup
 $ sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u pi --hp /home/pi
 $ pm2 save
 
-# show apps managed by pm2
-pm2 status
-
-# check if your pm2 process is running
+# show apps managed by pm2, all three below commands show pretty much the same
+$ pm2 status
 $ pm2 list
+$ pm2 ls
 
-# monitor your apps running on pm2
+# monitor resources your apps take on pm2
 $ pm2 monit
 ```
 
