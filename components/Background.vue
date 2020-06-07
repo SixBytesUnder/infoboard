@@ -211,9 +211,12 @@ export default {
 		getNasaAPOD() {
 			axios.get('/api/nasa')
 				.then((response) => {
-					// this.background = `background-image: url("${response.data.hdurl}")`
-					const filePath = require(`@/assets/nasa/${response.data}`)
-					this.background = `background-image: url("${filePath}")`
+					if (response.data.media_type === 'image') {
+						this.background = `background-image: url("${response.data.hdurl}")`
+					} else {
+						const filePath = require('@/assets/images/nasa.jpg')
+						this.background = `background-image: url("${filePath}")`
+					}
 				})
 				.catch((err) => {
 					if (this.env === 'development') { console.log(err) }
