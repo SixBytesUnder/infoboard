@@ -86,16 +86,7 @@ export default {
 		},
 		getWeather() {
 			// get current weather
-			const params = {
-				lat: process.env.WEATHER_LAT,
-				lon: process.env.WEATHER_LON,
-				unit_system: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
-				fields: process.env.WEATHER_FIELDS,
-				apikey: process.env.WEATHER_API_KEY
-			}
-			axios.get('https://api.climacell.co/v3/weather/realtime', {
-				params
-			})
+			axios.get('/api/weather/realtime')
 				.then((response) => {
 					this.weather = response.data
 					this.$emit('weather-more', response.data)

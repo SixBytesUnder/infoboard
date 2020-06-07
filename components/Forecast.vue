@@ -62,16 +62,7 @@ export default {
 			return require(`~/assets/${path}`)
 		},
 		getForecast() {
-			const params = {
-				lat: process.env.WEATHER_LAT,
-				lon: process.env.WEATHER_LON,
-				unit_system: process.env.WEATHER_UNITS === 'us' ? 'us' : 'si',
-				fields: 'temp,weather_code',
-				apikey: process.env.WEATHER_API_KEY
-			}
-			axios.get('https://api.climacell.co/v3/weather/forecast/daily', {
-				params
-			})
+			axios.get('/api/weather/forecast')
 				.then((response) => {
 					this.forecast = response.data.slice(0, 7)
 				})
