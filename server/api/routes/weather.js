@@ -29,8 +29,8 @@ router.get('/weather/:param', (requ, resp) => {
 			console.error(error.message)
 			// consume response data to free up memory
 			res.resume()
-			// return empty array as response so that the request doesn't hang
-			resp.json([])
+			// return empty object as a response, so that the request doesn't hang
+			resp.json({})
 			return
 		}
 
