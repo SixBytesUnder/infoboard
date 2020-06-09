@@ -1,7 +1,7 @@
 <template>
 	<div class="row py-2">
 		<div
-			v-if="enable === 'true'"
+			v-if="enable"
 			class="col-12 col-sm-6">
 			<div class="row">
 				<div class="item col mx-2">
@@ -52,6 +52,7 @@
 					</div>
 					<div
 						v-if="showTube"
+						:class="magicMirror ? 'mm' : ''"
 						class="tube-data px-2 py-2 withBackground"
 						@click="toggleTube">
 						<div
@@ -77,7 +78,7 @@
 		</div>
 
 		<div
-			v-if="showMore && weather"
+			v-if="weatherMoreInfo && weather"
 			class="col-12 col-sm-6 pr-4">
 			<div class="ml-auto p-2 smaller withBackground">
 				<div
@@ -104,7 +105,7 @@ import axios from 'axios'
 export default {
 	name: 'Weathermore',
 	props: {
-		showMore: {
+		weatherMoreInfo: {
 			type: Boolean,
 			default() {
 				return false
@@ -119,14 +120,15 @@ export default {
 	},
 	data() {
 		return {
-			env: process.env.NODE_ENV,
-			enable: process.env.TFL,
+			env: process.env.NODE_ENV || 'development',
+			enable: process.env.TFL === 'true',
 			appId: process.env.TFL_APP_ID,
 			appKey: process.env.TFL_APP_KEY,
 			busStops: process.env.TFL_BUS_STOPS.split(','),
 			statusLines: process.env.TFL_STATUS,
-			showBuses: false,
-			showTube: false,
+			magicMirror: process.env.MAGIC_MIRROR === 'true',
+			showBuses: process.env.AE_TFL === 'true',
+			showTube: process.env.AE_TFL === 'true',
 			// this.busesTemp is needed because updating this.buses directly causes display issues
 			busesTemp: {},
 			buses: {},
@@ -172,12 +174,6 @@ export default {
 			this.buses = {}
 			if (this.busStops.length > 0) {
 				this.getBus()
-				// console.log(this.busStops[10])
-
-				// for (let line of this.busStops) {
-				// 	console.log(line)
-				// 	this.getBus(line)
-				// }
 			}
 			// tube line status
 			this.getTube()
@@ -317,6 +313,11 @@ export default {
 .waterloo-city {
 	background-color: #70C3CE;
 	color: #113892;
+}
+
+.mm .badge {
+	background: none;
+	color: #FFFFFF;
 }
 
 .smaller {

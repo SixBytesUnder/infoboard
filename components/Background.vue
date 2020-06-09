@@ -2,8 +2,10 @@
 	<section class="container">
 		<div
 			id="backgroundImageBlur"
-			:style="background" />
+			:style="background"
+			:class="magicMirror ? 'mm' : ''" />
 		<div
+			v-if="!magicMirror"
 			id="backgroundImage"
 			:style="background" />
 
@@ -15,14 +17,14 @@
 				fullscreen
 			</button>
 			<button
-				v-if="showNavButtons === true"
+				v-if="showNavButtons && !magicMirror"
 				:disabled="disableButtons"
 				class="btn btn-sm btn-outline-dark"
 				@click="getNext('image')">
 				{{ nextimage }}
 			</button>
 			<button
-				v-if="enableFolderButton === true && showNavButtons === true"
+				v-if="enableFolderButton && showNavButtons && !magicMirror"
 				:disabled="disableButtons"
 				class="btn btn-sm btn-outline-dark"
 				@click="getNext('folder')">
@@ -39,7 +41,8 @@ import Unsplash, { toJson } from 'unsplash-js'
 export default {
 	data() {
 		return {
-			imageInterval: process.env.IMAGE_INTERVAL,
+			imageInterval: process.env.IMAGE_INTERVAL || 60,
+			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			nasa: false,
 			background: '',
 			imageSrc: '',
@@ -61,26 +64,28 @@ export default {
 		this.showNavButtons = process.env.NAV_BUTTONS === 'true'
 		this.perPage = !isNaN(process.env.PEXELS_PERPAGE) ? process.env.PEXELS_PERPAGE : 40
 		this.page = !isNaN(process.env.PEXELS_PAGE) ? process.env.PEXELS_PAGE : 0
-		if (this.imagesSource === 'single') {
-			this.showNavButtons = false
-			this.getBackground()
-		} else if (this.imagesSource === 'nasa') {
-			this.showNavButtons = false
-			this.getNasaAPOD()
-			this.interval = setInterval(this.getNasaAPOD, 1000 * 60 * 60)
-		} else if (this.imagesSource === 'unsplash') {
-			this.enableFolderButton = false
-			this.getUnsplash()
-			this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
-		} else if (this.imagesSource === 'pexels') {
-			this.loadState()
-			this.enableFolderButton = false
-			this.getPexels(this.perPage, this.page)
-			this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
-		} else {
-			this.loadState()
-			this.getBackground()
-			this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
+		if (this.magicMirror === false) {
+			if (this.imagesSource === 'single') {
+				this.showNavButtons = false
+				this.getBackground()
+			} else if (this.imagesSource === 'nasa') {
+				this.showNavButtons = false
+				this.getNasaAPOD()
+				this.interval = setInterval(this.getNasaAPOD, 1000 * 60 * 60)
+			} else if (this.imagesSource === 'unsplash') {
+				this.enableFolderButton = false
+				this.getUnsplash()
+				this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
+			} else if (this.imagesSource === 'pexels') {
+				this.loadState()
+				this.enableFolderButton = false
+				this.getPexels(this.perPage, this.page)
+				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+			} else {
+				this.loadState()
+				this.getBackground()
+				this.interval = setInterval(this.getBackground, this.imageInterval * 1000)
+			}
 		}
 	},
 	beforeDestroy() {
@@ -284,6 +289,11 @@ export default {
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
+}
+
+#backgroundImageBlur.mm {
+	background: none;
+	background-color: #000;
 }
 
 #backgroundImage {

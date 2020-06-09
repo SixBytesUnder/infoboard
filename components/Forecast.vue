@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="forecast && showForecast && enableWeather === 'true'"
+		v-if="forecast && showForecast && enableWeather"
 		class="row mx-0 py-2">
 		<div
 			v-for="(day, index) of forecast"
@@ -45,7 +45,7 @@ export default {
 	},
 	data() {
 		return {
-			enableWeather: process.env.WEATHER,
+			enableWeather: process.env.WEATHER === 'true',
 			forecast: {},
 			moment
 		}

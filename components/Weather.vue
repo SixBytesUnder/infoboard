@@ -1,7 +1,5 @@
 <template>
-	<div
-		v-if="enableWeather === 'true'"
-		class="col-12 col-sm-6">
+	<div class="col-12 col-sm-6">
 		<div class="row">
 			<div
 				v-if="weather && weather.temp"
@@ -58,8 +56,7 @@ import moment from 'moment'
 export default {
 	data() {
 		return {
-			enableWeather: process.env.WEATHER,
-			locationName: process.env.WEATHER_LOCATION_NAME,
+			locationName: process.env.WEATHER_LOCATION_NAME || '',
 			timeFormat: process.env.TIME_FORMAT,
 			showForecast: false,
 			weather: {},
@@ -90,6 +87,12 @@ export default {
 				.then((response) => {
 					this.weather = response.data
 					this.$emit('weather-more', response.data)
+					if (process.env.AE_WEATHER_DETAILS === 'true') {
+						this.$emit('weather-more-show')
+					}
+					if (process.env.AE_FORECAST === 'true') {
+						this.$emit('show-forecast')
+					}
 					this.updated = moment(response.data.observation_time.value).format(this.timeFormat)
 				})
 				.catch((err) => {

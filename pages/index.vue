@@ -4,6 +4,7 @@
 		<div class="row mx-2 py-2">
 			<Datetime />
 			<Weather
+				v-if="enableWeather"
 				@show-forecast="onShowForecast"
 				@weather-more="onWeatherMore"
 				@weather-more-show="onWeatherMoreShow" />
@@ -11,7 +12,7 @@
 		<Forecast :show-forecast="showForecast" />
 
 		<Tfl
-			:show-more="weatherMoreInfo"
+			:weather-more-info="weatherMoreInfo"
 			:weather="weather" />
 		<Calendar />
 	</div>
@@ -36,6 +37,8 @@ export default {
 	},
 	data() {
 		return {
+			enableWeather: process.env.WEATHER === 'true',
+			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			weather: {},
 			showForecast: false,
 			weatherMoreInfo: false
@@ -50,6 +53,13 @@ export default {
 		},
 		onWeatherMore(value) {
 			this.weather = value
+		}
+	},
+	head() {
+		return {
+			bodyAttrs: {
+				class: this.magicMirror ? 'mm' : ''
+			}
 		}
 	}
 }
@@ -73,6 +83,11 @@ html, body {
 	background-color: rgba(41, 41, 41, 0.3);
 	border-radius: 0.3rem;
 	width: fit-content;
+}
+
+/* Styles for Magic Mirror mode - highest contrast */
+.mm .withBackground {
+	background: none;
 }
 
 @media (max-width: 575.98px) {

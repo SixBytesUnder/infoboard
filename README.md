@@ -11,6 +11,7 @@ Using NASA picture of the day https://infoboard.sixbytesunder.com/
 ![Desktop landscape](https://i.imgur.com/iuyV0x9.jpg?raw=true "Desktop landscape - all options collapsed")
 ![Galaxy S5 portrait](https://i.imgur.com/P5w1h0r.jpg?raw=true "Galaxy S5 portrait - all options collapsed")
 ![iPad Pro landscape](https://i.imgur.com/Lfm25Uc.jpg?raw=true "iPad Pro landscape - all options expanded")
+![Magic Mirror mode](https://i.imgur.com/jBo1Gox.png?raw=true "Magic Mirror mode")
 
 More example screenshots in [/static/examples/](/static/examples/) or https://imgur.com/a/Odm4haP
 
@@ -27,6 +28,7 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
   * many more.
 * Transport for London status updates for tube, overground, dlr, tfl rail and tram;
 * Transport for London bus timetable for bus stops you choose;
+* [Magic Mirror](https://www.raspberrypi.org/blog/magic-mirror/) mode - no background images at all, just solid black background and all text is white. This gives best contrast to use behind a magic mirror.
 * Everything, except for time can be folded or expanded by clicking on their icons;
 * Two buttons at the bottom right corner allow skipping to the next image or skip the entire folder to the next one (for local images source only);
 * If your browser supports programmatic fullscreen mode, a third button will appear to switch browser to fullscreen;
