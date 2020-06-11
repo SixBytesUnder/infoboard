@@ -88,3 +88,4 @@ sw.*
 credentials.json
 token.json
 .editorconfig
+.vscode

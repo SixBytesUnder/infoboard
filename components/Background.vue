@@ -11,7 +11,7 @@
 
 		<div class="btn-group buttons">
 			<button
-				v-if="fullscreenEnabled === true"
+				v-if="fullscreenEnabled"
 				class="btn btn-sm btn-outline-dark"
 				@click="fullscreen">
 				fullscreen
