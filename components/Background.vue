@@ -70,8 +70,14 @@ export default {
 		this.fullscreenEnabled = document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled
 		this.imagesSource = process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE
 		this.showNavButtons = process.env.NAV_BUTTONS === 'true'
-		this.perPage = !isNaN(process.env.PEXELS_PERPAGE) ? process.env.PEXELS_PERPAGE : 40
-		this.page = !isNaN(process.env.PEXELS_PAGE) ? process.env.PEXELS_PAGE : 0
+		if (this.imagesSource === 'unsplash') {
+			this.perPage = !isNaN(process.env.UNSPLASH_PERPAGE) ? process.env.UNSPLASH_PERPAGE : 40
+		} else if (this.imagesSource === 'pexels') {
+			this.perPage = !isNaN(process.env.PEXELS_PERPAGE) ? process.env.PEXELS_PERPAGE : 40
+		} else {
+			this.perPage = 10
+		}
+		this.page = 1
 		if (this.magicMirror === false) {
 			if (this.imagesSource === 'single') {
 				this.showNavButtons = false
@@ -237,20 +243,39 @@ export default {
 		},
 		getUnsplash() {
 			const unsplash = new Unsplash({
-				applicationId: process.env.UNSPLASH_ACCESS,
+				accessKey: process.env.UNSPLASH_ACCESS,
 				secret: process.env.UNSPLASH_SECRET,
 				callbackUrl: process.env.CALLBACK_URL
 			})
-			unsplash.photos.getRandomPhoto()
-				.then(toJson)
-				.then((unsplashResp) => {
-					this.background = `background-image: url("${unsplashResp.urls.regular}")`
-				})
+			if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true') {
+				if (this.imageList.length === 0) {
+					unsplash.search.photos(`weather ${this.weather.weather_code.value.split('_').join(' ')}`, this.page, this.perPage)
+						.then(toJson)
+						.then((unsplashResp) => {
+							for (let i = 0; i < unsplashResp.results.length; i++) {
+								this.imageList.push(unsplashResp.results[i].urls.regular)
+							}
+							this.lastImage = this.imageList.shift()
+							this.background = `background-image: url("${this.lastImage}")`
+							this.saveState()
+							this.page++
+						})
+				} else {
+					// remove current image from array and display it
+					this.lastImage = this.imageList.shift()
+					this.background = `background-image: url("${this.lastImage}")`
+				}
+			} else {
+				unsplash.photos.getRandomPhoto()
+					.then(toJson)
+					.then((unsplashResp) => {
+						this.background = `background-image: url("${unsplashResp.urls.regular}")`
+					})
+			}
 		},
 		getPexels() {
 			if (this.imageList.length === 0) {
 				let url
-				// this.weather
 				if (process.env.WEATHER === 'true' && process.env.PEXELS_WEATHER_TAGGED === 'true') {
 					url = `https://api.pexels.com/v1/search?per_page=${this.perPage}&page=${this.page}&query=weather%20${this.weather.weather_code.value.split('_').join('%20')}`
 				} else {
@@ -270,7 +295,7 @@ export default {
 						if (this.env === 'development') { console.log(err) }
 					})
 					.then(() => {
-					// save current images array state
+						// save current images array state
 						this.saveState()
 					})
 				this.page++
