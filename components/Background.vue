@@ -260,6 +260,9 @@ export default {
 							this.saveState()
 							this.page++
 						})
+						.catch((err) => {
+							if (this.env === 'development') { console.log(err) }
+						})
 				} else {
 					// remove current image from array and display it
 					this.lastImage = this.imageList.shift()
@@ -270,6 +273,9 @@ export default {
 					.then(toJson)
 					.then((unsplashResp) => {
 						this.background = `background-image: url("${unsplashResp.urls.regular}")`
+					})
+					.catch((err) => {
+						if (this.env === 'development') { console.log(err) }
 					})
 			}
 		},
