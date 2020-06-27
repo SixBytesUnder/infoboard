@@ -1,6 +1,8 @@
 <template>
 	<div class="container-fluid pt-2">
-		<Background />
+		<Background
+			v-if="enableWeather === true ? weather.weather_code : true"
+			:weather="weather" />
 		<div class="row mx-2 py-2">
 			<Datetime />
 			<Weather

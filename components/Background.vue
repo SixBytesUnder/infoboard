@@ -39,6 +39,14 @@ import axios from 'axios'
 import Unsplash, { toJson } from 'unsplash-js'
 
 export default {
+	props: {
+		weather: {
+			type: Object,
+			default() {
+				return {}
+			}
+		}
+	},
 	data() {
 		return {
 			imageInterval: process.env.IMAGE_INTERVAL || 60,
@@ -241,13 +249,19 @@ export default {
 		},
 		getPexels() {
 			if (this.imageList.length === 0) {
-				this.page++
-				axios.get(`https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`, {
+				let url
+				// this.weather
+				if (process.env.WEATHER === 'true' && process.env.PEXELS_WEATHER_TAGGED === 'true') {
+					url = `https://api.pexels.com/v1/search?per_page=${this.perPage}&page=${this.page}&query=weather%20${this.weather.weather_code.value.split('_').join('%20')}`
+				} else {
+					url = `https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`
+				}
+				axios.get(url, {
 					headers: { Authorization: process.env.PEXELS_KEY }
 				})
 					.then((response) => {
 						for (let i = 0; i < response.data.photos.length; i++) {
-							this.imageList.push(response.data.photos[i].src.medium)
+							this.imageList.push(response.data.photos[i].src.large)
 						}
 						this.lastImage = this.imageList.shift()
 						this.background = `background-image: url("${this.lastImage}")`
@@ -259,6 +273,7 @@ export default {
 					// save current images array state
 						this.saveState()
 					})
+				this.page++
 			} else {
 				// remove current image from array and display it
 				this.lastImage = this.imageList.shift()
