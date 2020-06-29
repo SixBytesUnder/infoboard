@@ -173,6 +173,12 @@ $ pm2 monit
 nginx setup on RPi: https://nuxtjs.org/faq/nginx-proxy/  
 Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.keymetrics.io/docs/usage/quick-start/  
 
+## Donate
+
+If this project helps you or makes you happy in any way, please consider giving me a cup of ~~coffee~~ tea :) I'm one of those weird dpeople who don't drink cofee, sorry ;)
+
+[![asd](https://img.shields.io/badge/Donate-PayPal-brightgreen?logo=paypal)](https://paypal.me/SixBytesUnder)
+
 ## License
 
 [MIT](https://github.com/SixBytesUnder/infoboard/blob/master/LICENSE)
