@@ -1,11 +1,11 @@
 <template>
-	<div class="row py-2">
+	<div class="row pt-2">
 		<div
 			v-if="enable"
 			class="col-12 col-sm-6">
 			<div class="row">
 				<div class="item col mx-2">
-					<div class="media px-2 py-2 withBackground">
+					<div class="media p-2 withBackground">
 						<img
 							id="bus-icon"
 							class="align-self-start"
@@ -43,7 +43,7 @@
 					<div
 						v-if="!showTube"
 						id="tube-icon"
-						class="px-2 py-2 withBackground">
+						class="p-2 withBackground">
 						<img
 							class="bus-icon"
 							src="~/assets/images/tube.svg"
