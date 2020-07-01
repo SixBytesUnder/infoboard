@@ -16,10 +16,10 @@
 						:alt="day.weather_code.value">
 				</div>
 				<div class="col">
-					{{ day.temp[1].max.value }}&deg;{{ day.temp[1].max.units }}
+					{{ roundValue(day.temp[1].max.value) }}&deg;{{ day.temp[1].max.units }}
 				</div>
 				<div class="col">
-					{{ day.temp[0].min.value }}&deg;{{ day.temp[0].min.units }}
+					{{ roundValue(day.temp[0].min.value) }}&deg;{{ day.temp[0].min.units }}
 				</div>
 				<div class="col small px-0">
 					{{ day.weather_code.value.split('_').join(' ') }}
@@ -46,6 +46,7 @@ export default {
 	data() {
 		return {
 			enableWeather: process.env.WEATHER === 'true',
+			tempRouded: process.env.WEATHER_ROUNDED === 'true',
 			forecast: {},
 			moment
 		}
@@ -69,6 +70,13 @@ export default {
 				.catch((err) => {
 					console.log(err)
 				})
+		},
+		roundValue(val) {
+			if (this.tempRouded) {
+				return Math.round(val)
+			} else {
+				return val
+			}
 		}
 	}
 }

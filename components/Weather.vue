@@ -20,11 +20,11 @@
 							{{ locationName }}
 						</p>
 						<p class="display-4">
-							{{ weather.temp.value }}&deg;{{ weather.temp.units }}
+							{{ roundValue(weather.temp.value) }}&deg;{{ weather.temp.units }}
 						</p>
 						<p class="smaller">
 							Feels like
-							{{ weather.feels_like.value }}&deg;{{ weather.feels_like.units }}
+							{{ roundValue(weather.feels_like.value) }}&deg;{{ weather.feels_like.units }}
 						</p>
 						<p class="d-flex justify-content-between align-items-center">
 							{{ weather.weather_code.value.split('_').join(' ') }}
@@ -58,6 +58,7 @@ export default {
 		return {
 			locationName: process.env.WEATHER_LOCATION_NAME || '',
 			timeFormat: process.env.TIME_FORMAT,
+			tempRouded: process.env.WEATHER_ROUNDED === 'true',
 			showForecast: false,
 			weather: {},
 			updated: '',
@@ -98,6 +99,13 @@ export default {
 				.catch((err) => {
 					console.log(err)
 				})
+		},
+		roundValue(val) {
+			if (this.tempRouded) {
+				return Math.round(val)
+			} else {
+				return val
+			}
 		}
 	}
 }

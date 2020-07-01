@@ -1,48 +1,33 @@
 <template>
 	<div
 		v-if="enable === 'true'"
-		class="col">
+		class="col-12 col-sm-6">
 		<div class="row">
-			<div class="col mx-2">
+			<div class="col ml-2">
 				<div
 					v-if="!showCalendar"
-					class="row justify-content-end p-2">
-					<div class="p-2 mr-2 withBackground">
-						<img
-							id="calendar-icon"
-							src="~/assets/images/calendar.svg"
-							alt="Calendar"
-							@click="toggleCalendar">
-					</div>
+					class="p-2 withBackground">
+					<img
+						class="calendar-icon"
+						src="~/assets/images/calendar.svg"
+						alt="Calendar"
+						@click="toggleCalendar">
 				</div>
 				<div
 					v-if="showCalendar"
-					class="row justify-content-end"
-					@click="toggleCalendar">
-					<div class="col-8 p-2 mr-3 withBackground">
+					class="row">
+					<div
+						class="col-8 p-2 ml-3 withBackground smaller"
+						@click="toggleCalendar">
 						<p>
 							Upcoming calendar events:
-							<a
-								v-if="!authorized"
-								href="#"
-								class="badge badge-dark"
-								@click.prevent="handleAuth">
-								Sign In
-							</a>
-							<a
-								v-if="authorized"
-								href="#"
-								class="badge badge-dark"
-								@click.prevent="handleSignout">
-								Sign Out
-							</a>
 						</p>
 						<div
 							v-for="(events, day) in eventsList"
 							:key="day"
 							class="col border-top">
 							<div class="col-12 px-0">
-								{{ day === moment().format(dateFormat) ? 'Today' : day }}
+								{{ isSoon(day) }}
 							</div>
 							<div
 								v-for="(ev, index) in events"
@@ -64,149 +49,79 @@
 </template>
 
 <script>
-import moment from 'moment'
-// import { google } from 'googleapis'
+import axios from 'axios'
 
 export default {
 	data() {
 		return {
-			env: process.env.NODE_ENV,
 			enable: process.env.CALENDAR_ENABLE,
-			dateFormat: 'YYYY-MM-DD',
+			dateFormat: process.env.CALENDAR_DATE_FORMAT,
 			eventsList: {},
-			showCalendar: false,
-			API_KEY: process.env.CALENDAR_API_KEY,
-			CLIENT_ID: process.env.CALENDAR_CLIENT_ID,
-			DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-			SCOPES: 'https://www.googleapis.com/auth/calendar.readonly',
-			authToken: undefined,
-			api: undefined,
-			authorized: false
+			showCalendar: false
 		}
 	},
 	mounted() {
-		// eslint-disable-next-line no-undef
-		this.api = gapi
-		this.handleClientLoad()
-		this.dateFormat = process.env.CALENDAR_DATE_FORMAT === '' || process.env.CALENDAR_DATE_FORMAT === undefined ? 'YYYY-MM-DD' : process.env.CALENDAR_DATE_FORMAT
+		this.getEvents()
 		this.interval = setInterval(this.getEvents, 1000 * 3600)
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
 	},
 	methods: {
-		saveAuthToken() {
-			let saving
-
-			try {
-				saving = JSON.stringify(this.authToken)
-				localStorage.removeItem('infoboardGCState')
-				localStorage.setItem('infoboardGCState', saving)
-			} catch (err) {
-				if (this.env === 'development') { console.log(err) }
-			}
-		},
-		loadAuthToken() {
-			let loading
-
-			try {
-				loading = localStorage.getItem('infoboardGCState')
-				if (loading !== null) {
-					this.authToken = JSON.parse(loading)
-				}
-			} catch (err) {
-				if (this.env === 'development') { console.log(err) }
-			}
-		},
-		handleClientLoad() {
-			this.api.load('client:auth2', this.initClient)
-		},
-		initClient() {
-			const apiParams = {
-				apiKey: this.API_KEY,
-				clientId: this.CLIENT_ID,
-				discoveryDocs: this.DISCOVERY_DOCS,
-				scope: this.SCOPES
-			}
-
-			this.api.client.init(apiParams).then(() => {
-				this.loadAuthToken()
-			}).then(() => {
-				// Listen for sign-in state changes.
-				this.api.auth2.getAuthInstance().isSignedIn.listen(this.authorized)
-				if (this.authToken !== undefined) {
-					this.authorized = true
-					this.getEvents()
-				}
-			}, (err) => {
-				if (this.env === 'development') { console.log(JSON.stringify(err)) }
-			})
-		},
-		handleAuth(event) {
-			Promise.resolve(this.api.auth2.getAuthInstance().signIn())
-				.then((token) => {
-					this.authToken = token
-					this.saveAuthToken()
-					this.authorized = true
-					this.getEvents()
-					this.toggleCalendar()
-				})
-		},
-		handleSignout(event) {
-			Promise.resolve(this.api.auth2.getAuthInstance().signOut())
-				.then(() => {
-					localStorage.removeItem('infoboardGCState')
-					this.authorized = false
-					this.eventsList = {}
-				})
-		},
 		getEvents() {
-			if (this.authorized === true) {
-				this.api.client.calendar.events.list({
-					calendarId: 'primary',
-					timeMin: (new Date()).toISOString(),
-					showDeleted: false,
-					singleEvents: true,
-					maxResults: 10,
-					orderBy: 'startTime'
-				}).then((response) => {
-					const eventsList = {}
-					if (response.result.items.length > 0) {
-						response.result.items.map((event) => {
-							const startTime = event.start.dateTime || event.start.date
-							const endTime = moment(event.end.dateTime).format('HH:mm') || ''
-							const date = moment(startTime).format(this.dateFormat)
-							const time = moment(startTime).format('HH:mm')
-							if (typeof eventsList[date] === 'undefined') {
-								eventsList[date] = []
+			axios.get('/api/calendar')
+				.then((response) => {
+					if (response.data.length > 0) {
+						response.data.map((event) => {
+							if (typeof this.eventsList[event.startDate] === 'undefined') {
+								this.eventsList[event.startDate] = []
 							}
-							if (time === '00:00') {
-								eventsList[date].push({ time: 'all-day', summary: event.summary })
+							if (event.startTime === event.endTime) {
+								this.eventsList[event.startDate].push({ time: 'all-day', summary: event.title })
 							} else {
-								eventsList[date].push({ time: time + '-' + endTime, summary: event.summary })
+								this.eventsList[event.startDate].push({ time: `${event.startTime}-${event.endTime}`, summary: event.title })
 							}
 						})
 					} else {
-						eventsList.push('No upcoming events found.')
+						this.eventsList.push('No upcoming events found.')
 					}
-					this.eventsList = eventsList
 				})
-			}
+				.catch((err) => {
+					if (process.env.NODE_ENV === 'development') { console.log(err) }
+				})
 		},
 		toggleCalendar() {
 			this.showCalendar = !this.showCalendar
+		},
+		isSoon(checkDate) {
+			const today = new Date()
+			const someDate = new Date(checkDate)
+			if (someDate.getMonth() === today.getMonth() && someDate.getFullYear() === today.getFullYear()) {
+				if (someDate.getDate() === today.getDate()) {
+					return 'Today'
+				} else if (someDate.getDate() === today.getDate() + 1) {
+					return 'Tomorrow'
+				} else {
+					return checkDate
+				}
+			} else {
+				return checkDate
+			}
 		}
 	}
 }
 </script>
 
 <style scoped>
-#calendar-icon {
+.calendar-icon {
 	min-width: 10%;
 	width: 4rem;
 }
 small {
-	font-size: 60%;
+	font-size: 70%;
+}
+.smaller {
+	font-size: 0.75rem;
 }
 .border-top, .border-right {
 	border-width: 0.5px !important;

@@ -72,6 +72,7 @@ module.exports = {
 	axios: {
 		// See https://github.com/nuxt-community/axios-module#options
 	},
+	telemetry: true,
 
 	/*
   ** Build configuration
@@ -89,6 +90,9 @@ module.exports = {
 					loader: 'eslint-loader',
 					exclude: /(node_modules)/
 				})
+			}
+			if (ctx.isDev) {
+				config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
 			}
 		}
 	},
