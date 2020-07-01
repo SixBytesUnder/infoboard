@@ -1,7 +1,7 @@
 # infoboard
 
-> Infoboard showing photos from local folder as the background, time, weather and Transport for London status updates.  
-> Intended for Raspberry Pi, but should work on any machine with NodeJS v8 or newer available.
+> Infoboard showing time, weather, calendar events, photos from local folder or online sources as background and Transport for London status updates.  
+> Intended for Raspberry Pi, but should work on any machine with NodeJS available.
 
 ## Live demo
 Using NASA picture of the day https://infoboard.sixbytesunder.com/
@@ -18,7 +18,12 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 ## Features
 * Almost everything is configurable in `.env` file;
 * Show current time and date;
-* Background images, changing every 60 seconds. Source of images can be: a local folder, [NASA Picture of the day](https://apod.nasa.gov/apod/astropix.html), random image from [Unsplash](https://unsplash.com/) or curated images from [Pexels](https://www.pexels.com/);
+* Calendar events read from an iCal format link,
+* Background images, changing every 60 seconds. Source of images can be:
+  * a local folder,
+  * [NASA Picture of the day](https://apod.nasa.gov/apod/astropix.html),
+  * random image from [Unsplash](https://unsplash.com/),
+  * curated images from [Pexels](https://www.pexels.com/),
   * both Unsplash and Pexels also support showing images tagged with current weather conditions: "light rain", "mostly clear" and so on;
 * Current weather and weekly forecast from [ClimaCell](https://www.climacell.co/);
 * Additional weather details include:
@@ -148,7 +153,7 @@ $ npm install
 $ npm run dev
 ```
 
-For full documentation on NuxtJS go to [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
+For full documentation on NuxtJS go to [Nuxt.js docs](https://nuxtjs.org/guide).
 
 ## Other helpful commands
 
@@ -175,7 +180,7 @@ Production Process Manager for Node.js applications with a built-in Load Balance
 
 ## Donate
 
-If this project helps you or makes you happy in any way, please consider giving me a cup of ~~coffee~~ tea :) I'm one of those weird dpeople who don't drink cofee, sorry ;)
+If this project helps you or makes you happy in any way, please consider giving me a cup of ~~coffee~~ tea :) I'm one of those weird people who don't drink cofee, sorry ;)
 
 [![asd](https://img.shields.io/badge/Donate-PayPal-brightgreen?logo=paypal)](https://paypal.me/SixBytesUnder)
 

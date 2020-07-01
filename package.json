@@ -37,7 +37,7 @@
     "cross-env": "^7.0.2",
     "express": "^4.17.1",
     "glob": "^7.1.6",
-    "googleapis": "^52.1.0",
+    "ical": "^0.8.0",
     "moment": "^2.27.0",
     "nuxt": "^2.13.2",
     "unsplash-js": "^6.0.0"

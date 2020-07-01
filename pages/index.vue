@@ -16,7 +16,9 @@
 		<Tfl
 			:weather-more-info="weatherMoreInfo"
 			:weather="weather" />
-		<Calendar />
+		<div class="row pb-2">
+			<Calendar />
+		</div>
 	</div>
 </template>
 
