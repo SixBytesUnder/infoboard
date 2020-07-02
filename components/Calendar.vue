@@ -85,6 +85,9 @@ export default {
 					} else {
 						this.eventsList.push('No upcoming events found.')
 					}
+					if (process.env.AE_CALENDAR === 'true') {
+						this.showCalendar = true
+					}
 				})
 				.catch((err) => {
 					if (process.env.NODE_ENV === 'development') { console.log(err) }

@@ -149,8 +149,7 @@ export default {
 				pollen_tree: 'ClimaCell pollen index for trees',
 				pollen_weed: 'ClimaCell pollen index for weeds',
 				pollen_grass: 'ClimaCell pollen index for grass'
-			},
-			errors: []
+			}
 		}
 	},
 	mounted() {
@@ -233,8 +232,8 @@ export default {
 								}
 							}
 						}
-					} else {
-						this.errors.push(`TfL API error: ${res.message}`)
+					} else if (process.env.NODE_ENV === 'development') {
+						console.log(res.message)
 					}
 				}).catch((err) => {
 					if (process.env.NODE_ENV === 'development') { console.log(err) }
