@@ -120,7 +120,6 @@ export default {
 	},
 	data() {
 		return {
-			env: process.env.NODE_ENV || 'development',
 			enable: process.env.TFL === 'true',
 			appId: process.env.TFL_APP_ID,
 			appKey: process.env.TFL_APP_KEY,
@@ -213,7 +212,7 @@ export default {
 						this.busStops = process.env.TFL_BUS_STOPS.split(',')
 					}
 				}).catch((err) => {
-					if (this.env === 'development') { console.log(err) }
+					if (process.env.NODE_ENV === 'development') { console.log(err) }
 				})
 		},
 		async getTube() {
@@ -238,7 +237,7 @@ export default {
 						this.errors.push(`TfL API error: ${res.message}`)
 					}
 				}).catch((err) => {
-					if (this.env === 'development') { console.log(err) }
+					if (process.env.NODE_ENV === 'development') { console.log(err) }
 				})
 		}
 	}

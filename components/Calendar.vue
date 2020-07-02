@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="enable === 'true'"
+		v-if="enable === true"
 		class="col-12 col-sm-6">
 		<div class="row">
 			<div class="col ml-2">
@@ -54,7 +54,7 @@ import axios from 'axios'
 export default {
 	data() {
 		return {
-			enable: process.env.CALENDAR_ENABLE,
+			enable: process.env.CALENDAR_ENABLE === 'true',
 			dateFormat: process.env.CALENDAR_DATE_FORMAT,
 			eventsList: {},
 			showCalendar: false
