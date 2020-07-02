@@ -37,6 +37,7 @@
 <script>
 import axios from 'axios'
 import Unsplash, { toJson } from 'unsplash-js'
+import Flickr from 'flickr-sdk'
 
 export default {
 	props: {
@@ -55,6 +56,8 @@ export default {
 			background: '',
 			imageSrc: '',
 			imageList: [],
+			page: 1,
+			perPage: 10,
 			showNavButtons: false,
 			enableFolderButton: true,
 			disableButtons: false,
@@ -71,13 +74,10 @@ export default {
 		this.imagesSource = process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE
 		this.showNavButtons = process.env.NAV_BUTTONS === 'true'
 		if (this.imagesSource === 'unsplash') {
-			this.perPage = !isNaN(process.env.UNSPLASH_PERPAGE) ? process.env.UNSPLASH_PERPAGE : 40
+			this.perPage = 30
 		} else if (this.imagesSource === 'pexels') {
-			this.perPage = !isNaN(process.env.PEXELS_PERPAGE) ? process.env.PEXELS_PERPAGE : 40
-		} else {
-			this.perPage = 10
+			this.perPage = 80
 		}
-		this.page = 1
 		if (this.magicMirror === false) {
 			if (this.imagesSource === 'single') {
 				this.showNavButtons = false
@@ -93,7 +93,11 @@ export default {
 			} else if (this.imagesSource === 'pexels') {
 				this.loadState()
 				this.enableFolderButton = false
-				this.getPexels(this.perPage, this.page)
+				this.getPexels()
+				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+			} else if (this.imagesSource === 'flickr') {
+				this.enableFolderButton = false
+				this.getFlickr()
 				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
 			} else {
 				this.loadState()
@@ -114,7 +118,7 @@ export default {
 				localStorage.removeItem('infoboardBgrState')
 				localStorage.setItem('infoboardBgrState', savedImageList)
 			} catch (err) {
-				if (this.env === 'development') { console.log(err) }
+				if (process.env.NODE_ENV === 'development') { console.log(err) }
 			}
 		},
 		loadState() {
@@ -132,7 +136,7 @@ export default {
 					}
 				}
 			} catch (err) {
-				if (this.env === 'development') { console.log(err) }
+				if (process.env.NODE_ENV === 'development') { console.log(err) }
 			}
 		},
 		fullscreen() {
@@ -167,7 +171,10 @@ export default {
 				this.getUnsplash()
 				this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
 			} else if (this.imagesSource === 'pexels') {
-				this.getPexels(this.perPage, this.page)
+				this.getPexels()
+				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+			} else if (this.imagesSource === 'flickr') {
+				this.getFlickr()
 				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
 			} else {
 				this.getBackground(param)
@@ -203,7 +210,7 @@ export default {
 						this.pickImage()
 					})
 					.catch((err) => {
-						if (this.env === 'development') { console.log(err) }
+						if (process.env.NODE_ENV === 'development') { console.log(err) }
 					})
 			} else {
 				this.pickImage()
@@ -216,7 +223,7 @@ export default {
 						this.imageList = response.data
 					})
 					.catch((err) => {
-						if (this.env === 'development') { console.log(err) }
+						if (process.env.NODE_ENV === 'development') { console.log(err) }
 					})
 			}
 
@@ -238,7 +245,7 @@ export default {
 					}
 				})
 				.catch((err) => {
-					if (this.env === 'development') { console.log(err) }
+					if (process.env.NODE_ENV === 'development') { console.log(err) }
 				})
 		},
 		getUnsplash() {
@@ -261,12 +268,13 @@ export default {
 							this.page++
 						})
 						.catch((err) => {
-							if (this.env === 'development') { console.log(err) }
+							if (process.env.NODE_ENV === 'development') { console.log(err) }
 						})
 				} else {
 					// remove current image from array and display it
 					this.lastImage = this.imageList.shift()
 					this.background = `background-image: url("${this.lastImage}")`
+					this.page = 1
 				}
 			} else {
 				unsplash.photos.getRandomPhoto()
@@ -275,7 +283,7 @@ export default {
 						this.background = `background-image: url("${unsplashResp.urls.regular}")`
 					})
 					.catch((err) => {
-						if (this.env === 'development') { console.log(err) }
+						if (process.env.NODE_ENV === 'development') { console.log(err) }
 					})
 			}
 		},
@@ -298,7 +306,7 @@ export default {
 						this.background = `background-image: url("${this.lastImage}")`
 					})
 					.catch((err) => {
-						if (this.env === 'development') { console.log(err) }
+						if (process.env.NODE_ENV === 'development') { console.log(err) }
 					})
 					.then(() => {
 						// save current images array state
@@ -309,6 +317,35 @@ export default {
 				// remove current image from array and display it
 				this.lastImage = this.imageList.shift()
 				this.background = `background-image: url("${this.lastImage}")`
+				this.page = 1
+			}
+		},
+		getFlickr() {
+			if (this.imageList.length === 0) {
+				const flickr = new Flickr(process.env.FLICKR_API_KEY)
+				flickr.photos.search({
+					tags: `${this.weather.weather_code.value.split('_').join(',')}`,
+					tag_mode: 'all',
+					page: this.page
+				}).then((response) => {
+					for (let i = 0; i < response.body.photos.photo.length; i++) {
+						const img = response.body.photos.photo[i]
+						this.imageList.push(`https://farm${img.farm}.staticflickr.com/${img.server}/${img.id}_${img.secret}_b.jpg`)
+					}
+					this.lastImage = this.imageList.shift()
+					this.background = `background-image: url("${this.lastImage}")`
+				}).catch((err) => {
+					if (process.env.NODE_ENV === 'development') { console.log(err) }
+				}).then(() => {
+					// save current images array state
+					this.saveState()
+				})
+				this.page++
+			} else {
+				// remove current image from array and display it
+				this.lastImage = this.imageList.shift()
+				this.background = `background-image: url("${this.lastImage}")`
+				this.page = 1
 			}
 		}
 	}

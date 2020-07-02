@@ -24,7 +24,8 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
   * [NASA Picture of the day](https://apod.nasa.gov/apod/astropix.html),
   * random image from [Unsplash](https://unsplash.com/),
   * curated images from [Pexels](https://www.pexels.com/),
-  * both Unsplash and Pexels also support showing images tagged with current weather conditions: "light rain", "mostly clear" and so on;
+  * both Unsplash and Pexels also support showing images tagged with current weather conditions: "light rain", "mostly clear" and so on,
+  * weather tagged photos from [Flickr](https://www.flickr.com/);
 * Current weather and weekly forecast from [ClimaCell](https://www.climacell.co/);
 * Additional weather details include:
   * humidity,
