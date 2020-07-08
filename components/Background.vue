@@ -216,17 +216,6 @@ export default {
 				this.pickImage()
 			}
 
-			if (this.imageList.length === 0) {
-				// get new batch of images
-				await axios.get(`/api/backgrounds/${this.lastImage}`)
-					.then((response) => {
-						this.imageList = response.data
-					})
-					.catch((err) => {
-						if (process.env.NODE_ENV === 'development') { console.log(err) }
-					})
-			}
-
 			// save current images array state
 			this.saveState()
 
