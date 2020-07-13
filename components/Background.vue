@@ -9,27 +9,44 @@
 			id="backgroundImage"
 			:style="background" />
 
-		<div class="btn-group buttons">
-			<button
-				v-if="fullscreenEnabled"
-				class="btn btn-sm btn-outline-dark"
-				@click="fullscreen">
-				fullscreen
-			</button>
-			<button
-				v-if="showNavButtons && !magicMirror"
-				:disabled="disableButtons"
-				class="btn btn-sm btn-outline-dark"
-				@click="getNext('image')">
-				{{ nextimage }}
-			</button>
-			<button
-				v-if="enableFolderButton && showNavButtons && !magicMirror"
-				:disabled="disableButtons"
-				class="btn btn-sm btn-outline-dark"
-				@click="getNext('folder')">
-				{{ nextfolder }}
-			</button>
+		<div class="buttons text-right">
+			<div
+				v-if="showMetaData"
+				class="p-2 mb-2 text-left withBackground">
+				<p
+					v-for="(value, key) in imageMetaData"
+					:key="key">
+					{{ key }}: {{ value }}
+				</p>
+			</div>
+			<div class="btn-group">
+				<button
+					v-if="imagesSource === 'single' || imagesSource === 'local'"
+					class="btn btn-sm btn-outline-dark"
+					@click="getExif">
+					i
+				</button>
+				<button
+					v-if="fullscreenEnabled"
+					class="btn btn-sm btn-outline-dark"
+					@click="fullscreen">
+					fullscreen
+				</button>
+				<button
+					v-if="showNavButtons && !magicMirror"
+					:disabled="disableButtons"
+					class="btn btn-sm btn-outline-dark"
+					@click="getNext('image')">
+					{{ nextimage }}
+				</button>
+				<button
+					v-if="enableFolderButton && showNavButtons && !magicMirror"
+					:disabled="disableButtons"
+					class="btn btn-sm btn-outline-dark"
+					@click="getNext('folder')">
+					{{ nextfolder }}
+				</button>
+			</div>
 		</div>
 	</section>
 </template>
@@ -38,6 +55,7 @@
 import axios from 'axios'
 import Unsplash, { toJson } from 'unsplash-js'
 import Flickr from 'flickr-sdk'
+import ExifReader from 'exifreader'
 
 export default {
 	props: {
@@ -52,12 +70,15 @@ export default {
 		return {
 			imageInterval: process.env.IMAGE_INTERVAL || 60,
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
+			imagesSource: process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE,
 			nasa: false,
 			background: '',
 			imageSrc: '',
 			imageList: [],
 			page: 1,
 			perPage: 10,
+			showMetaData: false,
+			imageMetaData: {},
 			showNavButtons: false,
 			enableFolderButton: true,
 			disableButtons: false,
@@ -71,7 +92,6 @@ export default {
 	},
 	mounted() {
 		this.fullscreenEnabled = document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled
-		this.imagesSource = process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE
 		this.showNavButtons = process.env.NAV_BUTTONS === 'true'
 		if (this.imagesSource === 'unsplash') {
 			this.perPage = 30
@@ -139,6 +159,43 @@ export default {
 				if (process.env.NODE_ENV === 'development') { console.log(err) }
 			}
 		},
+		getExif(direct) {
+			axios
+				.get(`/api/background/${encodeURIComponent(this.lastImage)}`, {
+					responseType: 'arraybuffer'
+				})
+				.then((response) => {
+					const tags = ExifReader.load(response.data)
+					const imageMetaData = {}
+					imageMetaData.Make = (tags.Make || {}).description
+					imageMetaData.Model = (tags.Model || {}).description
+					imageMetaData.DateTime = (tags.DateTime || {}).description
+					imageMetaData.ExposureTime = `${(tags.ExposureTime || {}).description} sec`
+					imageMetaData.ExposureProgram = (tags.ExposureProgram || {}).description
+					imageMetaData['F Number'] = (tags.FNumber || {}).description
+					imageMetaData['Max Aperture'] = (tags.ApertureValue || {}).description
+					imageMetaData.ISO = (tags.ISOSpeedRatings || {}).description
+					imageMetaData.Flash = (tags.Flash || {}).description
+					imageMetaData['Focal Length'] = (tags.FocalLength || {}).description
+					imageMetaData['35mm Equivalent'] = (tags.FocalLengthIn35mmFilm || {}).description
+					imageMetaData.ShutterSpeed = (tags.ShutterSpeedValue || {}).description
+					imageMetaData.MeteringMode = (tags.MeteringMode || {}).description
+					imageMetaData.PixelXDimension = (tags.PixelXDimension || {}).description
+					imageMetaData.PixelYDimension = (tags.PixelYDimension || {}).description
+					Object.keys(imageMetaData).forEach((key) => {
+						if (imageMetaData[key]) {
+							this.imageMetaData[key] = imageMetaData[key]
+						}
+					})
+					// show meta data in UI
+					if (direct) {
+						this.showMetaData = !this.showMetaData
+					}
+				})
+				.catch((err) => {
+					if (process.env.NODE_ENV === 'development') { console.error(err) }
+				})
+		},
 		fullscreen() {
 			if (this.fullscreenEnabled === true) {
 				this.fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement
@@ -178,6 +235,7 @@ export default {
 				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
 			} else {
 				this.getBackground(param)
+				this.getExif(false)
 			}
 		},
 		pickImage() {
@@ -383,5 +441,9 @@ export default {
 	bottom: 0.5rem;
 	right: 0.5rem;
 	z-index: 10;
+}
+.buttons p {
+	font-size: 0.75rem;
+	margin: 0;
 }
 </style>
