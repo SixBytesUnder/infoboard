@@ -11,7 +11,7 @@
 
 		<div class="buttons text-right">
 			<div
-				v-if="showMetaData"
+				v-if="showMetaData || magicMirror"
 				class="p-2 mb-2 text-left withBackground">
 				<p
 					v-for="(value, key) in imageMetaData"
@@ -21,13 +21,13 @@
 			</div>
 			<div class="btn-group">
 				<button
-					v-if="imagesSource === 'single' || imagesSource === 'local'"
+					v-if="exifButton && !magicMirror && (imagesSource === 'single' || imagesSource === 'local')"
 					class="btn btn-sm btn-outline-dark"
 					@click="getExif">
 					i
 				</button>
 				<button
-					v-if="fullscreenEnabled"
+					v-if="fullscreenEnabled && !magicMirror"
 					class="btn btn-sm btn-outline-dark"
 					@click="fullscreen">
 					fullscreen
@@ -71,6 +71,7 @@ export default {
 			imageInterval: process.env.IMAGE_INTERVAL || 60,
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			imagesSource: process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE,
+			exifButton: process.env.EXIF === 'true',
 			nasa: false,
 			background: '',
 			imageSrc: '',
