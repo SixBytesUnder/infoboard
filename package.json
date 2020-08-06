@@ -29,11 +29,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "@nuxtjs/axios": "^5.11.0",
+    "@nuxtjs/axios": "^5.12.1",
     "@nuxtjs/dotenv": "^1.4.1",
     "@nuxtjs/pwa": "^3.0.0-beta.14",
-    "bootstrap": "^4.5.0",
-    "bootstrap-vue": "^2.15.0",
+    "bootstrap": "^4.5.1",
+    "bootstrap-vue": "^2.16.0",
     "cross-env": "^7.0.2",
     "exifreader": "^3.12.0",
     "express": "^4.17.1",
@@ -41,27 +41,27 @@
     "glob": "^7.1.6",
     "ical": "^0.8.0",
     "moment": "^2.27.0",
-    "nuxt": "^2.13.2",
+    "nuxt": "^2.14.1",
     "unsplash-js": "^6.0.0"
   },
   "devDependencies": {
-    "@nuxtjs/eslint-config": "^3.0.0",
+    "@nuxtjs/eslint-config": "^3.1.0",
     "@vue/test-utils": "^1.0.3",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^10.1.0",
-    "babel-jest": "^26.1.0",
-    "eslint": "^7.3.1",
+    "babel-jest": "^26.2.2",
+    "eslint": "^7.6.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-loader": "^4.0.2",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^23.17.1",
+    "eslint-plugin-jest": "^23.20.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-nuxt": "^1.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "eslint-plugin-vue": "^6.2.2",
-    "jest": "^26.1.0",
+    "jest": "^26.2.2",
     "nodemon": "^2.0.4",
-    "vue-jest": "^3.0.5"
+    "vue-jest": "^3.0.6"
   }
 }
