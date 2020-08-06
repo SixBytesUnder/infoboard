@@ -180,7 +180,7 @@ export default {
 			const busStop = this.busStops.shift()
 			await axios.get(`https://api.tfl.gov.uk/StopPoint/${busStop}/Arrivals?app_id=${this.appId}&app_key=${this.appKey}`)
 				.then((res) => {
-					if (res.data.length > 0) {
+					if (res.status === 200) {
 						for (let i = 0; i < res.data.length; i++) {
 							let timetable = ''
 
@@ -201,6 +201,8 @@ export default {
 							}
 							this.busesTemp[res.data[i].lineName].sort((a, b) => a - b)
 						}
+					} else if (process.env.NODE_ENV === 'development') {
+						console.log(res.message)
 					}
 				}).then(() => {
 					if (this.busStops.length > 0) {

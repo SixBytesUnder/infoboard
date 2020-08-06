@@ -21,6 +21,7 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 * Calendar events read from an iCal format link,
 * Background images, changing every 60 seconds. Source of images can be:
   * a local folder,
+  * view Exif information only for images from local folder,
   * [NASA Picture of the day](https://apod.nasa.gov/apod/astropix.html),
   * random image from [Unsplash](https://unsplash.com/),
   * curated images from [Pexels](https://www.pexels.com/),
