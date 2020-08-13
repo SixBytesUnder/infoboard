@@ -96,14 +96,19 @@
 				</div>
 			</div>
 		</div>
+		<Temphumid />
 	</div>
 </template>
 
 <script>
 import axios from 'axios'
+import Temphumid from '~/components/Temphumid.vue'
 
 export default {
 	name: 'Weathermore',
+	components: {
+		Temphumid
+	},
 	props: {
 		weatherMoreInfo: {
 			type: Boolean,

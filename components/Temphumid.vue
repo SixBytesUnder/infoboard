@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="enable === 'true'"
+		v-if="enable"
 		class="col">
 		<div class="row">
 			<div class="col mx-2">
@@ -34,12 +34,10 @@ import moment from 'moment'
 export default {
 	data() {
 		return {
-			env: process.env.NODE_ENV,
-			enable: process.env.TEMPHUMID,
+			enable: process.env.TEMPHUMID === 'true',
 			activeFrom: moment(process.env.TH_ACTIVE_FROM, process.env.TIME_FORMAT).valueOf(),
 			activeTo: moment(process.env.TH_ACTIVE_TO, process.env.TIME_FORMAT).valueOf(),
 			timer: process.env.TH_TIMER,
-			showDetails: false,
 			temperature: '~',
 			humidity: '~',
 			errors: []
@@ -53,10 +51,8 @@ export default {
 		clearInterval(this.interval)
 	},
 	methods: {
-		toggleDetails() {
-			this.showDetails = !this.showDetails
-		},
 		getData() {
+			console.log(process.env.NODE_ENV)
 			// check if current time is between working hours
 			if (moment().isBetween(this.activeFrom, this.activeTo)) {
 				axios.get('/api/dht')
@@ -65,8 +61,11 @@ export default {
 						this.humidity = response.data.humidity.toFixed(0)
 					})
 					.catch((err) => {
-						if (this.env === 'development') { console.log(err) }
+						if (process.env.NODE_ENV === 'development') { console.log(err) }
 					})
+			} else {
+				this.temperature = '~'
+				this.humidity = '~'
 			}
 		}
 	}
