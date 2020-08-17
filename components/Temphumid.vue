@@ -10,7 +10,7 @@
 							id="icon-temp"
 							src="~/assets/images/temperature.svg"
 							class="mr-2">
-						<p>{{ temperature }}&deg;C</p>
+						<span>{{ temperature }}&deg;C</span>
 					</div>
 				</div>
 				<div class="row px-3 justify-content-end">
@@ -19,7 +19,7 @@
 							id="icon-humidity"
 							src="~/assets/images/humidity.svg"
 							class="align-self-center mr-2">
-						<p>{{ humidity }}%</p>
+						<span>{{ humidity }}%</span>
 					</div>
 				</div>
 			</div>
@@ -54,19 +54,19 @@ export default {
 		getData() {
 			console.log(process.env.NODE_ENV)
 			// check if current time is between working hours
-			if (moment().isBetween(this.activeFrom, this.activeTo)) {
-				axios.get('/api/dht')
-					.then((response) => {
-						this.temperature = response.data.temperature.toFixed(0)
-						this.humidity = response.data.humidity.toFixed(0)
-					})
-					.catch((err) => {
-						if (process.env.NODE_ENV === 'development') { console.log(err) }
-					})
-			} else {
-				this.temperature = '~'
-				this.humidity = '~'
-			}
+			// if (moment().isBetween(this.activeFrom, this.activeTo)) {
+			axios.get('/api/dht')
+				.then((response) => {
+					this.temperature = response.data.temperature.toFixed(0)
+					this.humidity = response.data.humidity.toFixed(0)
+				})
+				.catch((err) => {
+					if (process.env.NODE_ENV === 'development') { console.log(err) }
+				})
+			// } else {
+			// 	this.temperature = '~'
+			// 	this.humidity = '~'
+			// }
 		}
 	}
 }

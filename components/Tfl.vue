@@ -79,7 +79,7 @@
 
 		<div
 			v-if="weatherMoreInfo && weather"
-			class="col-12 col-sm-6 pr-4">
+			class="col-12 col-sm-6 pr-4 mb-2">
 			<div class="ml-auto p-2 smaller withBackground">
 				<div
 					v-for="(name, slug) in fieldsMore"
