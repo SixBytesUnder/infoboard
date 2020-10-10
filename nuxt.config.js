@@ -1,7 +1,6 @@
 const pkg = require('./package')
 
 module.exports = {
-	mode: 'universal',
 	target: 'server',
 	telemetry: true,
 
