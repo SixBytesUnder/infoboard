@@ -1,6 +1,9 @@
 const pkg = require('./package')
 
 module.exports = {
+	target: 'server',
+	telemetry: true,
+
 	/*
   ** Headers of the page
   */
@@ -70,7 +73,6 @@ module.exports = {
 	axios: {
 		// See https://github.com/nuxt-community/axios-module#options
 	},
-	telemetry: true,
 
 	/*
   ** Build configuration

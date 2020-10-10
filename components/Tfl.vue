@@ -15,24 +15,29 @@
 						<div
 							v-if="showBuses"
 							class="media-body mx-2">
-							<p
-								v-for="(bus, busNumber) in buses"
-								:key="busNumber">
-								<span class="badge badge-light mr-1">
-									{{ busNumber }}
-								</span>
-								<span
-									v-for="(time, indexT) in bus"
-									:key="indexT"
-									class="align-self-middle">
-									<span v-if="indexT+1 < bus.length">
-										{{ time }}m,
+							<div
+								v-for="(timetable, name) in buses"
+								:key="name">
+								<p>{{ name }}</p>
+								<p
+									v-for="(bus, busNumber) in timetable"
+									:key="busNumber">
+									<span class="badge badge-light mr-1">
+										{{ busNumber }}
 									</span>
-									<span v-else>
-										{{ time }}m
+									<span
+										v-for="(time, indexT) in bus"
+										:key="indexT"
+										class="align-self-middle">
+										<span v-if="indexT+1 < bus.length">
+											{{ time }}m,
+										</span>
+										<span v-else>
+											{{ time }}m
+										</span>
 									</span>
-								</span>
-							</p>
+								</p>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -133,8 +138,6 @@ export default {
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			showBuses: process.env.AE_TFL === 'true',
 			showTube: process.env.AE_TFL === 'true',
-			// this.busesTemp is needed because updating this.buses directly causes display issues
-			busesTemp: {},
 			buses: {},
 			tube: {},
 			fieldsMore: {
@@ -158,8 +161,8 @@ export default {
 		}
 	},
 	mounted() {
-		this.getTfLStatus()
-		this.interval = setInterval(this.getTfLStatus, 60000)
+		this.getTflData()
+		this.interval = setInterval(this.getTflData, 60000)
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
@@ -171,79 +174,14 @@ export default {
 		toggleTube() {
 			this.showTube = !this.showTube
 		},
-		getTfLStatus() {
-			// clear existing buses timetable object
-			this.busesTemp = {}
-			this.buses = {}
-			if (this.busStops.length > 0) {
-				this.getBus()
-			}
-			// tube line status
-			this.getTube()
-		},
-		async getBus() {
-			const busStop = this.busStops.shift()
-			await axios.get(`https://api.tfl.gov.uk/StopPoint/${busStop}/Arrivals?app_id=${this.appId}&app_key=${this.appKey}`)
-				.then((res) => {
-					if (res.status === 200) {
-						for (let i = 0; i < res.data.length; i++) {
-							let timetable = ''
-
-							if (typeof res.data[i].timeToStation === 'number') {
-								timetable = Math.round(res.data[i].timeToStation / 60)
-							} else if (res.data[i].timeToStation <= 0.2) {
-								timetable = 'Due'
-							} else {
-								timetable = res.data[i].timeToStation
-							}
-
-							if (this.busesTemp[res.data[i].lineName] === undefined) {
-								this.busesTemp[res.data[i].lineName] = []
-							}
-							// add only unique arrival times to array
-							if (!this.busesTemp[res.data[i].lineName].includes(timetable)) {
-								this.busesTemp[res.data[i].lineName].push(timetable)
-							}
-							this.busesTemp[res.data[i].lineName].sort((a, b) => a - b)
-						}
-					} else if (process.env.NODE_ENV === 'development') {
-						console.log(res.message)
-					}
-				}).then(() => {
-					if (this.busStops.length > 0) {
-						this.getBus()
-					} else {
-						this.buses = this.busesTemp
-						// reassign bus stops from configuration
-						this.busStops = process.env.TFL_BUS_STOPS.split(',')
-					}
-				}).catch((err) => {
-					if (process.env.NODE_ENV === 'development') { console.log(err) }
+		getTflData() {
+			axios.get('/api/tfl')
+				.then((response) => {
+					this.buses = response.data.buses
+					this.tube = response.data.tube
 				})
-		},
-		async getTube() {
-			await axios.get(`https://api.tfl.gov.uk/line/mode/${this.statusLines}/status?app_id=${this.appId}&app_key=${this.appKey}`)
-				.then((res) => {
-					if (res.status === 200) {
-						for (let i = 0; i < res.data.length; i++) {
-							this.tube[res.data[i].id] = {
-								id: res.data[i].id,
-								name: res.data[i].name
-							}
-							// iterate through statuses
-							for (let j = 0; j < res.data[i].lineStatuses.length; j++) {
-								const lineStatus = res.data[i].lineStatuses[j]
-								this.tube[res.data[i].id].lineStatuses = {
-									statusSeverity: lineStatus.statusSeverity,
-									statusSeverityDescription: lineStatus.statusSeverityDescription
-								}
-							}
-						}
-					} else if (process.env.NODE_ENV === 'development') {
-						console.log(res.message)
-					}
-				}).catch((err) => {
-					if (process.env.NODE_ENV === 'development') { console.log(err) }
+				.catch((err) => {
+					if (process.env.NODE_ENV === 'development') { console.error(err) }
 				})
 		}
 	}

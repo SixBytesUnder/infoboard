@@ -29,21 +29,21 @@
     "test": "jest"
   },
   "dependencies": {
-    "@nuxtjs/axios": "^5.12.1",
+    "@nuxtjs/axios": "^5.12.2",
     "@nuxtjs/dotenv": "^1.4.1",
     "@nuxtjs/pwa": "^3.1.2",
     "bootstrap": "^4.5.2",
-    "bootstrap-vue": "^2.16.0",
+    "bootstrap-vue": "^2.17.3",
     "cross-env": "^7.0.2",
-    "exifreader": "^3.12.0",
+    "exifreader": "^3.12.3",
     "express": "^4.17.1",
     "flickr-sdk": "^3.9.0",
     "glob": "^7.1.6",
     "ical": "^0.8.0",
     "moment": "^2.29.1",
     "node-dht-sensor": "^0.4.3",
-    "nuxt": "^2.14.1",
-    "unsplash-js": "^6.0.0"
+    "nuxt": "^2.14.6",
+    "unsplash-js": "^6.3.0"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^3.1.0",
