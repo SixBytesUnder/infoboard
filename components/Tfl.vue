@@ -29,7 +29,10 @@
 										v-for="(time, indexT) in bus"
 										:key="indexT"
 										class="align-self-middle">
-										<span v-if="indexT+1 < bus.length">
+										<span v-if="time === 'Due'">
+											{{ time }},
+										</span>
+										<span v-else-if="indexT+1 < bus.length">
 											{{ time }}m,
 										</span>
 										<span v-else>
