@@ -72,7 +72,7 @@ export default {
 			axios.get('/api/calendar')
 				.then((response) => {
 					if (response.data.length > 0) {
-						response.data.map((event) => {
+						response.data.forEach((event) => {
 							if (typeof this.eventsList[event.startDate] === 'undefined') {
 								this.eventsList[event.startDate] = []
 							}
