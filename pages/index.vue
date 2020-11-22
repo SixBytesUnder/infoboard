@@ -16,6 +16,7 @@
 		<Tfl
 			:weather-more-info="weatherMoreInfo"
 			:weather="weather" />
+		<Covid />
 		<div class="row pb-2">
 			<Calendar />
 		</div>
@@ -29,6 +30,7 @@ import Weather from '~/components/Weather.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
+import Covid from '~/components/Covid.vue'
 
 export default {
 	components: {
@@ -37,7 +39,8 @@ export default {
 		Weather,
 		Forecast,
 		Calendar,
-		Tfl
+		Tfl,
+		Covid
 	},
 	data() {
 		return {
