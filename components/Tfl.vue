@@ -87,7 +87,7 @@
 
 		<div
 			v-if="weatherMoreInfo && weather"
-			class="col-12 col-sm-6 pr-4">
+			class="col-12 col-sm-6 pr-4 mb-2">
 			<div class="ml-auto p-2 smaller withBackground">
 				<div
 					v-for="(name, slug) in fieldsMore"
@@ -104,14 +104,19 @@
 				</div>
 			</div>
 		</div>
+		<Temphumid />
 	</div>
 </template>
 
 <script>
 import axios from 'axios'
+import Temphumid from '~/components/Temphumid.vue'
 
 export default {
 	name: 'Weathermore',
+	components: {
+		Temphumid
+	},
 	props: {
 		weatherMoreInfo: {
 			type: Boolean,
