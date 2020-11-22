@@ -6,8 +6,12 @@
 			<div class="col mx-2">
 				<div class="row px-3 justify-content-end">
 					<div class="d-flex flex-wrap p-2 withBackground">
-						COVID-19 cases
-						<table class="table table-sm table-bordered table-dark">
+						<div @click="toggleData">
+							COVID-19 cases
+						</div>
+						<table
+							v-if="showData"
+							class="table table-sm table-bordered table-dark">
 							<thead>
 								<tr>
 									<th scope="col">
@@ -58,6 +62,7 @@ export default {
 	data() {
 		return {
 			enable: process.env.C19_ENABLE === 'true',
+			showData: true,
 			timer: process.env.C19_TIMER,
 			countries: process.env.C19_COUNTRY.split(','),
 			dateFormat: process.env.C19_DATE_FORMAT,
@@ -73,6 +78,9 @@ export default {
 		clearInterval(this.interval)
 	},
 	methods: {
+		toggleData() {
+			this.showData = !this.showData
+		},
 		getData() {
 			axios.get('https://covid.ourworldindata.org/data/owid-covid-data.json')
 				.then((response) => {
