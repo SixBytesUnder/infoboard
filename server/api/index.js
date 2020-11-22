@@ -4,6 +4,7 @@ const background = require('./routes/background')
 const weather = require('./routes/weather')
 const nasa = require('./routes/nasa')
 const calendar = require('./routes/calendar')
+const dht = require('./routes/dht')
 const tfl = require('./routes/tfl')
 
 // Create express instnace
@@ -14,6 +15,7 @@ app.use(background)
 app.use(weather)
 app.use(nasa)
 app.use(calendar)
+app.use(dht)
 app.use(tfl)
 
 // Export the server middleware
