@@ -36,6 +36,7 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
   * many more.
 * Transport for London status updates for tube, overground, dlr, tfl rail and tram;
 * Transport for London bus timetable for bus stops you choose;
+* COVID-19 stats from [Our World in Data](https://ourworldindata.org/coronavirus). Their GitHub repo [here](https://github.com/owid/covid-19-data/tree/master/public/data);
 * [Magic Mirror](https://www.raspberrypi.org/blog/magic-mirror/) mode - no background images at all, just solid black background and all text is white. This gives best contrast to use behind a magic mirror.
 * Everything, except for time can be folded or expanded by clicking on their icons;
 * Two buttons at the bottom right corner allow skipping to the next image or skip the entire folder to the next one (for local images source only);
