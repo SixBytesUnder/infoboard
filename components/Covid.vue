@@ -5,7 +5,7 @@
 		<div class="row">
 			<div class="col mx-2">
 				<div class="row px-3 justify-content-end">
-					<div class="d-flex flex-wrap p-2 withBackground">
+					<div class="d-flex flex-wrap p-2 mt-2 withBackground">
 						<div @click="toggleData">
 							COVID-19 cases
 						</div>
@@ -84,6 +84,7 @@ export default {
 		getData() {
 			axios.get('https://covid.ourworldindata.org/data/owid-covid-data.json')
 				.then((response) => {
+					this.dataSet = []
 					// get last two days for each country
 					if (this.countries.length > 0) {
 						this.countries.forEach((countryCode) => {
