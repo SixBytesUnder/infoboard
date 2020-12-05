@@ -53,7 +53,7 @@
 
 <script>
 import axios from 'axios'
-import Unsplash, { toJson } from 'unsplash-js'
+import { createApi } from 'unsplash-js'
 import Flickr from 'flickr-sdk'
 import ExifReader from 'exifreader'
 
@@ -297,19 +297,22 @@ export default {
 				})
 		},
 		getUnsplash() {
-			const unsplash = new Unsplash({
+			const unsplash = createApi({
 				accessKey: process.env.UNSPLASH_ACCESS,
 				secret: process.env.UNSPLASH_SECRET,
 				callbackUrl: process.env.CALLBACK_URL
 			})
-			if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true') {
-				if (this.imageList.length === 0) {
-					unsplash.search.photos(`weather ${this.weather.weather_code.value.split('_').join(' ')}`, this.page, this.perPage)
-						.then(toJson)
+			if (this.imageList.length === 0) {
+				if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true') {
+					unsplash.search.getPhotos({
+						query: `weather ${this.weather.weather_code.value.split('_').join(' ')}`,
+						page: this.page,
+						perPage: this.perPage
+					})
 						.then((unsplashResp) => {
-							for (let i = 0; i < unsplashResp.results.length; i++) {
-								this.imageList.push(unsplashResp.results[i].urls.regular)
-							}
+							unsplashResp.response.results.forEach((photo) => {
+								this.imageList.push(photo.urls.regular)
+							})
 							this.lastImage = this.imageList.shift()
 							this.background = `background-image: url("${this.lastImage}")`
 							this.saveState()
@@ -319,20 +322,25 @@ export default {
 							if (process.env.NODE_ENV === 'development') { console.log(err) }
 						})
 				} else {
-					// remove current image from array and display it
-					this.lastImage = this.imageList.shift()
-					this.background = `background-image: url("${this.lastImage}")`
-					this.page = 1
+					unsplash.photos.getRandom({
+						count: this.perPage
+					})
+						.then((unsplashResp) => {
+							unsplashResp.response.forEach((photo) => {
+								this.imageList.push(photo.urls.regular)
+							})
+							this.lastImage = this.imageList.shift()
+							this.background = `background-image: url("${this.lastImage}")`
+							this.saveState()
+						})
+						.catch((err) => {
+							if (process.env.NODE_ENV === 'development') { console.log(err) }
+						})
 				}
 			} else {
-				unsplash.photos.getRandomPhoto()
-					.then(toJson)
-					.then((unsplashResp) => {
-						this.background = `background-image: url("${unsplashResp.urls.regular}")`
-					})
-					.catch((err) => {
-						if (process.env.NODE_ENV === 'development') { console.log(err) }
-					})
+				// remove current image from array and display it
+				this.lastImage = this.imageList.shift()
+				this.background = `background-image: url("${this.lastImage}")`
 			}
 		},
 		getPexels() {
