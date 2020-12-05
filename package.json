@@ -1,6 +1,6 @@
 {
   "name": "infoboard",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Infoboard showing time, weather, calendar events, photos from local folder or online sources as background and Transport for London status updates",
   "author": "SixBytesUnder <wojtek@sixbytesunder.com> (https://sixbytesunder.com)",
   "repository": {
