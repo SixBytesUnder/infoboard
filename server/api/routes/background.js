@@ -73,7 +73,6 @@ router.get('/background/:file(*)', (req, res) => {
 	})
 	s.on('error', function() {
 		res.set('Content-Type', 'text/plain')
-		// res.send(fullPath)
 		res.status(404).end(`File: ${fullPath} counld not be found`)
 	})
 })

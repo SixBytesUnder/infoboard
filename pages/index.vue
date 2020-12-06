@@ -51,13 +51,6 @@ export default {
 			weatherMoreInfo: false
 		}
 	},
-	head() {
-		return {
-			bodyAttrs: {
-				class: this.magicMirror ? 'mm' : ''
-			}
-		}
-	},
 	methods: {
 		onShowForecast(value) {
 			this.showForecast = !this.showForecast
@@ -67,6 +60,13 @@ export default {
 		},
 		onWeatherMore(value) {
 			this.weather = value
+		}
+	},
+	head() {
+		return {
+			bodyAttrs: {
+				class: this.magicMirror ? 'mm' : ''
+			}
 		}
 	}
 }
