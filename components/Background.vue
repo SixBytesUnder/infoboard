@@ -150,9 +150,9 @@ export default {
 				if (savedImageList !== null) {
 					this.imageList = JSON.parse(savedImageList)
 					// Clean saved list if user switched between local and Pexels
-					if (this.imagesSource === 'local' && this.imageList[0].search('images.pexels.com') >= 0) {
+					if (this.imagesSource === 'local' && this.imageList.length > 0 && this.imageList[0].search('images.pexels.com') >= 0) {
 						this.imageList = []
-					} else if (this.imagesSource === 'pexels' && this.imageList[0].search('images.pexels.com') > 0) {
+					} else if (this.imagesSource === 'pexels' && this.imageList.length > 0 && this.imageList[0].search('images.pexels.com') > 0) {
 						this.imageList = []
 					}
 				}
