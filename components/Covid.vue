@@ -1,53 +1,51 @@
 <template>
 	<div
 		v-if="enable"
-		class="col">
-		<div class="row">
-			<div class="col mx-2">
-				<div class="row px-3 justify-content-end">
-					<div class="d-flex flex-wrap p-2 mt-2 withBackground">
-						<div @click="toggleData">
-							COVID-19 cases
-						</div>
-						<table
-							v-if="showData"
-							class="table table-sm table-bordered table-dark">
-							<thead>
-								<tr>
-									<th scope="col">
-										Date
-									</th>
-									<th scope="col">
-										Country
-									</th>
-									<th scope="col">
-										Total Cases
-									</th>
-									<th scope="col">
-										New Cases
-									</th>
-									<th scope="col">
-										Total Deaths
-									</th>
-									<th scope="col">
-										New Deaths
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr
-									v-for="(country, index) in dataSet"
-									:key="index">
-									<td>{{ country.date }}</td>
-									<td>{{ country.country_name }}</td>
-									<td>{{ Intl.NumberFormat().format(country.total_cases) }}</td>
-									<td>{{ Intl.NumberFormat().format(country.new_cases) }}</td>
-									<td>{{ Intl.NumberFormat().format(country.total_deaths) }}</td>
-									<td>{{ Intl.NumberFormat().format(country.new_deaths) }}</td>
-								</tr>
-							</tbody>
-						</table>
+		class="row">
+		<div class="col mx-2">
+			<div class="row px-3 justify-content-end">
+				<div class="d-flex flex-wrap p-2 mt-2 withBackground">
+					<div @click="toggleData">
+						COVID-19 cases
 					</div>
+					<table
+						v-if="showData"
+						class="table table-sm table-bordered table-dark">
+						<thead>
+							<tr>
+								<th scope="col">
+									Date
+								</th>
+								<th scope="col">
+									Country
+								</th>
+								<th scope="col">
+									Total Cases
+								</th>
+								<th scope="col">
+									New Cases
+								</th>
+								<th scope="col">
+									Total Deaths
+								</th>
+								<th scope="col">
+									New Deaths
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr
+								v-for="(country, index) in dataSet"
+								:key="index">
+								<td>{{ country.date }}</td>
+								<td>{{ country.country_name }}</td>
+								<td>{{ Intl.NumberFormat().format(country.total_cases) }}</td>
+								<td>{{ Intl.NumberFormat().format(country.new_cases) }}</td>
+								<td>{{ Intl.NumberFormat().format(country.total_deaths) }}</td>
+								<td>{{ Intl.NumberFormat().format(country.new_deaths) }}</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</div>
@@ -112,5 +110,9 @@ export default {
 .table {
 	color: #fff;
 	font-size: 0.7rem;
+}
+.table-dark {
+	background-color: #343a40;
+	background-color: rgba(52, 58, 64, 0.7);
 }
 </style>

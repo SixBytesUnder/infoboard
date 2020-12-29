@@ -13,12 +13,18 @@
 		</div>
 		<Forecast :show-forecast="showForecast" />
 
-		<Tfl
-			:weather-more-info="weatherMoreInfo"
-			:weather="weather" />
-		<Covid />
-		<div class="row pb-2">
-			<Calendar />
+		<div class="row pt-2">
+			<div class="col-12 col-sm-6">
+				<Tfl />
+				<Calendar />
+			</div>
+			<div class="col-12 col-sm-6">
+				<Weathermore
+					:weather-more-info="weatherMoreInfo"
+					:weather="weather" />
+				<Temphumid />
+				<Covid />
+			</div>
 		</div>
 	</div>
 </template>
@@ -27,9 +33,11 @@
 import Background from '~/components/Background.vue'
 import Datetime from '~/components/Datetime.vue'
 import Weather from '~/components/Weather.vue'
+import Weathermore from '~/components/Weathermore.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
+import Temphumid from '~/components/Temphumid.vue'
 import Covid from '~/components/Covid.vue'
 
 export default {
@@ -37,9 +45,11 @@ export default {
 		Background,
 		Datetime,
 		Weather,
+		Weathermore,
 		Forecast,
 		Calendar,
 		Tfl,
+		Temphumid,
 		Covid
 	},
 	data() {
