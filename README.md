@@ -62,6 +62,9 @@ $ vim.tiny .env
 # install dependencies
 $ npm install
 
+# add DHT sensor package if you have the sensor
+$ npm install node-dht-sensor
+
 # build production bundle
 $ npm run build
 # Note, if you get build errors, scroll down for workarounds

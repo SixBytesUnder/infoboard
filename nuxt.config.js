@@ -60,11 +60,23 @@ export default {
 		'@nuxtjs/dotenv'
 	],
 
+	bootstrapVue: {
+		bootstrapCSS: true,
+		bootstrapVueCSS: false,
+		componentPlugins: [],
+		directivePlugins: [],
+		components: ['BContainer', 'BRow', 'BCol', 'BButton', 'BButtonGroup', 'BTable'],
+		directives: []
+	},
+
 	// Axios module configuration (https://go.nuxtjs.dev/config-axios)
 	axios: {},
 
 	// Build Configuration (https://go.nuxtjs.dev/config-build)
 	build: {
+		babel: {
+			compact: true
+		}
 	},
 
 	serverMiddleware: [
