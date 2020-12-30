@@ -22,7 +22,7 @@
 				<Weathermore
 					:weather-more-info="weatherMoreInfo"
 					:weather="weather" />
-				<Temphumid />
+				<Dht />
 				<Covid />
 			</div>
 		</div>
@@ -37,7 +37,7 @@ import Weathermore from '~/components/Weathermore.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
-import Temphumid from '~/components/Temphumid.vue'
+import Dht from '~/components/Dht.vue'
 import Covid from '~/components/Covid.vue'
 
 export default {
@@ -49,7 +49,7 @@ export default {
 		Forecast,
 		Calendar,
 		Tfl,
-		Temphumid,
+		Dht,
 		Covid
 	},
 	data() {

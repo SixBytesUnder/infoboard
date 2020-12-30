@@ -36,7 +36,7 @@
 		"bootstrap-vue": "^2.17.3",
 		"core-js": "^3.6.5",
 		"cross-env": "^7.0.3",
-		"exifreader": "^3.12.6",
+		"exifreader": "^3.13.0",
 		"express": "^4.17.1",
 		"flickr-sdk": "^3.10.0",
 		"glob": "^7.1.6",

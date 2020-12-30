@@ -3,8 +3,8 @@ try {
 	const { Router } = require('express')
 	const router = Router()
 	require('dotenv').config()
-	const sensorType = process.env.TH_SENSOR_TYPE
-	const pinNo = process.env.TH_GPIO_PIN
+	const sensorType = process.env.DHT_SENSOR_TYPE
+	const pinNo = process.env.DHT_GPIO_PIN
 
 	router.get('/dht', (requ, resp) => {
 		// if we're in dev mode, mock sensor values
