@@ -6,6 +6,7 @@ const nasa = require('./routes/nasa')
 const calendar = require('./routes/calendar')
 const tfl = require('./routes/tfl')
 const dht = require('./routes/dht')
+const sds = require('./routes/sds')
 
 // Create express instnace
 const app = express()
@@ -17,6 +18,7 @@ app.use(nasa)
 app.use(calendar)
 app.use(tfl)
 app.use(dht)
+app.use(sds)
 
 // Export the server middleware
 module.exports = {

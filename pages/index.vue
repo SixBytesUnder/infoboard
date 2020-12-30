@@ -23,6 +23,7 @@
 					:weather-more-info="weatherMoreInfo"
 					:weather="weather" />
 				<Dht />
+				<Sds />
 				<Covid />
 			</div>
 		</div>
@@ -38,6 +39,7 @@ import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
 import Dht from '~/components/Dht.vue'
+import Sds from '~/components/Sds.vue'
 import Covid from '~/components/Covid.vue'
 
 export default {
@@ -50,6 +52,7 @@ export default {
 		Calendar,
 		Tfl,
 		Dht,
+		Sds,
 		Covid
 	},
 	data() {

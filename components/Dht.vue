@@ -12,7 +12,7 @@
 					<span>{{ temperature }}&deg;C</span>
 				</div>
 			</div>
-			<div class="row px-3 justify-content-end">
+			<div class="row px-3 pb-2 justify-content-end">
 				<div class="d-flex flex-wrap p-2 withBackground">
 					<img
 						id="icon-humidity"

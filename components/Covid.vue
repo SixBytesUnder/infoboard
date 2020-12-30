@@ -4,7 +4,7 @@
 		class="row">
 		<div class="col mx-2">
 			<div class="row px-3 justify-content-end">
-				<div class="d-flex flex-wrap p-2 mt-2 withBackground">
+				<div class="d-flex flex-wrap p-2 mb-2 withBackground">
 					<div @click="toggleData">
 						COVID-19 cases
 					</div>
