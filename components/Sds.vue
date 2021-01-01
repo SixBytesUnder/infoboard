@@ -37,8 +37,10 @@ export default {
 		}
 	},
 	mounted() {
-		this.getData()
-		this.interval = setInterval(this.getData, process.env.SDS_FREQUENCY * 1000)
+		if (this.enable) {
+			this.getData()
+			this.interval = setInterval(this.getData, process.env.SDS_FREQUENCY * 1000)
+		}
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)

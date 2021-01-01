@@ -1,11 +1,19 @@
+/**
+ * https://gist.github.com/marians/dde90d448e4c6f9d850102067ab0f842
+ * https://dev.to/minkovsky/working-on-my-iot-air-quality-monitoring-setup-40a5
+ * https://raspberrypi.stackexchange.com/questions/88079/get-the-dev-tty-for-raspberry-pi
+ * custom sds wrapper using serial package
+ * https://github.com/ikhayainkomishi/node-red-contrib-sds011/blob/master/sds011-node/sds011-node.js
+ * npm install sds011-wrapper
+ * or
+ * npm install serialport
+ * npm install nova-sds011
+ */
 try {
 	const SDS011Wrapper = require('sds011-wrapper')
 	const { Router } = require('express')
 	const router = Router()
 	require('dotenv').config()
-	// https://gist.github.com/marians/dde90d448e4c6f9d850102067ab0f842
-	// https://dev.to/minkovsky/working-on-my-iot-air-quality-monitoring-setup-40a5
-	// https://raspberrypi.stackexchange.com/questions/88079/get-the-dev-tty-for-raspberry-pi
 	// COM5 is for Windows; RPi will be ttyUSB0 or ttyUSB1...
 	const port = process.env.SDS_PORT
 	const sensor = new SDS011Wrapper(port)

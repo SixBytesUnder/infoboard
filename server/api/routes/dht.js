@@ -36,14 +36,14 @@ try {
 
 	module.exports = router
 } catch (e) {
-	// console.error(e)
+	console.error(e)
 	const { Router } = require('express')
 	const router = Router()
 
 	router.get('/dht', (requ, resp) => {
 		resp.json({
-			temperature: Math.floor(Math.random() * Math.floor(40)),
-			humidity: Math.floor(Math.random() * Math.floor(100))
+			temperature: 0,
+			humidity: 0
 		})
 	})
 
