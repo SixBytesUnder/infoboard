@@ -5,8 +5,18 @@
 		<div class="col mx-2">
 			<div class="row px-3 justify-content-end">
 				<div class="d-flex flex-wrap p-2 mb-2 withBackground">
-					<div @click="toggleData">
-						COVID-19 cases
+					<div>
+						<span @click="toggleData">COVID-19 cases</span>
+						<small
+							v-if="showData && showToday"
+							@click="toggleDay">
+							| show previous
+						</small>
+						<small
+							v-if="showData && !showToday"
+							@click="toggleDay">
+							| show latest
+						</small>
 					</div>
 					<table
 						v-if="showData"
@@ -33,9 +43,21 @@
 								</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody v-if="showToday">
 							<tr
-								v-for="(country, index) in dataSet"
+								v-for="(country, index) in dataSet.today"
+								:key="index">
+								<td>{{ country.date }}</td>
+								<td>{{ country.country_name }}</td>
+								<td>{{ Intl.NumberFormat().format(country.total_cases) }}</td>
+								<td>{{ Intl.NumberFormat().format(country.new_cases) }}</td>
+								<td>{{ Intl.NumberFormat().format(country.total_deaths) }}</td>
+								<td>{{ Intl.NumberFormat().format(country.new_deaths) }}</td>
+							</tr>
+						</tbody>
+						<tbody v-if="!showToday">
+							<tr
+								v-for="(country, index) in dataSet.yesterday"
 								:key="index">
 								<td>{{ country.date }}</td>
 								<td>{{ country.country_name }}</td>
@@ -60,6 +82,7 @@ export default {
 		return {
 			enable: process.env.C19_ENABLE === 'true',
 			showData: true,
+			showToday: true,
 			timer: process.env.C19_TIMER,
 			countries: process.env.C19_COUNTRY.split(','),
 			dateFormat: process.env.C19_DATE_FORMAT,
@@ -78,19 +101,37 @@ export default {
 		toggleData() {
 			this.showData = !this.showData
 		},
+		toggleDay() {
+			this.showToday = !this.showToday
+		},
 		getData() {
 			this.$axios.get('https://covid.ourworldindata.org/data/owid-covid-data.json')
 				.then((response) => {
-					this.dataSet = []
+					this.dataSet = {
+						today: [],
+						yesterday: []
+					}
 					// get last two days for each country
 					if (this.countries.length > 0) {
 						this.countries.forEach((countryCode) => {
 							const country = response.data[countryCode]
-							const countryData = country.data.slice(Math.max(country.data.length - 2, 0)).reverse()
-							countryData.forEach((row) => {
-								row.country_name = country.location
-								row.date = moment(row.date).format(this.dateFormat)
-								this.dataSet.push(row)
+							const today = country.data.slice(-1)
+							this.dataSet.today.push({
+								country_name: country.location,
+								date: moment(today[0].date).format(this.dateFormat),
+								total_cases: today[0].total_cases,
+								new_cases: today[0].new_cases,
+								total_deaths: today[0].total_deaths,
+								new_deaths: today[0].new_deaths
+							})
+							const yesterday = country.data.slice(-2, -1)
+							this.dataSet.yesterday.push({
+								country_name: country.location,
+								date: moment(yesterday[0].date).format(this.dateFormat),
+								total_cases: yesterday[0].total_cases,
+								new_cases: yesterday[0].new_cases,
+								total_deaths: yesterday[0].total_deaths,
+								new_deaths: yesterday[0].new_deaths
 							})
 						})
 					} else {
