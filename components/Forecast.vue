@@ -30,7 +30,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import moment from 'moment'
 
 export default {
@@ -63,7 +62,7 @@ export default {
 			return require(`~/assets/${path}`)
 		},
 		getForecast() {
-			axios.get('/api/weather/forecast')
+			this.$axios.get('/api/weather/forecast')
 				.then((response) => {
 					this.forecast = response.data.slice(0, 7)
 				})

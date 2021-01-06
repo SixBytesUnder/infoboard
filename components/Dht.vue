@@ -26,8 +26,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
 	data() {
 		return {
@@ -49,7 +47,7 @@ export default {
 	},
 	methods: {
 		getData() {
-			axios.get('/api/dht')
+			this.$axios.get('/api/dht')
 				.then((response) => {
 					this.temperature = response.data.temperature.toFixed(0)
 					this.humidity = response.data.humidity.toFixed(0)

@@ -53,7 +53,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import moment from 'moment'
 
 export default {
@@ -80,7 +79,7 @@ export default {
 			this.showData = !this.showData
 		},
 		getData() {
-			axios.get('https://covid.ourworldindata.org/data/owid-covid-data.json')
+			this.$axios.get('https://covid.ourworldindata.org/data/owid-covid-data.json')
 				.then((response) => {
 					this.dataSet = []
 					// get last two days for each country

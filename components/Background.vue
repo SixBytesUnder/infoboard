@@ -52,7 +52,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import { createApi } from 'unsplash-js'
 import Flickr from 'flickr-sdk'
 import ExifReader from 'exifreader'
@@ -161,7 +160,7 @@ export default {
 			}
 		},
 		getExif(direct) {
-			axios
+			this.$axios
 				.get(`/api/background/${encodeURIComponent(this.lastImage)}`, {
 					responseType: 'arraybuffer'
 				})
@@ -263,7 +262,7 @@ export default {
 
 			if (this.imageList.length === 0) {
 				// get new batch of images
-				await axios.get(`/api/backgrounds/${this.lastImage}`)
+				await this.$axios.get(`/api/backgrounds/${this.lastImage}`)
 					.then((response) => {
 						this.imageList = response.data
 						this.pickImage()
@@ -283,7 +282,7 @@ export default {
 			}
 		},
 		getNasaAPOD() {
-			axios.get('/api/nasa')
+			this.$axios.get('/api/nasa')
 				.then((response) => {
 					if (response.data.media_type === 'image') {
 						this.background = `background-image: url("${response.data.hdurl}")`
@@ -351,7 +350,7 @@ export default {
 				} else {
 					url = `https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`
 				}
-				axios.get(url, {
+				this.$axios.get(url, {
 					headers: { Authorization: process.env.PEXELS_KEY }
 				})
 					.then((response) => {

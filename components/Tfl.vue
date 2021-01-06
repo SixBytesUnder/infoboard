@@ -84,8 +84,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
 	name: 'TfL',
 	data() {
@@ -117,7 +115,7 @@ export default {
 			this.showTube = !this.showTube
 		},
 		getTflData() {
-			axios.get('/api/tfl')
+			this.$axios.get('/api/tfl')
 				.then((response) => {
 					this.buses = response.data.buses
 					this.tube = response.data.tube

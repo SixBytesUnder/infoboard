@@ -50,7 +50,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import moment from 'moment'
 
 export default {
@@ -84,7 +83,7 @@ export default {
 		},
 		getWeather() {
 			// get current weather
-			axios.get('/api/weather/realtime')
+			this.$axios.get('/api/weather/realtime')
 				.then((response) => {
 					this.weather = response.data
 					this.$emit('weather-more', response.data)

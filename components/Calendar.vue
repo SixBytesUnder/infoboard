@@ -47,8 +47,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
 	data() {
 		return {
@@ -67,7 +65,7 @@ export default {
 	},
 	methods: {
 		getEvents() {
-			axios.get('/api/calendar')
+			this.$axios.get('/api/calendar')
 				.then((response) => {
 					if (response.data.length > 0) {
 						response.data.forEach((event) => {
