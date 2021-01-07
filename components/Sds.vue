@@ -59,7 +59,7 @@ export default {
 				3: 'sds_sad',
 				4: 'sds_dead'
 			}
-			this.$axios.get('/api/sds')
+			this.$axios.get('/sds')
 				.then((response) => {
 					this.pm25 = response.data.pm25
 					this.pm10 = response.data.pm10

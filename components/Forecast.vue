@@ -62,7 +62,7 @@ export default {
 			return require(`~/assets/${path}`)
 		},
 		getForecast() {
-			this.$axios.get('/api/weather/forecast')
+			this.$axios.get('/weather/forecast')
 				.then((response) => {
 					this.forecast = response.data.slice(0, 7)
 				})

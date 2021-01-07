@@ -65,7 +65,7 @@ export default {
 	},
 	methods: {
 		getEvents() {
-			this.$axios.get('/api/calendar')
+			this.$axios.get('/calendar')
 				.then((response) => {
 					if (response.data.length > 0) {
 						response.data.forEach((event) => {

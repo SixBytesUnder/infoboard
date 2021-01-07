@@ -161,7 +161,7 @@ export default {
 		},
 		getExif(direct) {
 			this.$axios
-				.get(`/api/background/${encodeURIComponent(this.lastImage)}`, {
+				.get(`/background/${encodeURIComponent(this.lastImage)}`, {
 					responseType: 'arraybuffer'
 				})
 				.then((response) => {
@@ -262,7 +262,7 @@ export default {
 
 			if (this.imageList.length === 0) {
 				// get new batch of images
-				await this.$axios.get(`/api/backgrounds/${this.lastImage}`)
+				await this.$axios.get(`/backgrounds/${this.lastImage}`)
 					.then((response) => {
 						this.imageList = response.data
 						this.pickImage()
@@ -282,7 +282,7 @@ export default {
 			}
 		},
 		getNasaAPOD() {
-			this.$axios.get('/api/nasa')
+			this.$axios.get('/nasa')
 				.then((response) => {
 					if (response.data.media_type === 'image') {
 						this.background = `background-image: url("${response.data.hdurl}")`

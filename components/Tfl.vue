@@ -115,7 +115,7 @@ export default {
 			this.showTube = !this.showTube
 		},
 		getTflData() {
-			this.$axios.get('/api/tfl')
+			this.$axios.get('/tfl')
 				.then((response) => {
 					this.buses = response.data.buses
 					this.tube = response.data.tube

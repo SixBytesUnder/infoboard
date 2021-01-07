@@ -83,7 +83,7 @@ export default {
 		},
 		getWeather() {
 			// get current weather
-			this.$axios.get('/api/weather/realtime')
+			this.$axios.get('/weather/realtime')
 				.then((response) => {
 					this.weather = response.data
 					this.$emit('weather-more', response.data)

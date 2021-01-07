@@ -47,7 +47,7 @@ export default {
 	},
 	methods: {
 		getData() {
-			this.$axios.get('/api/dht')
+			this.$axios.get('/dht')
 				.then((response) => {
 					this.temperature = response.data.temperature.toFixed(0)
 					this.humidity = response.data.humidity.toFixed(0)
