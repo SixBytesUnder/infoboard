@@ -142,7 +142,6 @@ export default {
 				this.getUnsplash()
 				this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
 			} else if (this.imagesSource === 'pexels') {
-				this.loadState()
 				this.enableFolderButton = false
 				this.getPexels()
 				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
@@ -333,7 +332,7 @@ export default {
 				callbackUrl: process.env.CALLBACK_URL
 			})
 			if (this.imageList.length === 0) {
-				if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true') {
+				if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true' && this.weatherTag) {
 					unsplash.search.getPhotos({
 						query: `weather ${this.weatherTag}`,
 						page: this.page,
@@ -376,7 +375,7 @@ export default {
 		getPexels() {
 			if (this.imageList.length === 0) {
 				let url
-				if (process.env.WEATHER === 'true' && process.env.PEXELS_WEATHER_TAGGED === 'true') {
+				if (process.env.WEATHER === 'true' && process.env.PEXELS_WEATHER_TAGGED === 'true' && this.weatherTag) {
 					url = `https://api.pexels.com/v1/search?per_page=${this.perPage}&page=${this.page}&query=weather%20${encodeURI(this.weatherTag)}`
 				} else {
 					url = `https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`
@@ -410,7 +409,7 @@ export default {
 			if (this.imageList.length === 0) {
 				const flickr = new Flickr(process.env.FLICKR_API_KEY)
 				flickr.photos.search({
-					tags: encodeURI(this.weatherTag),
+					tags: this.weatherTag ? this.weatherTag : 'random',
 					tag_mode: 'all',
 					page: this.page
 				}).then((response) => {
@@ -421,7 +420,7 @@ export default {
 					this.lastImage = this.imageList.shift()
 					this.background = `background-image: url("${this.lastImage}")`
 				}).catch((err) => {
-					if (process.env.NODE_ENV === 'development') { console.log(err) }
+					if (process.env.NODE_ENV === 'development') { console.error(err) }
 				}).then(() => {
 					// save current images array state
 					this.saveState()

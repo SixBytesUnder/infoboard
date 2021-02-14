@@ -37,10 +37,11 @@ router.get('/weather', (requ, resp) => {
 		res.on('end', () => {
 			try {
 				body = JSON.parse(Buffer.concat(body).toString())
+				resp.json(body.data.timelines)
 			} catch (error) {
 				console.error(error)
+				resp.json({ error: 'check console' })
 			}
-			resp.json(body.data.timelines)
 		})
 	})
 	req.on('error', (error) => {
