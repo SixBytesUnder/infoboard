@@ -1,28 +1,28 @@
 <template>
 	<div
-		v-if="forecast && showForecast && enableWeather"
+		v-if="forecastData && showForecast && enableWeather"
 		class="row mx-0 py-2">
 		<div
-			v-for="(day, index) of forecast"
+			v-for="(day, index) of days"
 			:key="index"
 			class="forecastWrapper col withBackground mx-2 mb-2">
 			<div class="forecast h-100 m-auto">
 				<div class="col">
-					{{ moment(day.observation_time.value).format('dddd') }}
+					{{ day.date }}
 				</div>
 				<div class="col forecastIcon">
 					<img
-						:src="day.weather_code ? loadImage(`images/${day.weather_code.value}.svg`) : loadImage('images/missing.svg')"
-						:alt="day.weather_code.value">
+						:src="day.weatherCode ? loadImage(`images/${day.weatherCode}.svg`) : loadImage('images/missing.svg')"
+						:alt="units.weatherCode[day.weatherCode]">
 				</div>
 				<div class="col">
-					{{ roundValue(day.temp[1].max.value) }}&deg;{{ day.temp[1].max.units }}
+					{{ roundValue(Math.max(...day.temperature)) }}&deg;{{ units.temperature.charAt() }}
 				</div>
 				<div class="col">
-					{{ roundValue(day.temp[0].min.value) }}&deg;{{ day.temp[0].min.units }}
+					{{ roundValue(Math.min(...day.temperature)) }}&deg;{{ units.temperature.charAt() }}
 				</div>
 				<div class="col small px-0">
-					{{ day.weather_code.value.split('_').join(' ') }}
+					{{ units.weatherCode[day.weatherCode] }}
 				</div>
 			</div>
 		</div>
@@ -31,6 +31,7 @@
 
 <script>
 import moment from 'moment'
+import units from '~/data/units'
 
 export default {
 	name: 'Forecast',
@@ -40,35 +41,41 @@ export default {
 			default() {
 				return false
 			}
+		},
+		forecastData: {
+			type: Array,
+			default() {
+				return []
+			}
 		}
 	},
 	data() {
 		return {
 			enableWeather: process.env.WEATHER === 'true',
 			tempRouded: process.env.WEATHER_ROUNDED === 'true',
-			forecast: {},
+			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
+			days: {},
 			moment
 		}
 	},
-	mounted() {
-		this.getForecast()
-		this.interval = setInterval(this.getForecast, 600000)
-	},
-	beforeDestroy() {
-		clearInterval(this.interval)
+	updated() {
+		this.forecastData[1].intervals.forEach((day) => {
+			const date = moment(day.startTime).format('dddd')
+			if (date in this.days) {
+				this.days[date].temperature.push(day.values.temperature)
+				this.days[date].weatherCode = day.values.weatherCode
+			} else {
+				this.days[date] = {
+					date,
+					temperature: [day.values.temperature],
+					weatherCode: day.values.weatherCode
+				}
+			}
+		})
 	},
 	methods: {
 		loadImage(path) {
 			return require(`~/assets/${path}`)
-		},
-		getForecast() {
-			this.$axios.get('/weather/forecast')
-				.then((response) => {
-					this.forecast = response.data.slice(0, 7)
-				})
-				.catch((err) => {
-					console.log(err)
-				})
 		},
 		roundValue(val) {
 			if (this.tempRouded) {

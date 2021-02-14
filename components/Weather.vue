@@ -2,13 +2,13 @@
 	<div class="col-12 col-sm-6">
 		<div class="row">
 			<div
-				v-if="weather && weather.temp"
+				v-if="weather && weather.temperature"
 				class="col weather pr-0">
 				<div class="media px-2 float-right withBackground">
 					<img
 						id="weather-icon"
-						:src="weather.weather_code ? loadImage(`images/${weather.weather_code.value}.svg`) : loadImage('images/missing.svg')"
-						:alt="weather.weather_code.value"
+						:src="weather.weatherCode ? loadImage(`images/${weather.weatherCode}.svg`) : loadImage('images/missing.svg')"
+						:alt="weather.weatherCode"
 						class="align-self-center mr-2"
 						@click="toggleForecast">
 					<div class="media-body my-2">
@@ -20,14 +20,14 @@
 							{{ locationName }}
 						</p>
 						<p class="display-4">
-							{{ roundValue(weather.temp.value) }}&deg;{{ weather.temp.units }}
+							{{ roundValue(weather.temperature) }}&deg;{{ units.temperature.charAt() }}
 						</p>
 						<p class="smaller">
 							Feels like
-							{{ roundValue(weather.feels_like.value) }}&deg;{{ weather.feels_like.units }}
+							{{ roundValue(weather.temperatureApparent) }}&deg;{{ units.temperatureApparent.charAt() }}
 						</p>
 						<p class="d-flex justify-content-between align-items-center">
-							{{ weather.weather_code.value.split('_').join(' ') }}
+							{{ units.weatherCode[weather.weatherCode] }}
 							<button
 								class="btn btn-sm btn-outline-light"
 								@click="toggleMoreInfo">
@@ -51,6 +51,7 @@
 
 <script>
 import moment from 'moment'
+import units from '~/data/units'
 
 export default {
 	data() {
@@ -61,6 +62,7 @@ export default {
 			showForecast: false,
 			weather: {},
 			updated: '',
+			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
 			moment
 		}
 	},
@@ -82,10 +84,10 @@ export default {
 			this.$emit('weather-more-show')
 		},
 		getWeather() {
-			// get current weather
-			this.$axios.get('/weather/realtime')
+			// get current weather and forecast
+			this.$axios.get('/weather')
 				.then((response) => {
-					this.weather = response.data
+					this.weather = response.data[0].intervals[0].values
 					this.$emit('weather-more', response.data)
 					if (process.env.AE_WEATHER_DETAILS === 'true') {
 						this.$emit('weather-more-show')
@@ -93,10 +95,10 @@ export default {
 					if (process.env.AE_FORECAST === 'true') {
 						this.$emit('show-forecast')
 					}
-					this.updated = moment(response.data.observation_time.value).format(this.timeFormat)
+					this.updated = moment(response.data[0].intervals[0].startTime).format(this.timeFormat)
 				})
 				.catch((err) => {
-					console.log(err)
+					console.error(err)
 				})
 		},
 		roundValue(val) {

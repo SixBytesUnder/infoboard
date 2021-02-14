@@ -7,18 +7,22 @@
 			:key="slug"
 			class="row px-2">
 			<div
-				v-if="weather && weather[slug]"
+				v-if="weather && weather[0].intervals[0].values[slug]"
 				class="col pl-2 pr-3 border-bottom border-right">
 				{{ name }}
 			</div>
-			<div class="col px-2 border-bottom text-center">
-				{{ weather[slug].value }} {{ weather[slug].units }}
+			<div
+				v-if="weather && weather[0].intervals[0].values[slug]"
+				class="col px-2 border-bottom text-center">
+				{{ weather[0].intervals[0].values[slug] }} {{ units[slug] }}
 			</div>
 		</div>
 	</div>
 </template>
 
 <script>
+import units from '~/data/units'
+
 export default {
 	name: 'Weathermore',
 	props: {
@@ -29,31 +33,32 @@ export default {
 			}
 		},
 		weather: {
-			type: Object,
+			type: Array,
 			default() {
-				return {}
+				return []
 			}
 		}
 	},
 	data() {
 		return {
+			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
 			fieldsMore: {
 				humidity: 'Humidity',
-				wind_speed: 'Wind speed',
-				wind_gust: 'Wind gust speed',
-				baro_pressure: 'Barometric pressure',
-				surface_shortwave_radiation: 'Solar radiation reaching the surface',
-				moon_phase: 'Moon phase',
-				pm25: 'Particulate Matter < 2.5 μm',
-				pm10: 'Particulate Matter < 10 μm',
-				o3: 'Ozone',
-				no2: 'Nitrogen Dioxide',
-				co: 'Carbon Monoxide',
-				so2: 'Sulfur Dioxide',
-				epa_health_concern: 'Air quality index per US EPA standard',
-				pollen_tree: 'ClimaCell pollen index for trees',
-				pollen_weed: 'ClimaCell pollen index for weeds',
-				pollen_grass: 'ClimaCell pollen index for grass'
+				windSpeed: 'Wind speed',
+				windGust: 'Wind gust speed',
+				pressureSurfaceLevel: 'Barometric pressure',
+				solarGHI: 'Solar radiation reaching the surface',
+				moonPhase: 'Moon phase',
+				particulateMatter25: 'Particulate Matter < 2.5 μm',
+				particulateMatter10: 'Particulate Matter < 10 μm',
+				pollutantO3: 'Ozone',
+				pollutantNO2: 'Nitrogen Dioxide',
+				pollutantCO: 'Carbon Monoxide',
+				pollutantSO2: 'Sulfur Dioxide',
+				epaHealthConcern: 'Air quality index per US EPA standard',
+				treeIndex: 'ClimaCell pollen index for trees',
+				weedIndex: 'ClimaCell pollen index for weeds',
+				grassIndex: 'ClimaCell pollen index for grass'
 			}
 		}
 	}

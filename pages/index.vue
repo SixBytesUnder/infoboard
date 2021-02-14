@@ -1,7 +1,7 @@
 <template>
 	<div class="container-fluid pt-2">
 		<Background
-			v-if="enableWeather === true ? weather.weather_code : true"
+			v-if="enableWeather === true"
 			:weather="weather" />
 		<div class="row mx-2 py-2">
 			<Datetime />
@@ -11,7 +11,9 @@
 				@weather-more="onWeatherMore"
 				@weather-more-show="onWeatherMoreShow" />
 		</div>
-		<Forecast :show-forecast="showForecast" />
+		<Forecast
+			:forecast-data="weather"
+			:show-forecast="showForecast" />
 
 		<div class="row pt-2">
 			<div class="col-12 col-sm-6">
@@ -59,7 +61,7 @@ export default {
 		return {
 			enableWeather: process.env.WEATHER === 'true',
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
-			weather: {},
+			weather: [],
 			showForecast: false,
 			weatherMoreInfo: false
 		}

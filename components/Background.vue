@@ -55,13 +55,14 @@
 import { createApi } from 'unsplash-js'
 import Flickr from 'flickr-sdk'
 import ExifReader from 'exifreader'
+import units from '~/data/units'
 
 export default {
 	props: {
 		weather: {
-			type: Object,
+			type: Array,
 			default() {
-				return {}
+				return []
 			}
 		}
 	},
@@ -71,7 +72,9 @@ export default {
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			imagesSource: process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE,
 			exifButton: process.env.EXIF === 'true',
+			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
 			nasa: false,
+			weatherTag: '',
 			background: '',
 			imageSrc: '',
 			imageList: [],
@@ -88,6 +91,34 @@ export default {
 			nextfolder: 'folder',
 			// used to tell the backend what to show next
 			lastImage: ''
+		}
+	},
+	watch: {
+		weather(value) {
+			if (value.length > 0) {
+				if (this.weatherTag !== value[0].intervals[0].values.weatherCode) {
+					this.weatherTag = this.units.weatherCode[this.weather[0].intervals[0].values.weatherCode]
+					// weather tag has changed, rerun weather tagged image functions
+					if (this.magicMirror === false) {
+						if (this.imagesSource === 'unsplash') {
+							this.imageList = []
+							this.enableFolderButton = false
+							this.getUnsplash()
+							this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
+						} else if (this.imagesSource === 'pexels') {
+							this.imageList = []
+							this.enableFolderButton = false
+							this.getPexels()
+							this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+						} else if (this.imagesSource === 'flickr') {
+							this.imageList = []
+							this.enableFolderButton = false
+							this.getFlickr()
+							this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+						}
+					}
+				}
+			}
 		}
 	},
 	mounted() {
@@ -304,7 +335,7 @@ export default {
 			if (this.imageList.length === 0) {
 				if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true') {
 					unsplash.search.getPhotos({
-						query: `weather ${this.weather.weather_code.value.split('_').join(' ')}`,
+						query: `weather ${this.weatherTag}`,
 						page: this.page,
 						perPage: this.perPage
 					})
@@ -346,7 +377,7 @@ export default {
 			if (this.imageList.length === 0) {
 				let url
 				if (process.env.WEATHER === 'true' && process.env.PEXELS_WEATHER_TAGGED === 'true') {
-					url = `https://api.pexels.com/v1/search?per_page=${this.perPage}&page=${this.page}&query=weather%20${this.weather.weather_code.value.split('_').join('%20')}`
+					url = `https://api.pexels.com/v1/search?per_page=${this.perPage}&page=${this.page}&query=weather%20${encodeURI(this.weatherTag)}`
 				} else {
 					url = `https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`
 				}
@@ -379,7 +410,7 @@ export default {
 			if (this.imageList.length === 0) {
 				const flickr = new Flickr(process.env.FLICKR_API_KEY)
 				flickr.photos.search({
-					tags: `${this.weather.weather_code.value.split('_').join(',')}`,
+					tags: encodeURI(this.weatherTag),
 					tag_mode: 'all',
 					page: this.page
 				}).then((response) => {

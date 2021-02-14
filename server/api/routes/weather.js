@@ -3,52 +3,51 @@ const { Router } = require('express')
 const router = Router()
 require('dotenv').config()
 
-router.get('/weather/:param', (requ, resp) => {
+router.get('/weather', (requ, resp) => {
 	const lat = process.env.WEATHER_LAT
 	const lon = process.env.WEATHER_LON
-	const unitSystem = process.env.WEATHER_UNITS === 'us' ? 'us' : 'si'
-	const fields = process.env.WEATHER_FIELDS
+	const units = process.env.WEATHER_UNITS === 'imperial' ? 'imperial' : 'metric'
+	const fields = process.env.WEATHER_FIELDS.split(',')
 	const apiKey = process.env.WEATHER_API_KEY
-	let urlPath = ''
-	if (requ.params.param === 'realtime') {
-		urlPath = `realtime?lat=${lat}&lon=${lon}&unit_system=${unitSystem}&fields=${fields}&apikey=${apiKey}`
-	} else {
-		urlPath = `forecast/daily?lat=${lat}&lon=${lon}&unit_system=${unitSystem}&fields=temp,weather_code&apikey=${apiKey}`
+
+	const credentials = JSON.stringify({
+		location: `${lat},${lon}`,
+		fields,
+		timesteps: ['current', '1h', '1d'],
+		// timesteps: ['current', '1d'],
+		units
+	})
+
+	const options = {
+		method: 'POST',
+		host: 'data.climacell.co',
+		port: 443,
+		path: '/v4/timelines',
+		headers: {
+			'Content-Type': 'application/json',
+			apikey: apiKey
+		}
 	}
-	https.get(`https://api.climacell.co/v3/weather/${urlPath}`, (res) => {
-		const { statusCode } = res
-		const contentType = res.headers['content-type']
 
-		let error
-		if (statusCode !== 200) {
-			error = new Error('Request Failed.\n' + `Status Code: ${statusCode}`)
-		} else if (!/^application\/json/.test(contentType)) {
-			error = new Error('Invalid content-type.\n' + `Expected application/json but received ${contentType}`)
-		}
-		if (error) {
-			console.error(error.message)
-			// consume response data to free up memory
-			res.resume()
-			// return empty object as a response, so that the request doesn't hang
-			resp.json({})
-			return
-		}
-
-		res.setEncoding('utf8')
-		let rawData = ''
-
-		res.on('data', (chunk) => { rawData += chunk })
+	const req = https.request(options, (res) => {
+		let body = []
+		res.on('data', (chunk) => {
+			body.push(chunk)
+		})
 		res.on('end', () => {
 			try {
-				const parsedData = JSON.parse(rawData)
-				resp.json(parsedData)
-			} catch (e) {
-				console.error(e.message)
+				body = JSON.parse(Buffer.concat(body).toString())
+			} catch (error) {
+				console.error(error)
 			}
+			resp.json(body.data.timelines)
 		})
-	}).on('error', (e) => {
-		console.error(`Got error: ${e.message}`)
 	})
+	req.on('error', (error) => {
+		console.error(error)
+	})
+	req.write(credentials)
+	req.end()
 })
 
 module.exports = router
