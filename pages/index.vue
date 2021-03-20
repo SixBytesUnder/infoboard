@@ -12,7 +12,7 @@
 				@weather-more-show="onWeatherMoreShow" />
 		</div>
 		<Forecast
-			:forecast-data="weather"
+			:forecast-data="days"
 			:show-forecast="showForecast" />
 
 		<div class="row pt-2">
@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 import Background from '~/components/Background.vue'
 import Datetime from '~/components/Datetime.vue'
 import Weather from '~/components/Weather.vue'
@@ -62,8 +63,10 @@ export default {
 			enableWeather: process.env.WEATHER === 'true',
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			weather: [],
+			days: {},
 			showForecast: false,
-			weatherMoreInfo: false
+			weatherMoreInfo: false,
+			moment
 		}
 	},
 	head() {
@@ -81,7 +84,22 @@ export default {
 			this.weatherMoreInfo = !this.weatherMoreInfo
 		},
 		onWeatherMore(value) {
+			// needed for data behind the "more" button
 			this.weather = value
+			// transform raw weather data to clean daily forecast
+			value[1].intervals.forEach((day) => {
+				const date = moment(day.startTime).format('dddd')
+				if (date in this.days) {
+					this.days[date].temperature.push(day.values.temperature)
+					this.days[date].weatherCode = day.values.weatherCode
+				} else {
+					this.days[date] = {
+						date,
+						temperature: [day.values.temperature],
+						weatherCode: day.values.weatherCode
+					}
+				}
+			})
 		}
 	}
 }

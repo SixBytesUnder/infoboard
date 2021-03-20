@@ -3,7 +3,7 @@
 		v-if="forecastData && showForecast && enableWeather"
 		class="row mx-0 py-2">
 		<div
-			v-for="(day, index) of days"
+			v-for="(day, index) of forecastData"
 			:key="index"
 			class="forecastWrapper col withBackground mx-2 mb-2">
 			<div class="forecast h-100 m-auto">
@@ -30,7 +30,6 @@
 </template>
 
 <script>
-import moment from 'moment'
 import units from '~/data/units'
 
 export default {
@@ -43,9 +42,9 @@ export default {
 			}
 		},
 		forecastData: {
-			type: Array,
+			type: Object,
 			default() {
-				return []
+				return {}
 			}
 		}
 	},
@@ -53,25 +52,8 @@ export default {
 		return {
 			enableWeather: process.env.WEATHER === 'true',
 			tempRouded: process.env.WEATHER_ROUNDED === 'true',
-			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
-			days: {},
-			moment
+			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric
 		}
-	},
-	updated() {
-		this.forecastData[1].intervals.forEach((day) => {
-			const date = moment(day.startTime).format('dddd')
-			if (date in this.days) {
-				this.days[date].temperature.push(day.values.temperature)
-				this.days[date].weatherCode = day.values.weatherCode
-			} else {
-				this.days[date] = {
-					date,
-					temperature: [day.values.temperature],
-					weatherCode: day.values.weatherCode
-				}
-			}
-		})
 	},
 	methods: {
 		loadImage(path) {
