@@ -14,7 +14,12 @@
 			<div
 				v-if="weather && weather[0].intervals[0].values[slug]"
 				class="col px-2 border-bottom text-center">
-				{{ weather[0].intervals[0].values[slug] }} {{ units[slug] }}
+				<span v-if="typeof units[slug] === 'object'">
+					{{ units[slug][weather[0].intervals[0].values[slug]] }}
+				</span>
+				<span v-else>
+					{{ weather[0].intervals[0].values[slug] }} {{ units[slug] }}
+				</span>
 			</div>
 		</div>
 	</div>
