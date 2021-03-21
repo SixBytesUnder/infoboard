@@ -86,6 +86,8 @@ export default {
 		onWeatherMore(value) {
 			// needed for data behind the "more" button
 			this.weather = value
+			// clean foracast days object
+			this.days = {}
 			// transform raw weather data to clean daily forecast
 			value[1].intervals.forEach((day) => {
 				const date = moment(day.startTime).format('dddd')
