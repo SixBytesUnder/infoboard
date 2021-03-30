@@ -15,7 +15,7 @@
 				v-if="weather && weather[0].intervals[0].values[slug]"
 				class="col px-2 border-bottom text-center">
 				<span v-if="typeof units[slug] === 'object'">
-					{{ units[slug][weather[0].intervals[0].values[slug]] }}
+					{{ units[slug][Math.round(weather[0].intervals[0].values[slug])] }}
 				</span>
 				<span v-else>
 					{{ weather[0].intervals[0].values[slug] }} {{ units[slug] }}
@@ -54,16 +54,16 @@ export default {
 				pressureSurfaceLevel: 'Barometric pressure',
 				solarGHI: 'Solar radiation reaching the surface',
 				moonPhase: 'Moon phase',
-				particulateMatter25: 'Particulate Matter < 2.5 μm',
-				particulateMatter10: 'Particulate Matter < 10 μm',
+				particulateMatter25: 'PM < 2.5 μm',
+				particulateMatter10: 'PM < 10 μm',
 				pollutantO3: 'Ozone',
 				pollutantNO2: 'Nitrogen Dioxide',
 				pollutantCO: 'Carbon Monoxide',
 				pollutantSO2: 'Sulfur Dioxide',
 				epaHealthConcern: 'Air quality index per US EPA standard',
-				treeIndex: 'ClimaCell pollen index for trees',
-				weedIndex: 'ClimaCell pollen index for weeds',
-				grassIndex: 'ClimaCell pollen index for grass'
+				treeIndex: 'Pollen index for trees',
+				weedIndex: 'Pollen index for weeds',
+				grassIndex: 'Pollen index for grass'
 			}
 		}
 	}

@@ -20,7 +20,7 @@ router.get('/weather', (requ, resp) => {
 
 	const options = {
 		method: 'POST',
-		host: 'data.climacell.co',
+		host: 'api.tomorrow.io',
 		port: 443,
 		path: '/v4/timelines',
 		headers: {

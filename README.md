@@ -27,7 +27,7 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
   * curated images from [Pexels](https://www.pexels.com/),
   * both Unsplash and Pexels also support showing images tagged with current weather conditions: "light rain", "mostly clear" and so on,
   * weather tagged photos from [Flickr](https://www.flickr.com/);
-* Current weather and weekly forecast from [ClimaCell](https://www.climacell.co/);
+* Current weather and weekly forecast from [Tomorrow.io](https://www.tomorrow.io/) formerly ClimaCell;
 * Additional weather details include:
   * humidity,
   * wind speed,
