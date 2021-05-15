@@ -52,17 +52,17 @@
 </template>
 
 <script>
-import axios from 'axios'
-import Unsplash, { toJson } from 'unsplash-js'
+import { createApi } from 'unsplash-js'
 import Flickr from 'flickr-sdk'
 import ExifReader from 'exifreader'
+import units from '~/data/units'
 
 export default {
 	props: {
 		weather: {
-			type: Object,
+			type: Array,
 			default() {
-				return {}
+				return []
 			}
 		}
 	},
@@ -72,7 +72,9 @@ export default {
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			imagesSource: process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE,
 			exifButton: process.env.EXIF === 'true',
+			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
 			nasa: false,
+			weatherTag: '',
 			background: '',
 			imageSrc: '',
 			imageList: [],
@@ -89,6 +91,34 @@ export default {
 			nextfolder: 'folder',
 			// used to tell the backend what to show next
 			lastImage: ''
+		}
+	},
+	watch: {
+		weather(value) {
+			if (value.length > 0) {
+				if (this.weatherTag !== value[0].intervals[0].values.weatherCode) {
+					this.weatherTag = this.units.weatherCode[this.weather[0].intervals[0].values.weatherCode]
+					// weather tag has changed, rerun weather tagged image functions
+					if (this.magicMirror === false) {
+						if (this.imagesSource === 'unsplash') {
+							this.imageList = []
+							this.enableFolderButton = false
+							this.getUnsplash()
+							this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
+						} else if (this.imagesSource === 'pexels') {
+							this.imageList = []
+							this.enableFolderButton = false
+							this.getPexels()
+							this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+						} else if (this.imagesSource === 'flickr') {
+							this.imageList = []
+							this.enableFolderButton = false
+							this.getFlickr()
+							this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+						}
+					}
+				}
+			}
 		}
 	},
 	mounted() {
@@ -112,7 +142,6 @@ export default {
 				this.getUnsplash()
 				this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
 			} else if (this.imagesSource === 'pexels') {
-				this.loadState()
 				this.enableFolderButton = false
 				this.getPexels()
 				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
@@ -150,9 +179,9 @@ export default {
 				if (savedImageList !== null) {
 					this.imageList = JSON.parse(savedImageList)
 					// Clean saved list if user switched between local and Pexels
-					if (this.imagesSource === 'local' && this.imageList[0].search('images.pexels.com') >= 0) {
+					if (this.imagesSource === 'local' && this.imageList.length > 0 && this.imageList[0].search('images.pexels.com') >= 0) {
 						this.imageList = []
-					} else if (this.imagesSource === 'pexels' && this.imageList[0].search('images.pexels.com') > 0) {
+					} else if (this.imagesSource === 'pexels' && this.imageList.length > 0 && this.imageList[0].search('images.pexels.com') > 0) {
 						this.imageList = []
 					}
 				}
@@ -161,8 +190,8 @@ export default {
 			}
 		},
 		getExif(direct) {
-			axios
-				.get(`/api/background/${encodeURIComponent(this.lastImage)}`, {
+			this.$axios
+				.get(`/background/${encodeURIComponent(this.lastImage)}`, {
 					responseType: 'arraybuffer'
 				})
 				.then((response) => {
@@ -263,7 +292,7 @@ export default {
 
 			if (this.imageList.length === 0) {
 				// get new batch of images
-				await axios.get(`/api/backgrounds/${this.lastImage}`)
+				await this.$axios.get(`/backgrounds/${this.lastImage}`)
 					.then((response) => {
 						this.imageList = response.data
 						this.pickImage()
@@ -283,7 +312,7 @@ export default {
 			}
 		},
 		getNasaAPOD() {
-			axios.get('/api/nasa')
+			this.$axios.get('/nasa')
 				.then((response) => {
 					if (response.data.media_type === 'image') {
 						this.background = `background-image: url("${response.data.hdurl}")`
@@ -297,19 +326,22 @@ export default {
 				})
 		},
 		getUnsplash() {
-			const unsplash = new Unsplash({
+			const unsplash = createApi({
 				accessKey: process.env.UNSPLASH_ACCESS,
 				secret: process.env.UNSPLASH_SECRET,
 				callbackUrl: process.env.CALLBACK_URL
 			})
-			if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true') {
-				if (this.imageList.length === 0) {
-					unsplash.search.photos(`weather ${this.weather.weather_code.value.split('_').join(' ')}`, this.page, this.perPage)
-						.then(toJson)
+			if (this.imageList.length === 0) {
+				if (process.env.WEATHER === 'true' && process.env.UNSPLASH_WEATHER_TAGGED === 'true' && this.weatherTag) {
+					unsplash.search.getPhotos({
+						query: `weather ${this.weatherTag}`,
+						page: this.page,
+						perPage: this.perPage
+					})
 						.then((unsplashResp) => {
-							for (let i = 0; i < unsplashResp.results.length; i++) {
-								this.imageList.push(unsplashResp.results[i].urls.regular)
-							}
+							unsplashResp.response.results.forEach((photo) => {
+								this.imageList.push(photo.urls.regular)
+							})
 							this.lastImage = this.imageList.shift()
 							this.background = `background-image: url("${this.lastImage}")`
 							this.saveState()
@@ -319,31 +351,36 @@ export default {
 							if (process.env.NODE_ENV === 'development') { console.log(err) }
 						})
 				} else {
-					// remove current image from array and display it
-					this.lastImage = this.imageList.shift()
-					this.background = `background-image: url("${this.lastImage}")`
-					this.page = 1
+					unsplash.photos.getRandom({
+						count: this.perPage
+					})
+						.then((unsplashResp) => {
+							unsplashResp.response.forEach((photo) => {
+								this.imageList.push(photo.urls.regular)
+							})
+							this.lastImage = this.imageList.shift()
+							this.background = `background-image: url("${this.lastImage}")`
+							this.saveState()
+						})
+						.catch((err) => {
+							if (process.env.NODE_ENV === 'development') { console.log(err) }
+						})
 				}
 			} else {
-				unsplash.photos.getRandomPhoto()
-					.then(toJson)
-					.then((unsplashResp) => {
-						this.background = `background-image: url("${unsplashResp.urls.regular}")`
-					})
-					.catch((err) => {
-						if (process.env.NODE_ENV === 'development') { console.log(err) }
-					})
+				// remove current image from array and display it
+				this.lastImage = this.imageList.shift()
+				this.background = `background-image: url("${this.lastImage}")`
 			}
 		},
 		getPexels() {
 			if (this.imageList.length === 0) {
 				let url
-				if (process.env.WEATHER === 'true' && process.env.PEXELS_WEATHER_TAGGED === 'true') {
-					url = `https://api.pexels.com/v1/search?per_page=${this.perPage}&page=${this.page}&query=weather%20${this.weather.weather_code.value.split('_').join('%20')}`
+				if (process.env.WEATHER === 'true' && process.env.PEXELS_WEATHER_TAGGED === 'true' && this.weatherTag) {
+					url = `https://api.pexels.com/v1/search?per_page=${this.perPage}&page=${this.page}&query=weather%20${encodeURI(this.weatherTag)}`
 				} else {
 					url = `https://api.pexels.com/v1/curated?per_page=${this.perPage}&page=${this.page}`
 				}
-				axios.get(url, {
+				this.$axios.get(url, {
 					headers: { Authorization: process.env.PEXELS_KEY }
 				})
 					.then((response) => {
@@ -372,7 +409,7 @@ export default {
 			if (this.imageList.length === 0) {
 				const flickr = new Flickr(process.env.FLICKR_API_KEY)
 				flickr.photos.search({
-					tags: `${this.weather.weather_code.value.split('_').join(',')}`,
+					tags: this.weatherTag ? this.weatherTag : 'random',
 					tag_mode: 'all',
 					page: this.page
 				}).then((response) => {
@@ -383,7 +420,7 @@ export default {
 					this.lastImage = this.imageList.shift()
 					this.background = `background-image: url("${this.lastImage}")`
 				}).catch((err) => {
-					if (process.env.NODE_ENV === 'development') { console.log(err) }
+					if (process.env.NODE_ENV === 'development') { console.error(err) }
 				}).then(() => {
 					// save current images array state
 					this.saveState()

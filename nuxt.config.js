@@ -1,12 +1,7 @@
 const pkg = require('./package')
 
-module.exports = {
-	target: 'server',
-	telemetry: true,
-
-	/*
-  ** Headers of the page
-  */
+export default {
+	// Global page headers (https://go.nuxtjs.dev/config-head)
 	head: {
 		htmlAttrs: {
 			lang: 'en'
@@ -14,7 +9,7 @@ module.exports = {
 		title: pkg.name,
 		meta: [
 			{ charset: 'utf-8' },
-			{ name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' },
+			{ name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
 			{ hid: 'description', name: 'description', content: pkg.description }
 		],
 		script: [
@@ -26,9 +21,7 @@ module.exports = {
 		]
 	},
 
-	/*
-	** PWA manifest file
-	*/
+	// PWA manifest file
 	manifest: {
 		name: pkg.name,
 		short_name: pkg.name,
@@ -39,63 +32,55 @@ module.exports = {
 		display: 'standalone'
 	},
 
-	/*
-  ** Customize the progress-bar color
-  */
-	loading: { color: '#fff' },
-
-	/*
-  ** Global CSS
-  */
+	// Global CSS (https://go.nuxtjs.dev/config-css)
 	css: [
 	],
 
-	/*
-  ** Plugins to load before mounting the App
-  */
+	// Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
 	plugins: [
 	],
 
-	/*
-  ** Nuxt.js modules
-  */
-	modules: [
-		// Doc: https://axios.nuxtjs.org/usage
-		'@nuxtjs/axios',
-		// Doc: https://bootstrap-vue.js.org/docs/
-		'bootstrap-vue/nuxt',
-		'@nuxtjs/dotenv',
-		'@nuxtjs/pwa'
+	// Auto import components (https://go.nuxtjs.dev/config-components)
+	components: true,
+
+	// Modules for dev and build (recommended) (https://go.nuxtjs.dev/config-modules)
+	buildModules: [
+		// https://go.nuxtjs.dev/eslint
+		'@nuxtjs/eslint-module'
 	],
-	/*
-  ** Axios module configuration
-  */
-	axios: {
-		// See https://github.com/nuxt-community/axios-module#options
+
+	// Modules (https://go.nuxtjs.dev/config-modules)
+	modules: [
+		// https://go.nuxtjs.dev/bootstrap
+		'bootstrap-vue/nuxt',
+		// https://go.nuxtjs.dev/axios
+		'@nuxtjs/axios',
+		// https://go.nuxtjs.dev/pwa
+		'@nuxtjs/pwa',
+		'@nuxtjs/dotenv'
+	],
+
+	bootstrapVue: {
+		bootstrapCSS: true,
+		bootstrapVueCSS: false,
+		componentPlugins: [],
+		directivePlugins: [],
+		components: ['BContainer', 'BRow', 'BCol', 'BButton', 'BButtonGroup', 'BTable'],
+		directives: []
 	},
 
-	/*
-  ** Build configuration
-  */
+	// Axios module configuration (https://go.nuxtjs.dev/config-axios)
+	axios: {
+		baseURL: '/api'
+	},
+
+	// Build Configuration (https://go.nuxtjs.dev/config-build)
 	build: {
-		/*
-    ** You can extend webpack config here
-    */
-		extend(config, ctx) {
-			// Run ESLint on save
-			if (ctx.isDev && ctx.isClient) {
-				config.module.rules.push({
-					enforce: 'pre',
-					test: /\.(js|vue)$/,
-					loader: 'eslint-loader',
-					exclude: /(node_modules)/
-				})
-			}
-			if (ctx.isDev) {
-				config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
-			}
+		babel: {
+			compact: true
 		}
 	},
+
 	serverMiddleware: [
 		// API middleware
 		'~/server/api/index.js'

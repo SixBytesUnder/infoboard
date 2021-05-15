@@ -27,13 +27,14 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
   * curated images from [Pexels](https://www.pexels.com/),
   * both Unsplash and Pexels also support showing images tagged with current weather conditions: "light rain", "mostly clear" and so on,
   * weather tagged photos from [Flickr](https://www.flickr.com/);
-* Current weather and weekly forecast from [ClimaCell](https://www.climacell.co/);
+* Current weather and weekly forecast from [Tomorrow.io](https://www.tomorrow.io/) formerly ClimaCell;
 * Additional weather details include:
   * humidity,
   * wind speed,
   * barometric pressure,
   * air quality (PM2.5 and PM10),
   * many more.
+* Support for local [DHT sensor](https://www.google.com/search?q=DHT+sensor) (temperature and humidity); Check installation instructions [below](#dht-sensor-installing-and-troubleshooting);
 * Transport for London status updates for tube, overground, dlr, tfl rail and tram;
 * Transport for London bus timetable for bus stops you choose;
 * COVID-19 stats from [Our World in Data](https://ourworldindata.org/coronavirus). Their GitHub repo [here](https://github.com/owid/covid-19-data/tree/master/public/data);
@@ -60,6 +61,9 @@ $ vim.tiny .env
 
 # install dependencies
 $ npm install
+
+# add DHT sensor package if you have the sensor
+$ npm install node-dht-sensor
 
 # build production bundle
 $ npm run build
@@ -180,6 +184,16 @@ $ pm2 monit
 
 nginx setup on RPi: https://nuxtjs.org/faq/nginx-proxy/  
 Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.keymetrics.io/docs/usage/quick-start/  
+
+## DHT sensor installing and troubleshooting
+DHT module in not included by default as it causes a lot of issues on Windows, which is my development environment. After installing everything on your Raspberry, just run `npm install node-dht-sensor`, add correct settigs in .env file, restart the app and it'll automatically detect the module and use it.
+
+If you're on Windows and still want to see it, you'll quite likely get build errors on DHT module while running `npm install`. This is due to node-gyp or MSBuild issues on Windows. There could be a hundred reasons for it. You can check if solutions proposed [here](https://github.com/nodejs/node-gyp/issues/119), [here](https://github.com/nodejs/node-gyp/issues/1663) or [here](https://github.com/nodejs/node-gyp/issues/1747) work for you.
+
+Otherwise, just use WSL (Windows Subsystem for Linux) to install DHT module. If you do so the DHT module will return random numbers to show you how it'd look like.  
+Note, you can install DHT package on WSL, but still `npm run dev` on Windows. It'll still work just fine.
+
+If you don't have the DHT sensor at all, you can ignore all the above or just run `npm uninstall node-dht-sensor` or simply remove `node-dht-sensor` line from your package.json file.
 
 ## Donate
 

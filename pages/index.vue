@@ -1,7 +1,7 @@
 <template>
 	<div class="container-fluid pt-2">
 		<Background
-			v-if="enableWeather === true ? weather.weather_code : true"
+			v-if="enableWeather === true"
 			:weather="weather" />
 		<div class="row mx-2 py-2">
 			<Datetime />
@@ -11,25 +11,38 @@
 				@weather-more="onWeatherMore"
 				@weather-more-show="onWeatherMoreShow" />
 		</div>
-		<Forecast :show-forecast="showForecast" />
+		<Forecast
+			:forecast-data="days"
+			:show-forecast="showForecast" />
 
-		<Tfl
-			:weather-more-info="weatherMoreInfo"
-			:weather="weather" />
-		<Covid />
-		<div class="row pb-2">
-			<Calendar />
+		<div class="row pt-2">
+			<div class="col-12 col-sm-6">
+				<Tfl />
+				<Calendar />
+			</div>
+			<div class="col-12 col-sm-6">
+				<Weathermore
+					:weather-more-info="weatherMoreInfo"
+					:weather="weather" />
+				<Dht />
+				<Sds />
+				<Covid />
+			</div>
 		</div>
 	</div>
 </template>
 
 <script>
+import moment from 'moment'
 import Background from '~/components/Background.vue'
 import Datetime from '~/components/Datetime.vue'
 import Weather from '~/components/Weather.vue'
+import Weathermore from '~/components/Weathermore.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
+import Dht from '~/components/Dht.vue'
+import Sds from '~/components/Sds.vue'
 import Covid from '~/components/Covid.vue'
 
 export default {
@@ -37,18 +50,23 @@ export default {
 		Background,
 		Datetime,
 		Weather,
+		Weathermore,
 		Forecast,
 		Calendar,
 		Tfl,
+		Dht,
+		Sds,
 		Covid
 	},
 	data() {
 		return {
 			enableWeather: process.env.WEATHER === 'true',
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
-			weather: {},
+			weather: [],
+			days: {},
 			showForecast: false,
-			weatherMoreInfo: false
+			weatherMoreInfo: false,
+			moment
 		}
 	},
 	head() {
@@ -66,7 +84,24 @@ export default {
 			this.weatherMoreInfo = !this.weatherMoreInfo
 		},
 		onWeatherMore(value) {
+			// needed for data behind the "more" button
 			this.weather = value
+			// clean foracast days object
+			this.days = {}
+			// transform raw weather data to clean daily forecast
+			value[1].intervals.forEach((day) => {
+				const date = moment(day.startTime).format('dddd')
+				if (date in this.days) {
+					this.days[date].temperature.push(day.values.temperature)
+					this.days[date].weatherCode = day.values.weatherCode
+				} else {
+					this.days[date] = {
+						date,
+						temperature: [day.values.temperature],
+						weatherCode: day.values.weatherCode
+					}
+				}
+			})
 		}
 	}
 }
