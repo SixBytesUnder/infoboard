@@ -1,42 +1,42 @@
 <template>
-	<div
-		v-if="enable"
-		class="row">
-		<div class="col ml-2 mb-2">
-			<div
-				v-if="!showCalendar"
-				class="p-2 withBackground">
-				<img
-					class="calendar-icon"
-					src="~/assets/images/calendar.svg"
-					alt="Calendar"
-					@click="toggleCalendar">
-			</div>
-			<div
-				v-if="showCalendar"
-				class="row">
+	<div v-if="enable">
+		<div class="row">
+			<div class="col mr-2 mb-2">
 				<div
-					class="col-8 p-2 ml-3 withBackground smaller"
-					@click="toggleCalendar">
-					<p>
-						Upcoming calendar events:
-					</p>
+					v-if="!showCalendar"
+					class="p-2 withBackground">
+					<img
+						class="calendar-icon"
+						src="~/assets/images/calendar.svg"
+						alt="Calendar"
+						@click="toggleCalendar">
+				</div>
+				<div
+					v-if="showCalendar"
+					class="row m-0">
 					<div
-						v-for="(events, day) in eventsList"
-						:key="day"
-						class="col border-top">
-						<div class="col-12 px-0">
-							{{ isSoon(day) }}
-						</div>
+						class="col p-2 withBackground smaller"
+						@click="toggleCalendar">
+						<p>
+							Upcoming calendar events:
+						</p>
 						<div
-							v-for="(ev, index) in events"
-							:key="index"
-							class="row">
-							<div class="col-3 border-right">
-								<small>{{ ev.time }}</small>
+							v-for="(events, day) in eventsList"
+							:key="day"
+							class="col border-top">
+							<div class="col-12 px-0">
+								{{ isSoon(day) }}
 							</div>
-							<div class="col-9">
-								{{ ev.summary }}
+							<div
+								v-for="(ev, index) in events"
+								:key="index"
+								class="row">
+								<div class="col-3 border-end">
+									<small>{{ ev.time }}</small>
+								</div>
+								<div class="col-9">
+									{{ ev.summary }}
+								</div>
 							</div>
 						</div>
 					</div>

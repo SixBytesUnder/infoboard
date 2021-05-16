@@ -1,14 +1,14 @@
 <template>
 	<div
 		v-if="weatherMoreInfo && weather"
-		class="ml-auto p-2 mb-2 mr-2 smaller withBackground">
+		class="ms-auto p-2 mb-2 smaller withBackground">
 		<div
 			v-for="(name, slug) in fieldsMore"
 			:key="slug"
 			class="row px-2">
 			<div
 				v-if="weather && weather[0].intervals[0].values[slug]"
-				class="col pl-2 pr-3 border-bottom border-right">
+				class="col pl-2 pr-3 border-bottom border-end">
 				{{ name }}
 			</div>
 			<div

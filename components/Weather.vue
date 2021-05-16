@@ -1,49 +1,46 @@
 <template>
 	<div class="col-12 col-sm-6">
-		<div class="row">
-			<div
-				v-if="weather && weather.temperature"
-				class="col weather pr-0">
-				<div class="media px-2 float-right withBackground">
+		<div
+			v-if="weather && weather.temperature"
+			class="row py-2 ms-auto withBackground weather">
+			<div class="col">
+				<img
+					id="weather-icon"
+					:src="weather.weatherCode ? loadImage(`images/${weather.weatherCode}.svg`) : loadImage('images/missing.svg')"
+					:alt="weather.weatherCode"
+					class="flex-shrink-0 align-self-center"
+					@click="toggleForecast">
+			</div>
+			<div class="col">
+				<p>
 					<img
-						id="weather-icon"
-						:src="weather.weatherCode ? loadImage(`images/${weather.weatherCode}.svg`) : loadImage('images/missing.svg')"
-						:alt="weather.weatherCode"
-						class="align-self-center mr-2"
-						@click="toggleForecast">
-					<div class="media-body my-2">
-						<p>
-							<img
-								:alt="locationName"
-								src="~/assets/images/pin.svg"
-								class="location-icon">
-							{{ locationName }}
-						</p>
-						<p class="display-4">
-							{{ roundValue(weather.temperature) }}&deg;{{ units.temperature.charAt() }}
-						</p>
-						<p class="smaller">
-							Feels like
-							{{ roundValue(weather.temperatureApparent) }}&deg;{{ units.temperatureApparent.charAt() }}
-						</p>
-						<p class="d-flex justify-content-between align-items-center">
-							{{ units.weatherCode[weather.weatherCode] }}
-							<button
-								class="btn btn-sm btn-outline-light"
-								@click="toggleMoreInfo">
-								more
-							</button>
-						</p>
-						<small>
-							<a
-								href="https://www.climacell.co/"
-								target="_blank">
-								Powered by ClimaCell
-							</a>
-						</small>
-						<small>Updated on: {{ updated }}</small>
-					</div>
-				</div>
+						:alt="locationName"
+						src="~/assets/images/pin.svg"
+						class="location-icon">
+					{{ locationName }}
+				</p>
+				<h5 class="my-0 display-4">
+					{{ roundValue(weather.temperature) }}&deg;{{ units.temperature.charAt() }}
+				</h5>
+				<p class="smaller">
+					Feels like
+					{{ roundValue(weather.temperatureApparent) }}&deg;{{ units.temperatureApparent.charAt() }}
+				</p>
+				<p class="d-flex justify-content-between align-items-center">
+					{{ units.weatherCode[weather.weatherCode] }}
+					<button
+						class="btn btn-sm btn-outline-light"
+						@click="toggleMoreInfo">
+						more
+					</button>
+				</p>
+				<p class="small">
+					<a
+						href="https://www.tomorrow.io/"
+						target="_blank">
+						Powered by Tomorrow.io</a>
+					Updated:{{ updated }}
+				</p>
 			</div>
 		</div>
 	</div>
@@ -113,38 +110,25 @@ export default {
 </script>
 
 <style scoped>
-.weather p {
-	margin-bottom: 0;
-}
-.weather small {
-	font-size: 0.4rem;
-	margin-top: -10px;
-}
-.weather small a {
-	color: #fff;
-}
-.location-icon {
-	height: 1.1em;
+.card {
+	background-color: transparent;
 }
 #weather-icon {
 	width: 10rem;
 }
+.weather p {
+	margin-bottom: 0;
+}
 .smaller {
-	font-size: 0.6rem;
+	font-size: .6rem;
 }
-
-.forecast {
-	text-align: center;
+.small {
+	font-size: 0.5rem;
 }
-.forecastIcon img {
-	width: 50%;
+.small a {
+	color: #fff;
 }
-@media (max-width: 575.98px) {
-	#weather-icon {
-		width: 6rem;
-	}
-	.forecastWrapper {
-		min-width: 45%;
-	}
+.location-icon {
+	height: 1.1em;
 }
 </style>

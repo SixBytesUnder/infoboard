@@ -1,5 +1,5 @@
 <template>
-	<section class="container">
+	<div class="container">
 		<div
 			id="backgroundImageBlur"
 			:style="background"
@@ -48,7 +48,7 @@
 				</button>
 			</div>
 		</div>
-	</section>
+	</div>
 </template>
 
 <script>

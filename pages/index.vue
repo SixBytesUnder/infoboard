@@ -1,9 +1,9 @@
 <template>
-	<div class="container-fluid pt-2">
+	<div class="container-fluid">
 		<Background
 			v-if="enableWeather === true"
 			:weather="weather" />
-		<div class="row mx-2 py-2">
+		<div class="row p-2 position-relative">
 			<Datetime />
 			<Weather
 				v-if="enableWeather"
@@ -15,12 +15,12 @@
 			:forecast-data="days"
 			:show-forecast="showForecast" />
 
-		<div class="row pt-2">
+		<div class="row pt-2 position-relative">
 			<div class="col-12 col-sm-6">
 				<Tfl />
 				<Calendar />
 			</div>
-			<div class="col-12 col-sm-6">
+			<div class="col-12 col-sm-6 position-relative">
 				<Weathermore
 					:weather-more-info="weatherMoreInfo"
 					:weather="weather" />
@@ -120,6 +120,17 @@ html, body {
 	user-select: none; /* Standard */
 }
 
+/* .bgrImage {
+	background-image: url("/api/background/2007-05-11_14%20-%20gosia%20i%20kasia%20w%20londynie%5C100_1224.JPG");
+	image-orientation: from-image;
+	height: 100vh;
+	background-attachment: fixed;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+
+}
+ */
 .withBackground {
 	background-color: #333333;
 	background-color: rgba(41, 41, 41, 0.3);

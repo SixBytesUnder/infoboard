@@ -1,12 +1,12 @@
 <template>
 	<div
 		v-if="forecastData && showForecast && enableWeather"
-		class="row mx-0 py-2">
+		class="row position-relative">
 		<div
 			v-for="(day, index) of forecastData"
 			:key="index"
-			class="forecastWrapper col withBackground mx-2 mb-2">
-			<div class="forecast h-100 m-auto">
+			class="forecastWrapper mx-2 mb-2 col withBackground">
+			<div class="forecast">
 				<div class="col">
 					{{ day.date }}
 				</div>

@@ -1,8 +1,8 @@
 <template>
 	<div v-if="enable">
 		<div class="row">
-			<div class="item col mx-2">
-				<div class="media p-2 withBackground">
+			<div class="item col">
+				<div class="media mr-2 p-2 withBackground">
 					<img
 						id="bus-icon"
 						class="align-self-start"
@@ -11,7 +11,7 @@
 						@click="toggleBuses">
 					<div
 						v-if="showBuses"
-						class="media-body mx-2">
+						class="media-body mx-2 mt-2">
 						<div
 							v-for="(timetable, name) in buses"
 							:key="name">
@@ -19,7 +19,7 @@
 							<p
 								v-for="(bus, busNumber) in timetable"
 								:key="busNumber">
-								<span class="badge badge-light mr-1">
+								<span class="badge bg-light text-dark mr-1">
 									{{ busNumber }}
 								</span>
 								<span
@@ -44,7 +44,7 @@
 		</div>
 
 		<div class="row">
-			<div class="item col m-2">
+			<div class="item col mr-2 my-2">
 				<div
 					v-if="!showTube"
 					id="tube-icon"
@@ -58,7 +58,7 @@
 				<div
 					v-if="showTube"
 					:class="magicMirror ? 'mm' : ''"
-					class="tube-data px-2 py-2 withBackground"
+					class="tube-data p-2 withBackground"
 					@click="toggleTube">
 					<div
 						v-for="(line, idx) of tube"
