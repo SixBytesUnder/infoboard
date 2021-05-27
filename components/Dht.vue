@@ -2,22 +2,22 @@
 	<div
 		v-if="enable"
 		class="row">
-		<div class="col mx-2">
-			<div class="row px-3 pb-2 justify-content-end">
-				<div class="d-flex flex-wrap p-2 withBackground">
+		<div class="col">
+			<div class="row pb-2 justify-content-end">
+				<div class="p-2 withBackground">
 					<img
 						id="icon-temp"
 						src="~/assets/images/temperature.svg"
-						class="mr-2">
+						class="align-self-center">
 					<span>{{ temperature }}&deg;C</span>
 				</div>
 			</div>
-			<div class="row px-3 pb-2 justify-content-end">
-				<div class="d-flex flex-wrap p-2 withBackground">
+			<div class="row pb-2 justify-content-end">
+				<div class="p-2 withBackground">
 					<img
 						id="icon-humidity"
 						src="~/assets/images/humidity.svg"
-						class="align-self-center mr-2">
+						class="align-self-center">
 					<span>{{ humidity }}%</span>
 				</div>
 			</div>

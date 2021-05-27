@@ -15,12 +15,12 @@
 			:forecast-data="days"
 			:show-forecast="showForecast" />
 
-		<div class="row pt-2 position-relative">
-			<div class="col-12 col-sm-6">
+		<div class="row p-2 position-relative">
+			<div class="col-12 col-sm-6 g-0">
 				<Tfl />
 				<Calendar />
 			</div>
-			<div class="col-12 col-sm-6 position-relative">
+			<div class="col-12 col-sm-6">
 				<Weathermore
 					:weather-more-info="weatherMoreInfo"
 					:weather="weather" />
@@ -41,8 +41,6 @@ import Weathermore from '~/components/Weathermore.vue'
 import Forecast from '~/components/Forecast.vue'
 import Calendar from '~/components/Calendar.vue'
 import Tfl from '~/components/Tfl.vue'
-import Dht from '~/components/Dht.vue'
-import Sds from '~/components/Sds.vue'
 import Covid from '~/components/Covid.vue'
 
 export default {
@@ -54,8 +52,8 @@ export default {
 		Forecast,
 		Calendar,
 		Tfl,
-		Dht,
-		Sds,
+		Dht: () => import(/* webpackChunkName: "Dht" */ '~/components/Dht.vue'),
+		Sds: () => import(/* webpackChunkName: "Sds" */ '~/components/Sds.vue'),
 		Covid
 	},
 	data() {

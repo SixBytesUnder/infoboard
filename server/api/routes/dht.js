@@ -36,7 +36,6 @@ try {
 
 	module.exports = router
 } catch (e) {
-	console.error(e)
 	const { Router } = require('express')
 	const router = Router()
 

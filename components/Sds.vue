@@ -2,18 +2,17 @@
 	<div
 		v-if="enable"
 		class="row">
-		<div class="col mx-2">
-			<div class="row px-3 pb-2 justify-content-end">
-				<div
-					v-if="enable"
-					class="d-inline-flex align-items-center withBackground p-2">
-					<img
-						id="icon"
-						:src="loadImage(quality)"
-						class="mr-2">
-					<div>
-						<div>PM2.5: {{ pm25 }}</div>
-						<div>PM10: {{ pm10 }}</div>
+		<div class="col">
+			<div class="row pb-2 justify-content-end">
+				<div class="row p-2 g-0 withBackground">
+					<div class="col text-center">
+						<img
+							id="sds-icon"
+							:src="loadImage(quality)">
+					</div>
+					<div class="col">
+						<span>PM2.5: {{ pm25 }}</span>
+						<span>PM10: {{ pm10 }}</span>
 					</div>
 				</div>
 			</div>
@@ -94,7 +93,7 @@ export default {
 </script>
 
 <style scoped>
-#icon {
+#sds-icon {
 	width: 2rem;
 }
 .withBackground {

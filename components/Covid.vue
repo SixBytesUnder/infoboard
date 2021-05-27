@@ -2,8 +2,8 @@
 	<div
 		v-if="enable"
 		class="row">
-		<div class="col mx-2">
-			<div class="row px-3 justify-content-end">
+		<div class="col">
+			<div class="row justify-content-end">
 				<div class="d-flex flex-wrap p-2 mb-2 withBackground">
 					<div>
 						<span @click="toggleData">COVID-19 cases</span>
