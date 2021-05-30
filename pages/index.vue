@@ -104,7 +104,7 @@ html, body {
 	background-color: #292929;
 	color: #fff;
 	font-family: 'Cousine', monospace;
-	font-size: 1rem;
+	font-size: 18px;
 	height: 100vh;
 	-webkit-user-select: none; /* Safari */
 	-moz-user-select: none; /* Firefox */
