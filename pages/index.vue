@@ -36,25 +36,19 @@
 import moment from 'moment'
 import Background from '~/components/Background.vue'
 import Datetime from '~/components/Datetime.vue'
-import Weather from '~/components/Weather.vue'
-import Weathermore from '~/components/Weathermore.vue'
-import Forecast from '~/components/Forecast.vue'
-import Calendar from '~/components/Calendar.vue'
-import Tfl from '~/components/Tfl.vue'
-import Covid from '~/components/Covid.vue'
 
 export default {
 	components: {
 		Background,
 		Datetime,
-		Weather,
-		Weathermore,
-		Forecast,
-		Calendar,
-		Tfl,
+		Weather: () => import(/* webpackChunkName: "Weather" */ '~/components/Weather.vue'),
+		Weathermore: () => import(/* webpackChunkName: "Weathermore" */ '~/components/Weathermore.vue'),
+		Forecast: () => import(/* webpackChunkName: "Forecast" */ '~/components/Forecast.vue'),
+		Calendar: () => import(/* webpackChunkName: "Calendar" */ '~/components/Calendar.vue'),
+		Tfl: () => import(/* webpackChunkName: "Tfl" */ '~/components/Tfl.vue'),
 		Dht: () => import(/* webpackChunkName: "Dht" */ '~/components/Dht.vue'),
 		Sds: () => import(/* webpackChunkName: "Sds" */ '~/components/Sds.vue'),
-		Covid
+		Covid: () => import(/* webpackChunkName: "Covid" */ '~/components/Covid.vue')
 	},
 	data() {
 		return {
