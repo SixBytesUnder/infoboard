@@ -26,6 +26,7 @@
 					:weather="weather" />
 				<Dht />
 				<Sds />
+				<Crypto />
 				<Covid />
 			</div>
 		</div>
@@ -48,7 +49,8 @@ export default {
 		Tfl: () => import(/* webpackChunkName: "Tfl" */ '~/components/Tfl.vue'),
 		Dht: () => import(/* webpackChunkName: "Dht" */ '~/components/Dht.vue'),
 		Sds: () => import(/* webpackChunkName: "Sds" */ '~/components/Sds.vue'),
-		Covid: () => import(/* webpackChunkName: "Covid" */ '~/components/Covid.vue')
+		Covid: () => import(/* webpackChunkName: "Covid" */ '~/components/Covid.vue'),
+		Crypto: () => import(/* webpackChunkName: "Crypto" */ '~/components/Crypto.vue')
 	},
 	data() {
 		return {
