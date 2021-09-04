@@ -20,6 +20,7 @@ module.exports = {
 		'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 		'vue/html-indent': ['error', 'tab'],
 		'vue/html-closing-bracket-newline': 'off',
+		'vue/script-setup-uses-vars': 'off',
 		indent: [2, 'tab',
 			{ ignoredNodes: ['TemplateLiteral'] }],
 		'template-curly-spacing': 'off',
