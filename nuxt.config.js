@@ -74,6 +74,9 @@ export default {
 		baseURL: '/api'
 	},
 
+	publicRuntimeConfig: {},
+	privateRuntimeConfig: {},
+
 	// Build Configuration (https://go.nuxtjs.dev/config-build)
 	build: {
 		babel: {
