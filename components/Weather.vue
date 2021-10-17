@@ -56,6 +56,7 @@ export default {
 			locationName: process.env.WEATHER_LOCATION_NAME || '',
 			timeFormat: process.env.TIME_FORMAT,
 			tempRouded: process.env.WEATHER_ROUNDED === 'true',
+			refresh: process.env.WEATHER_REFRESH || 300000,
 			showForecast: false,
 			weather: {},
 			updated: '',
@@ -65,7 +66,7 @@ export default {
 	},
 	mounted() {
 		this.getWeather()
-		this.interval = setInterval(this.getWeather, 300000)
+		this.interval = setInterval(this.getWeather, this.refresh)
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
