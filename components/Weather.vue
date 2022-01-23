@@ -51,6 +51,7 @@ import moment from 'moment'
 import units from '~/data/units'
 
 export default {
+	name: 'WeatherWidget',
 	data() {
 		return {
 			locationName: process.env.WEATHER_LOCATION_NAME || '',

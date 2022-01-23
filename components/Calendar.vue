@@ -48,6 +48,7 @@
 
 <script>
 export default {
+	name: 'CalednarWidget',
 	data() {
 		return {
 			enable: process.env.CALENDAR_ENABLE === 'true',

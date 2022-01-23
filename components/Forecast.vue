@@ -33,7 +33,7 @@
 import units from '~/data/units'
 
 export default {
-	name: 'Forecast',
+	name: 'ForecastWidget',
 	props: {
 		showForecast: {
 			type: Boolean,

@@ -27,6 +27,7 @@
 
 <script>
 export default {
+	name: 'DhtWidget',
 	data() {
 		return {
 			enable: process.env.DHT === 'true',

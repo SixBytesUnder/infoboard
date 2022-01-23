@@ -54,10 +54,11 @@
 <script>
 import { createApi } from 'unsplash-js'
 import Flickr from 'flickr-sdk'
-import ExifReader from 'exifreader'
+import { load } from 'exifreader'
 import units from '~/data/units'
 
 export default {
+	name: 'BackgroundWidget',
 	props: {
 		weather: {
 			type: Array,
@@ -195,7 +196,7 @@ export default {
 					responseType: 'arraybuffer'
 				})
 				.then((response) => {
-					const tags = ExifReader.load(response.data)
+					const tags = load(response.data)
 					const imageMetaData = {}
 					imageMetaData.Make = (tags.Make || {}).description
 					imageMetaData.Model = (tags.Model || {}).description

@@ -1,32 +1,32 @@
 <template>
 	<div class="container-fluid">
-		<Background
+		<BackgroundWidget
 			v-if="enableWeather === true"
 			:weather="weather" />
 		<div class="row p-2 position-relative">
-			<Datetime />
-			<Weather
+			<DateTime />
+			<WeatherWidget
 				v-if="enableWeather"
 				@show-forecast="onShowForecast"
 				@weather-more="onWeatherMore"
 				@weather-more-show="onWeatherMoreShow" />
 		</div>
-		<Forecast
+		<ForecastWidget
 			:forecast-data="days"
 			:show-forecast="showForecast" />
 
 		<div class="row p-2 position-relative">
 			<div class="col-12 col-sm-6 g-0">
-				<Tfl />
-				<Calendar />
+				<TflWidget />
+				<CalendarWidget />
 			</div>
 			<div class="col-12 col-sm-6">
-				<Weathermore
+				<WeatherMore
 					:weather-more-info="weatherMoreInfo"
 					:weather="weather" />
-				<Dht />
-				<Sds />
-				<Covid />
+				<DhtWidget />
+				<SdsWidget />
+				<CovidWidget />
 			</div>
 		</div>
 	</div>
@@ -34,21 +34,21 @@
 
 <script>
 import moment from 'moment'
-import Background from '~/components/Background.vue'
-import Datetime from '~/components/Datetime.vue'
+import BackgroundWidget from '~/components/Background.vue'
+import DateTime from '~/components/Datetime.vue'
 
 export default {
 	components: {
-		Background,
-		Datetime,
-		Weather: () => import(/* webpackChunkName: "Weather" */ '~/components/Weather.vue'),
-		Weathermore: () => import(/* webpackChunkName: "Weathermore" */ '~/components/Weathermore.vue'),
-		Forecast: () => import(/* webpackChunkName: "Forecast" */ '~/components/Forecast.vue'),
-		Calendar: () => import(/* webpackChunkName: "Calendar" */ '~/components/Calendar.vue'),
-		Tfl: () => import(/* webpackChunkName: "Tfl" */ '~/components/Tfl.vue'),
-		Dht: () => import(/* webpackChunkName: "Dht" */ '~/components/Dht.vue'),
-		Sds: () => import(/* webpackChunkName: "Sds" */ '~/components/Sds.vue'),
-		Covid: () => import(/* webpackChunkName: "Covid" */ '~/components/Covid.vue')
+		BackgroundWidget,
+		DateTime,
+		WeatherWidget: () => import(/* webpackChunkName: "WeatherWidget" */ '~/components/Weather.vue'),
+		WeatherMore: () => import(/* webpackChunkName: "WeatherMore" */ '~/components/Weathermore.vue'),
+		ForecastWidget: () => import(/* webpackChunkName: "ForecastWidget" */ '~/components/Forecast.vue'),
+		CalendarWidget: () => import(/* webpackChunkName: "CalendarWidget" */ '~/components/Calendar.vue'),
+		TflWidget: () => import(/* webpackChunkName: "TflWidget" */ '~/components/Tfl.vue'),
+		DhtWidget: () => import(/* webpackChunkName: "DhtWidget" */ '~/components/Dht.vue'),
+		SdsWidget: () => import(/* webpackChunkName: "SdsWidget" */ '~/components/Sds.vue'),
+		CovidWidget: () => import(/* webpackChunkName: "CovidWidget" */ '~/components/Covid.vue')
 	},
 	data() {
 		return {

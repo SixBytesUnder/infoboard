@@ -1,0 +1,32 @@
+{
+	"root": true,
+	"env": {
+		"browser": true,
+		"es2021": true,
+		"node": true
+	},
+	"parserOptions": {
+		"parser": "@babel/eslint-parser",
+		"requireConfigFile": false
+	},
+	"extends": [
+		"@nuxtjs",
+		"plugin:nuxt/recommended"
+	],
+	// add your custom rules here
+	"rules": {
+		"indent": [2, "tab", { "ignoredNodes": ["TemplateLiteral"] }],
+		"no-console": "off",
+		"no-debugger": "off",
+		"no-tabs": "off",
+		"nuxt/no-cjs-in-config": "off",
+		"space-before-function-paren": ["error", "never"],
+		"template-curly-spacing": "off",
+		"vue/html-closing-bracket-newline": "off",
+		"vue/html-indent": ["error", "tab"],
+		"vue/multi-word-component-names": ["error", {
+			"ignores": ["default", "index"]
+		}],
+		"vue/script-setup-uses-vars": "off"
+	}
+}

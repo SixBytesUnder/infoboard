@@ -85,7 +85,7 @@
 
 <script>
 export default {
-	name: 'TfL',
+	name: 'TfLWidget',
 	data() {
 		return {
 			enable: process.env.TFL === 'true',

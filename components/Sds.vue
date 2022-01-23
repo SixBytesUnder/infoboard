@@ -22,6 +22,7 @@
 
 <script>
 export default {
+	name: 'SdsWidget',
 	data() {
 		return {
 			env: process.env.NODE_ENV,

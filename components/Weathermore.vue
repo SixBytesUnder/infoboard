@@ -31,7 +31,7 @@
 import units from '~/data/units'
 
 export default {
-	name: 'Weathermore',
+	name: 'WeatherMore',
 	props: {
 		weatherMoreInfo: {
 			type: Boolean,

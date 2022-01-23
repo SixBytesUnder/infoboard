@@ -17,6 +17,7 @@
 import moment from 'moment'
 
 export default {
+	name: 'DateTime',
 	data() {
 		return {
 			time: moment().format(process.env.TIME_FORMAT),

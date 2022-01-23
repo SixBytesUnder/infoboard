@@ -78,6 +78,7 @@
 import moment from 'moment'
 
 export default {
+	name: 'CovidWidget',
 	data() {
 		return {
 			enable: process.env.C19_ENABLE === 'true',
