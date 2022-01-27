@@ -5,6 +5,7 @@ const { Router } = require('express')
 const router = Router()
 require('dotenv').config()
 const mainDir = process.env.IMAGES_DIR
+const videoMP4 = process.env.INCLUDE_MP4 === 'true'
 
 function findNextDir(startPath, lastDir) {
 	let files = []
@@ -32,7 +33,8 @@ function findNextDir(startPath, lastDir) {
 	for (const asset of dirList) {
 		const fullPath = path.join(startPath, asset)
 		if (fs.statSync(fullPath).isDirectory()) {
-			files = glob.sync('**/*.+(jpg|jpeg)', {
+			const pattern = videoMP4 ? '**/*.+(jpg|jpeg|mp4)' : '**/*.+(jpg|jpeg)'
+			files = glob.sync(pattern, {
 				cwd: fullPath,
 				nocase: true,
 				realpath: true
@@ -68,7 +70,11 @@ router.get('/background/:file(*)', (req, res) => {
 	const fullPath = path.join(mainDir, req.params.file)
 	const s = fs.createReadStream(fullPath)
 	s.on('open', function() {
-		res.set('Content-Type', 'image/jpeg')
+		if (req.params.file.split('.').pop() === 'mp4') {
+			res.set('Content-Type', 'video/mp4')
+		} else {
+			res.set('Content-Type', 'image/jpeg')
+		}
 		s.pipe(res)
 	})
 	s.on('error', function() {

@@ -1,13 +1,25 @@
 <template>
 	<div class="container">
-		<div
-			id="backgroundImageBlur"
-			:style="background"
-			:class="magicMirror ? 'mm' : ''" />
-		<div
-			v-if="!magicMirror"
-			id="backgroundImage"
-			:style="background" />
+		<div v-if="assetType === 'video'">
+			<video
+				id="backgroundImage"
+				autoplay
+				muted
+				@play="startedPlaying"
+				@ended="endedPlaying">
+				<source :src="background" type="video/mp4">
+			</video>
+		</div>
+		<div v-else>
+			<div
+				id="backgroundImageBlur"
+				:style="background"
+				:class="magicMirror ? 'mm' : ''" />
+			<div
+				v-if="!magicMirror"
+				id="backgroundImage"
+				:style="background" />
+		</div>
 
 		<div class="buttons text-right">
 			<div
@@ -21,7 +33,7 @@
 			</div>
 			<div class="btn-group">
 				<button
-					v-if="exifButton && !magicMirror && (imagesSource === 'single' || imagesSource === 'local')"
+					v-if="exifButton && !magicMirror && (imagesSource === 'single' || imagesSource === 'local') && assetType === 'image'"
 					class="btn btn-sm btn-outline-dark"
 					@click="getExif">
 					i
@@ -77,6 +89,7 @@ export default {
 			nasa: false,
 			weatherTag: '',
 			background: '',
+			assetType: 'image',
 			imageSrc: '',
 			imageList: [],
 			page: 1,
@@ -266,18 +279,32 @@ export default {
 				this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
 			} else {
 				this.getBackground(param)
-				this.getExif(false)
+				if (this.assetType === 'image') {
+					this.getExif(false)
+				}
 			}
 		},
 		pickImage() {
 			// remove current image from array and display it
 			this.lastImage = this.imageList.shift()
 			this.imageSrc = encodeURIComponent(this.lastImage)
-			this.background = `background-image: url("/api/background/${this.imageSrc}")`
+			if (this.lastImage.split('.').pop() === 'mp4') {
+				this.assetType = 'video'
+				this.background = `/api/background/${this.imageSrc}`
+			} else {
+				this.assetType = 'image'
+				this.background = `background-image: url("/api/background/${this.imageSrc}")`
+			}
 			// get buttons back to normal
 			this.nextimage = 'image'
 			this.nextfolder = 'folder'
 			this.disableButtons = false
+		},
+		startedPlaying() {
+			clearInterval(this.interval)
+		},
+		endedPlaying() {
+			this.getNext('image')
 		},
 		async getBackground(param) {
 			if (param === 'image') {
