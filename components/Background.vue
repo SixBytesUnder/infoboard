@@ -4,7 +4,7 @@
 			<video
 				id="backgroundImage"
 				autoplay
-				muted
+				:muted="mute"
 				@play="startedPlaying"
 				@ended="endedPlaying">
 				<source :src="background" type="video/mp4">
@@ -85,6 +85,7 @@ export default {
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			imagesSource: process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE,
 			exifButton: process.env.EXIF === 'true',
+			mute: process.env.VIDEO_MUTE === 'true',
 			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
 			nasa: false,
 			weatherTag: '',
@@ -288,7 +289,7 @@ export default {
 			// remove current image from array and display it
 			this.lastImage = this.imageList.shift()
 			this.imageSrc = encodeURIComponent(this.lastImage)
-			if (this.lastImage.split('.').pop() === 'mp4') {
+			if (this.lastImage.split('.').pop().toLowerCase() === 'mp4') {
 				this.assetType = 'video'
 				this.background = `/api/background/${this.imageSrc}`
 			} else {
