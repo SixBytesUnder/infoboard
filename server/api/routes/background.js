@@ -5,11 +5,20 @@ const { Router } = require('express')
 const router = Router()
 require('dotenv').config()
 const mainDir = process.env.IMAGES_DIR
-const videoMP4 = process.env.INCLUDE_MP4 === 'true'
+const videoMP4 = process.env.VIDEO === 'true'
 
 function findNextDir(startPath, lastDir) {
 	let files = []
 	let dirList = fs.readdirSync(startPath)
+	// filter out video files as per config
+	const allowedFormats = videoMP4 ? ['jpg', 'jpeg', 'png', 'mp4'] : ['jpg', 'jpeg', 'png']
+	dirList = dirList.filter((file) => {
+		if (file.includes('.')) {
+			return allowedFormats.includes(file.split('.').pop().toLowerCase())
+		} else {
+			return file
+		}
+	})
 	const ignoreDirs = []
 	const normalizedMainDir = path.normalize(mainDir)
 
@@ -33,7 +42,7 @@ function findNextDir(startPath, lastDir) {
 	for (const asset of dirList) {
 		const fullPath = path.join(startPath, asset)
 		if (fs.statSync(fullPath).isDirectory()) {
-			const pattern = videoMP4 ? '**/*.+(jpg|jpeg|mp4)' : '**/*.+(jpg|jpeg)'
+			const pattern = videoMP4 ? '**/*.+(jpg|jpeg|png|mp4)' : '**/*.+(jpg|jpeg|png)'
 			files = glob.sync(pattern, {
 				cwd: fullPath,
 				nocase: true,
@@ -70,7 +79,7 @@ router.get('/background/:file(*)', (req, res) => {
 	const fullPath = path.join(mainDir, req.params.file)
 	const s = fs.createReadStream(fullPath)
 	s.on('open', function() {
-		if (req.params.file.split('.').pop() === 'mp4') {
+		if (req.params.file.split('.').pop().toLowerCase() === 'mp4') {
 			res.set('Content-Type', 'video/mp4')
 		} else {
 			res.set('Content-Type', 'image/jpeg')
