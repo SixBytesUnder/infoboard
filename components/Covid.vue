@@ -92,8 +92,10 @@ export default {
 		}
 	},
 	mounted() {
-		this.getData()
-		this.interval = setInterval(this.getData, this.timer * 1000)
+		if (this.enable) {
+			this.getData()
+			this.interval = setInterval(this.getData, this.timer * 1000)
+		}
 	},
 	beforeDestroy() {
 		clearInterval(this.interval)
