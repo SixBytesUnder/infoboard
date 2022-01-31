@@ -1,8 +1,9 @@
 <template>
 	<div class="container">
-		<div v-if="assetType === 'video'">
+		<div v-show="assetType === 'video'">
 			<video
 				id="backgroundImage"
+				ref="videoPlayer"
 				autoplay
 				:muted="mute"
 				@play="startedPlaying"
@@ -10,7 +11,7 @@
 				<source :src="background" type="video/mp4">
 			</video>
 		</div>
-		<div v-else>
+		<div v-show="assetType === 'image'">
 			<div
 				id="backgroundImageBlur"
 				:style="background"
@@ -290,6 +291,7 @@ export default {
 			this.lastImage = this.imageList.shift()
 			this.imageSrc = encodeURIComponent(this.lastImage)
 			if (this.lastImage.split('.').pop().toLowerCase() === 'mp4') {
+				this.$refs.videoPlayer.load()
 				this.assetType = 'video'
 				this.background = `/api/background/${this.imageSrc}`
 			} else {
