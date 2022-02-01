@@ -1,11 +1,11 @@
 <template>
 	<div class="container">
-		<div v-show="assetType === 'video'">
+		<div v-show="assetType === 'video' && !magicMirror">
 			<video
-				id="backgroundImage"
 				ref="videoPlayer"
+				class="backgroundImage"
 				autoplay
-				:muted="mute"
+				:muted="muted"
 				@play="startedPlaying"
 				@ended="endedPlaying">
 				<source :src="background" type="video/mp4">
@@ -13,12 +13,12 @@
 		</div>
 		<div v-show="assetType === 'image'">
 			<div
-				id="backgroundImageBlur"
+				class="backgroundImageBlur"
 				:style="background"
 				:class="magicMirror ? 'mm' : ''" />
 			<div
 				v-if="!magicMirror"
-				id="backgroundImage"
+				class="backgroundImage"
 				:style="background" />
 		</div>
 
@@ -33,6 +33,21 @@
 				</p>
 			</div>
 			<div class="btn-group">
+				<button
+					v-if="assetType === 'video'"
+					class="btn btn-sm btn-outline-dark"
+					@click="toggleMute">
+					<img
+						v-if="muted"
+						class="mute-icon"
+						src="~/assets/images/mute.svg"
+						alt="Mute/Unmute">
+					<img
+						v-else
+						class="mute-icon"
+						src="~/assets/images/unmute.svg"
+						alt="Mute/Unmute">
+				</button>
 				<button
 					v-if="exifButton && !magicMirror && (imagesSource === 'single' || imagesSource === 'local') && assetType === 'image'"
 					class="btn btn-sm btn-outline-dark"
@@ -86,7 +101,7 @@ export default {
 			magicMirror: process.env.MAGIC_MIRROR === 'true',
 			imagesSource: process.env.IMAGES_SOURCE === undefined || process.env.IMAGES_SOURCE === '' ? 'local' : process.env.IMAGES_SOURCE,
 			exifButton: process.env.EXIF === 'true',
-			mute: process.env.VIDEO_MUTE === 'true',
+			muted: process.env.VIDEO_MUTED === 'true',
 			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
 			nasa: false,
 			weatherTag: '',
@@ -309,6 +324,9 @@ export default {
 		endedPlaying() {
 			this.getNext('image')
 		},
+		toggleMute() {
+			this.muted = !this.muted
+		},
 		async getBackground(param) {
 			if (param === 'image') {
 				this.disableButtons = true
@@ -469,7 +487,7 @@ export default {
 </script>
 
 <style scoped>
-#backgroundImage, #backgroundImageBlur {
+.backgroundImage, .backgroundImageBlur {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -478,7 +496,7 @@ export default {
 	image-orientation: from-image;
 }
 
-#backgroundImageBlur {
+.backgroundImageBlur {
 	-webkit-filter: blur(10px);
 	-moz-filter: blur(10px);
 	-o-filter: blur(10px);
@@ -490,12 +508,12 @@ export default {
 	background-size: cover;
 }
 
-#backgroundImageBlur.mm {
+.backgroundImageBlur.mm {
 	background: none;
 	background-color: #000;
 }
 
-#backgroundImage {
+.backgroundImage {
 	display: block;
 	margin: auto;
 	max-width: 100vw;
@@ -514,5 +532,9 @@ export default {
 .buttons p {
 	font-size: 0.75rem;
 	margin: 0;
+}
+.mute-icon {
+	min-width: 10%;
+	width: 1rem;
 }
 </style>
