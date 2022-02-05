@@ -75,12 +75,22 @@ router.get('/backgrounds/*', (req, res) => {
 })
 
 // path to get the file from outside of root project directory
-router.get('/background/:file(*)', (req, res) => {
+router.get('/asdbackground/:file(*)', (req, res) => {
+	// console.log(JSON.stringify(req.headers))
+	// console.log(req.headers['user-agent'].includes('Safari'))
+	// headers.add("Content-Length", contentLength);
+	// headers.add("Content-Range", "bytes " + rangeStart + "-" + rangeEnd + "/" + fileSize);
+	// console.log(req.get('Range'))
+	// console.log(req.range())
 	const fullPath = path.join(mainDir, req.params.file)
 	const s = fs.createReadStream(fullPath)
 	s.on('open', function() {
 		if (req.params.file.split('.').pop().toLowerCase() === 'mp4') {
 			res.set('Content-Type', 'video/mp4')
+			// res.set('Content-Length', fs.statSync(fullPath).size)
+			// res.set('Content-Range', 'bytes 0-1024/' + fs.statSync(fullPath).size)
+			// res.set('Accept-Ranges', 'bytes')
+			// res.status(206)
 		} else {
 			res.set('Content-Type', 'image/jpeg')
 		}
@@ -90,6 +100,44 @@ router.get('/background/:file(*)', (req, res) => {
 		res.set('Content-Type', 'text/plain')
 		res.status(404).end(`File: ${fullPath} counld not be found`)
 	})
+})
+
+router.get('/background/:file(*)', (req, res) => {
+	const fullPath = path.join(mainDir, req.params.file)
+	const fileSize = fs.statSync(fullPath).size
+	const range = req.headers.range
+	if (req.params.file.split('.').pop().toLowerCase() === 'mp4') {
+		if (range) {
+			const parts = range.replace(/bytes=/, '').split('-')
+			const start = parseInt(parts[0], 10)
+			const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+			const chunksize = (end - start) + 1
+			const file = fs.createReadStream(fullPath, { start, end })
+			res.set('Content-Range', `bytes ${start}-${end}/${fileSize}`)
+			res.set('Accept-Ranges', 'bytes')
+			res.set('Content-Length', chunksize)
+			res.set('Content-Type', 'video/mp4')
+			res.status(206)
+			file.pipe(res)
+		} else {
+			res.set('Content-Length', fileSize)
+			res.set('Content-Type', 'video/mp4')
+			res.status(200)
+			fs.createReadStream(fullPath).pipe(res)
+		}
+	} else {
+		const stream = fs.createReadStream(fullPath)
+		stream.on('open', function() {
+			res.set('Content-Length', fileSize)
+			res.set('Content-Type', 'image/jpeg')
+			res.status(200)
+		})
+		stream.pipe(res)
+		stream.on('error', function() {
+			res.set('Content-Type', 'text/plain')
+			res.status(404).end(`File: ${fullPath} counld not be found`)
+		})
+	}
 })
 
 module.exports = router
