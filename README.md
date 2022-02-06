@@ -18,7 +18,7 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 ## Features
 * Almost everything is configurable in `.env` file;
 * Show current time and date;
-* Calendar events read from an iCal format link,
+* Calendar events from an iCal format link,
 * Background images, changing every 60 seconds. Source of images can be:
   * a local folder,
   * view Exif information only for images from local folder,
@@ -27,6 +27,7 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
   * curated images from [Pexels](https://www.pexels.com/),
   * both Unsplash and Pexels also support showing images tagged with current weather conditions: "light rain", "mostly clear" and so on,
   * weather tagged photos from [Flickr](https://www.flickr.com/);
+* MP4 videos played as the background;
 * Current weather and weekly forecast from [Tomorrow.io](https://www.tomorrow.io/) formerly ClimaCell;
 * Additional weather details include:
   * humidity,
@@ -53,7 +54,7 @@ $ cd /var/www/html/
 # clone this repo to current folder
 $ git clone https://github.com/SixBytesUnder/infoboard.git .
 
-# IMPORTANT! copy or rename file .env.example to .env
+# IMPORTANT! copy or rename config file .env.example to .env
 $ cp .env.example .env
 
 # then edit it to provide all necessary variables and API keys
@@ -153,6 +154,12 @@ $ pm2 monit
 # clone this repo to current directory
 $ git clone https://github.com/SixBytesUnder/infoboard.git .
 
+# copy or rename config file .env.example to .env
+$ cp .env.example .env
+
+# then edit it to provide all necessary variables and API keys
+$ vim.tiny .env
+
 # install dependencies
 $ npm install
 
@@ -169,11 +176,11 @@ To make sure `pm2` restarts the service after your server (Raspberry) restarts, 
 ``` bash
 # find out what to do to make sure pm2 runs after restart
 $ pm2 startup
-# above will ask you to run a commands similar to this
+# above will ask you to run commands similar to this
 $ sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u pi --hp /home/pi
 $ pm2 save
 
-# show apps managed by pm2, all three below commands show pretty much the same
+# show apps managed by pm2, all three below commands show pretty much the same result
 $ pm2 status
 $ pm2 list
 $ pm2 ls
@@ -182,18 +189,24 @@ $ pm2 ls
 $ pm2 monit
 ```
 
-nginx setup on RPi: https://nuxtjs.org/faq/nginx-proxy/  
+nginx setup on RPi: https://nuxtjs.org/deployments/nginx/  
 Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.keymetrics.io/docs/usage/quick-start/  
 
 ## DHT sensor installing and troubleshooting
-DHT module in not included by default as it causes a lot of issues on Windows, which is my development environment. After installing everything on your Raspberry, just run `npm install node-dht-sensor`, add correct settigs in .env file, restart the app and it'll automatically detect the module and use it.
+DHT module in not included by default as it causes a lot of issues on Windows, which is my development environment.
 
+### Raspberry Pi
+After installing everything on your Raspberry, just run `npm install node-dht-sensor`, add correct settigs in .env file, restart the app and it'll automatically detect the module and use it.  
+If you get build errors, it'll most likely be due to the old version of Python. node-dht-sensor package requires Python 3.6 or above and `apt` claims the latest available version in official repo is 3.5.3  
+To intall a more up to date version follow instructions in my [blog post](https://allurcode.com/install-latest-version-of-python-on-raspberry-pi/).
+
+### Windows
 If you're on Windows and still want to see it, you'll quite likely get build errors on DHT module while running `npm install`. This is due to node-gyp or MSBuild issues on Windows. There could be a hundred reasons for it. You can check if solutions proposed [here](https://github.com/nodejs/node-gyp/issues/119), [here](https://github.com/nodejs/node-gyp/issues/1663) or [here](https://github.com/nodejs/node-gyp/issues/1747) work for you.
 
 Otherwise, just use WSL (Windows Subsystem for Linux) to install DHT module. If you do so the DHT module will return random numbers to show you how it'd look like.  
-Note, you can install DHT package on WSL, but still `npm run dev` on Windows. It'll still work just fine.
+Note, you can install DHT package on WSL, but still execute `npm run dev` on Windows. It'll still work just fine.
 
-If you don't have the DHT sensor at all, you can ignore all the above or just run `npm uninstall node-dht-sensor` or simply remove `node-dht-sensor` line from your package.json file.
+If you don't have the DHT sensor at all, you can ignore all of the above or just run `npm uninstall node-dht-sensor` or simply remove `node-dht-sensor` line from your package.json file.
 
 ## Donate
 
