@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 export default {
 	name: 'CovidWidget',
@@ -121,7 +121,7 @@ export default {
 							const today = country.data.slice(-1)
 							this.dataSet.today.push({
 								country_name: country.location,
-								date: moment(today[0].date).format(this.dateFormat),
+								date: dayjs(today[0].date).format(this.dateFormat),
 								total_cases: today[0].total_cases,
 								new_cases: today[0].new_cases,
 								total_deaths: today[0].total_deaths,
@@ -130,7 +130,7 @@ export default {
 							const yesterday = country.data.slice(-2, -1)
 							this.dataSet.yesterday.push({
 								country_name: country.location,
-								date: moment(yesterday[0].date).format(this.dateFormat),
+								date: dayjs(yesterday[0].date).format(this.dateFormat),
 								total_cases: yesterday[0].total_cases,
 								new_cases: yesterday[0].new_cases,
 								total_deaths: yesterday[0].total_deaths,

@@ -2,7 +2,15 @@ const https = require('https')
 const { Router } = require('express')
 const router = Router()
 const ical = require('ical')
-const moment = require('moment')
+const dayjs = require('dayjs')
+const isBetween = require('dayjs/plugin/isBetween')
+const advancedFormat = require('dayjs/plugin/advancedFormat')
+const duration = require('dayjs/plugin/duration')
+const relativeTime = require('dayjs/plugin/relativeTime')
+dayjs.extend(isBetween)
+dayjs.extend(advancedFormat)
+dayjs.extend(duration)
+dayjs.extend(relativeTime)
 require('dotenv').config()
 
 function sortByKey(array, key) {
@@ -29,20 +37,20 @@ router.get('/calendar', (req, resp) => {
 
 					for (const i in events) {
 						if (Object.prototype.hasOwnProperty.call(events, i)) {
-							const rangeStart = moment()
-							const rangeEnd = moment().add(60, 'days')
+							const rangeStart = dayjs()
+							const rangeEnd = dayjs().add(60, 'day')
 							const event = events[i]
 
 							if (event.type === 'VEVENT') {
 								const title = event.summary
-								let startDate = moment(event.start)
-								let endDate = moment(event.end)
+								let startDate = dayjs(event.start)
+								let endDate = dayjs(event.end)
 
 								// Calculate duration of the event for use with recurring events.
 								const duration = parseInt(endDate.format('x')) - parseInt(startDate.format('x'))
 
 								// Simple case - no recurrences, just print out the calendar event.
-								if (typeof event.rrule === 'undefined' && moment(event.end).isBetween(rangeStart, rangeEnd)) {
+								if (typeof event.rrule === 'undefined' && dayjs(event.end).isBetween(rangeStart, rangeEnd)) {
 									eventsList.push({
 										title,
 										sort: startDate.unix(),
@@ -50,7 +58,7 @@ router.get('/calendar', (req, resp) => {
 										startTime: startDate.format(process.env.CALENDAR_TIME_FORMAT),
 										endDate: endDate.format(process.env.CALENDAR_DATE_FORMAT),
 										endTime: endDate.format(process.env.CALENDAR_TIME_FORMAT),
-										duration: moment.duration(duration).humanize()
+										duration: dayjs.duration(duration).humanize()
 									})
 								} else if (typeof event.rrule !== 'undefined') {
 									// Complicated case - if an RRULE exists, handle multiple recurrences of the event.
@@ -69,7 +77,7 @@ router.get('/calendar', (req, resp) => {
 									if (event.recurrences !== undefined) {
 										for (const r in event.recurrences) {
 											// Only add dates that weren't already in the range we added from the rrule so that we don't double-add those events.
-											if (moment(new Date(r)).isBetween(rangeStart, rangeEnd) !== true) {
+											if (dayjs(new Date(r)).isBetween(rangeStart, rangeEnd) !== true) {
 												dates.push(new Date(r))
 											}
 										}
@@ -81,7 +89,7 @@ router.get('/calendar', (req, resp) => {
 										let showRecurrence = true
 										let curDuration = duration
 
-										startDate = moment(date)
+										startDate = dayjs(date)
 
 										// Use just the date of the recurrence to look up overrides and exceptions (i.e. chop off time information)
 										const dateLookupKey = date.toISOString().substring(0, 10)
@@ -90,8 +98,8 @@ router.get('/calendar', (req, resp) => {
 										if ((curEvent.recurrences !== undefined) && (curEvent.recurrences[dateLookupKey] !== undefined)) {
 											// We found an override, so for this recurrence, use a potentially different title, start date, and duration.
 											curEvent = curEvent.recurrences[dateLookupKey]
-											startDate = moment(curEvent.start)
-											curDuration = parseInt(moment(curEvent.end).format('x')) - parseInt(startDate.format('x'))
+											startDate = dayjs(curEvent.start)
+											curDuration = parseInt(dayjs(curEvent.end).format('x')) - parseInt(startDate.format('x'))
 										} else if ((curEvent.exdate !== undefined) && (curEvent.exdate[dateLookupKey] !== undefined)) {
 											// If there's no recurrence override, check for an exception date.  Exception dates represent exceptions to the rule.
 											// This date is an exception date, which means we should skip it in the recurrence pattern.
@@ -100,7 +108,7 @@ router.get('/calendar', (req, resp) => {
 
 										// Set the the title and the end date from either the regular event or the recurrence override.
 										const recurrenceTitle = curEvent.summary
-										endDate = moment(parseInt(startDate.format('x')) + curDuration, 'x')
+										endDate = dayjs(parseInt(startDate.format('x')) + curDuration, 'x')
 
 										// If this recurrence ends before the start of the date range, or starts after the end of the date range,
 										// don't process it.
@@ -116,7 +124,7 @@ router.get('/calendar', (req, resp) => {
 												startTime: startDate.format(process.env.CALENDAR_TIME_FORMAT),
 												endDate: endDate.format(process.env.CALENDAR_DATE_FORMAT),
 												endTime: endDate.format(process.env.CALENDAR_TIME_FORMAT),
-												duration: moment.duration(duration).humanize()
+												duration: dayjs.duration(duration).humanize()
 											})
 										}
 									}

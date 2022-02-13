@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import dayjs from 'dayjs'
 import BackgroundWidget from '~/components/Background.vue'
 import DateTime from '~/components/Datetime.vue'
 
@@ -58,7 +58,7 @@ export default {
 			days: {},
 			showForecast: false,
 			weatherMoreInfo: false,
-			moment
+			dayjs
 		}
 	},
 	head() {
@@ -82,7 +82,7 @@ export default {
 			this.days = {}
 			// transform raw weather data to clean daily forecast
 			value[1].intervals.forEach((day) => {
-				const date = moment(day.startTime).format('dddd')
+				const date = dayjs(day.startTime).format('dddd')
 				if (date in this.days) {
 					this.days[date].temperature.push(day.values.temperature)
 					this.days[date].weatherCode = day.values.weatherCode

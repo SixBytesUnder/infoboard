@@ -14,14 +14,16 @@
 </template>
 
 <script>
-import moment from 'moment'
+import dayjs from 'dayjs'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
+dayjs.extend(advancedFormat)
 
 export default {
 	name: 'DateTime',
 	data() {
 		return {
-			time: moment().format(process.env.TIME_FORMAT),
-			date: moment().format(process.env.DATE_FORMAT)
+			time: dayjs().format(process.env.TIME_FORMAT),
+			date: dayjs().format(process.env.DATE_FORMAT)
 		}
 	},
 	mounted() {
@@ -32,8 +34,8 @@ export default {
 	},
 	methods: {
 		updateTime() {
-			this.time = moment().format(process.env.TIME_FORMAT)
-			this.date = moment().format(process.env.DATE_FORMAT)
+			this.time = dayjs().format(process.env.TIME_FORMAT)
+			this.date = dayjs().format(process.env.DATE_FORMAT)
 		}
 	}
 }

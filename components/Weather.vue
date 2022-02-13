@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import dayjs from 'dayjs'
 import units from '~/data/units'
 
 export default {
@@ -62,7 +62,7 @@ export default {
 			weather: {},
 			updated: '',
 			units: process.env.WEATHER_UNITS === 'imperial' ? units.imperial : units.metric,
-			moment
+			dayjs
 		}
 	},
 	mounted() {
@@ -94,7 +94,7 @@ export default {
 					if (process.env.AE_FORECAST === 'true') {
 						this.$emit('show-forecast')
 					}
-					this.updated = moment(response.data[0].intervals[0].startTime).format(this.timeFormat)
+					this.updated = dayjs(response.data[0].intervals[0].startTime).format(this.timeFormat)
 				})
 				.catch((err) => {
 					console.error(err)
