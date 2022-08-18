@@ -94,7 +94,7 @@ export default {
 					if (process.env.AE_FORECAST === 'true') {
 						this.$emit('show-forecast')
 					}
-					this.updated = dayjs(response.data[0].intervals[0].startTime).format(this.timeFormat)
+					this.updated = dayjs().format(this.timeFormat)
 				})
 				.catch((err) => {
 					console.error(err)
