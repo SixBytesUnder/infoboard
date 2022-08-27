@@ -48,8 +48,11 @@ More example screenshots in [/static/examples/](/static/examples/) or https://im
 
 ## Raspberry Pi production deployment steps
 ``` bash
+# create a new folder to hold app files
+$ sudo mkdir /srv/http
+$ chown pi:pi /srv/http/
 # go to project folder
-$ cd /var/www/html/
+$ cd /srv/http/
 
 # clone this repo to current folder
 $ git clone https://github.com/SixBytesUnder/infoboard.git .
@@ -77,6 +80,9 @@ $ sudo npm i -g pm2
 # start pm2, see below for detailed instructions
 $ pm2 start npm --name "infoboard" -- start
 
+# install additional nginx modules - needed to serve mp4 directive
+$ sudo apt install nginx-extras
+
 # configure nginx
 $ sudo vim.tiny /etc/nginx/sites-enabled/default
 
@@ -92,7 +98,7 @@ server {
     gzip_min_length 1000;
 
     # change 192.168.1.99 to your RPi's local IP address
-    server_name _ 192.168.1.99 infoboard;
+    server_name _ 192.168.1.99 infoboard.local;
 
     location / {
         proxy_redirect                      off;
@@ -103,6 +109,13 @@ server {
         proxy_read_timeout                  1m;
         proxy_connect_timeout               1m;
         proxy_pass                          http://127.0.0.1:3000;
+    }
+
+    location ~* .(mp4)$ {
+      mp4;
+      mp4_buffer_size                       1M;
+      mp4_max_buffer_size                   5M;
+      proxy_pass                            http://127.0.0.1:3000;
     }
 }
 
@@ -118,7 +131,7 @@ If your Raspberry is accessible on local network, open your browser and navigate
 ## Updating to latest version
 ``` bash
 # go to project folder
-$ cd /var/www/html/
+$ cd /srv/http/
 
 # pull latest files from GitHub
 $ git pull
@@ -169,7 +182,9 @@ $ npm run dev
 
 For full documentation on NuxtJS go to [Nuxt.js docs](https://nuxtjs.org/guide).
 
-## Other helpful commands
+## Other helpful commands and notes
+
+Current code has been tested with node v16.13.0
 
 To make sure `pm2` restarts the service after your server (Raspberry) restarts, run `pm2 startup` command. It should tell you exactly what you need to do next.
 
