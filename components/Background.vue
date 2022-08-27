@@ -89,9 +89,9 @@ export default {
 	name: 'BackgroundWidget',
 	props: {
 		weather: {
-			type: Array,
+			type: [Object, Array],
 			default() {
-				return []
+				return {}
 			}
 		}
 	},
@@ -126,27 +126,25 @@ export default {
 	},
 	watch: {
 		weather(value) {
-			if (value.length > 0) {
-				if (this.weatherTag !== value[0].intervals[0].values.weatherCode) {
-					this.weatherTag = this.units.weatherCode[this.weather[0].intervals[0].values.weatherCode]
-					// weather tag has changed, rerun weather tagged image functions
-					if (this.magicMirror === false) {
-						if (this.imagesSource === 'unsplash') {
-							this.imageList = []
-							this.enableFolderButton = false
-							this.getUnsplash()
-							this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
-						} else if (this.imagesSource === 'pexels') {
-							this.imageList = []
-							this.enableFolderButton = false
-							this.getPexels()
-							this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
-						} else if (this.imagesSource === 'flickr') {
-							this.imageList = []
-							this.enableFolderButton = false
-							this.getFlickr()
-							this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
-						}
+			if (this.weatherTag !== this.units.weatherCode[value.weatherCode]) {
+				this.weatherTag = this.units.weatherCode[value.weatherCode]
+				// weather tag has changed, rerun weather tagged image functions
+				if (this.magicMirror === false) {
+					if (this.imagesSource === 'unsplash') {
+						this.imageList = []
+						this.enableFolderButton = false
+						this.getUnsplash()
+						this.interval = setInterval(this.getUnsplash, this.imageInterval * 1000)
+					} else if (this.imagesSource === 'pexels') {
+						this.imageList = []
+						this.enableFolderButton = false
+						this.getPexels()
+						this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
+					} else if (this.imagesSource === 'flickr') {
+						this.imageList = []
+						this.enableFolderButton = false
+						this.getFlickr()
+						this.interval = setInterval(this.getPexels, this.imageInterval * 1000)
 					}
 				}
 			}

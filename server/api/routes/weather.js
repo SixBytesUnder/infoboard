@@ -13,8 +13,7 @@ router.get('/weather', (requ, resp) => {
 	const credentials = JSON.stringify({
 		location: `${lat},${lon}`,
 		fields,
-		timesteps: ['current', '1h', '1d'],
-		// timesteps: ['current', '1d'],
+		timesteps: ['current', '1d'],
 		units
 	})
 

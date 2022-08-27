@@ -8,18 +8,18 @@
 				:key="slug"
 				class="row px-2">
 				<div
-					v-if="weather && weather[0].intervals[0].values[slug]"
+					v-if="weather && weather[slug]"
 					class="col pl-2 pr-3 border-bottom border-end">
 					{{ name }}
 				</div>
 				<div
-					v-if="weather && weather[0].intervals[0].values[slug]"
+					v-if="weather && weather[slug]"
 					class="col px-2 border-bottom text-center">
 					<span v-if="typeof units[slug] === 'object'">
-						{{ units[slug][Math.round(weather[0].intervals[0].values[slug])] }}
+						{{ units[slug][Math.round(weather[slug])] }}
 					</span>
 					<span v-else>
-						{{ weather[0].intervals[0].values[slug] }} {{ units[slug] }}
+						{{ weather[slug] }} {{ units[slug] }}
 					</span>
 				</div>
 			</div>
@@ -40,9 +40,9 @@ export default {
 			}
 		},
 		weather: {
-			type: Array,
+			type: [Object, Array],
 			default() {
-				return []
+				return {}
 			}
 		}
 	},

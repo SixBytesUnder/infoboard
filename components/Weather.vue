@@ -86,7 +86,9 @@ export default {
 			// get current weather and forecast
 			this.$axios.get('/weather')
 				.then((response) => {
-					this.weather = response.data[0].intervals[0].values
+					// pick current weather
+					const current = response.data.find(element => element.timestep === 'current')
+					this.weather = current.intervals[0].values
 					this.$emit('weather-more', response.data)
 					if (process.env.AE_WEATHER_DETAILS === 'true') {
 						this.$emit('weather-more-show')
@@ -94,7 +96,7 @@ export default {
 					if (process.env.AE_FORECAST === 'true') {
 						this.$emit('show-forecast')
 					}
-					this.updated = dayjs().format(this.timeFormat)
+					this.updated = dayjs(current.intervals[0].startTime).format(this.timeFormat)
 				})
 				.catch((err) => {
 					console.error(err)

@@ -77,11 +77,12 @@ export default {
 		},
 		onWeatherMore(value) {
 			// needed for data behind the "more" button
-			this.weather = value
+			this.weather = value.find(element => element.timestep === 'current').intervals[0].values
 			// clean foracast days object
 			this.days = {}
 			// transform raw weather data to clean daily forecast
-			value[1].intervals.forEach((day) => {
+			const forecast = value.find(element => element.timestep === '1d')
+			forecast.intervals.forEach((day) => {
 				const date = dayjs(day.startTime).format('dddd')
 				if (date in this.days) {
 					this.days[date].temperature.push(day.values.temperature)
@@ -120,7 +121,6 @@ html, body {
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
-
 }
  */
 .withBackground {
