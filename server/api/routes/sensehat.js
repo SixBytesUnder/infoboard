@@ -7,12 +7,8 @@ try {
 	const IMU = new imu.IMU()
 
 	router.get('/sensehat', (req, res) => {
-		console.log('test')
-		console.log(process.env.NODE_ENV)
 		if (process.env.NODE_ENV !== 'development') {
-			console.log('in if')
 			IMU.getValue((err, data) => {
-				console.log(data)
 				if (err !== null) {
 					console.error(`Could not read sensor data: ${err}`)
 					res.json({
