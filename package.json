@@ -42,6 +42,7 @@
 		"flickr-sdk": "^6.0.0",
 		"glob": "^8.0.3",
 		"ical": "^0.8.0",
+		"node-sense-hat": "^0.0.2",
 		"nuxt": "^2.15.6",
 		"unsplash-js": "^7.0.11"
 	},

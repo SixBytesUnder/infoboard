@@ -24,6 +24,7 @@
 				<WeatherMore
 					:weather-more-info="weatherMoreInfo"
 					:weather="weather" />
+				<SenseHatWidget />
 				<DhtWidget />
 				<SdsWidget />
 				<CovidWidget />
@@ -46,6 +47,7 @@ export default {
 		ForecastWidget: () => import(/* webpackChunkName: "ForecastWidget" */ '~/components/Forecast.vue'),
 		CalendarWidget: () => import(/* webpackChunkName: "CalendarWidget" */ '~/components/Calendar.vue'),
 		TflWidget: () => import(/* webpackChunkName: "TflWidget" */ '~/components/Tfl.vue'),
+		SenseHatWidget: () => import(/* webpackChunkName: "SenseHat" */ '~/components/Sensehat.vue'),
 		DhtWidget: () => import(/* webpackChunkName: "DhtWidget" */ '~/components/Dht.vue'),
 		SdsWidget: () => import(/* webpackChunkName: "SdsWidget" */ '~/components/Sds.vue'),
 		CovidWidget: () => import(/* webpackChunkName: "CovidWidget" */ '~/components/Covid.vue')

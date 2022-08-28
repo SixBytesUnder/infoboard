@@ -7,6 +7,7 @@ const calendar = require('./routes/calendar')
 const tfl = require('./routes/tfl')
 const dht = require('./routes/dht')
 const sds = require('./routes/sds')
+const sensehat = require('./routes/sensehat')
 
 // Create express instnace
 const app = express()
@@ -19,6 +20,7 @@ app.use(calendar)
 app.use(tfl)
 app.use(dht)
 app.use(sds)
+app.use(sensehat)
 
 // Export the server middleware
 module.exports = {
