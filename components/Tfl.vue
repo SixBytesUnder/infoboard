@@ -134,68 +134,85 @@ export default {
 	width: 4rem;
 }
 .bakerloo {
-	background-color: #AE6118;
+	background-color: #aa571e;
 	color: #FFFFFF;
 }
 .central {
-	background-color: #E41F1F;
+	background-color: #d8121b;
 	color: #FFFFFF;
 }
 .circle {
-	background-color: #F8D42D;
+	background-color: #ffd000;
 	color: #113892;
 }
 .district {
-	background-color: #007229;
+	background-color: #00702f;
 	color: #FFFFFF;
 }
 .dlr {
-	background-color: #00BBB4;
+	background-color: #00a3a0;
+	color: #FFFFFF;
+}
+.elizabeth {
+	background-color: #704491;
 	color: #FFFFFF;
 }
 .hammersmith-city {
-	background-color: #E899A8;
+	background-color: #eda1b0;
 	color: #113892;
 }
 .jubilee {
-	background-color: #686E72;
+	background-color: #81888b;
 	color: #FFFFFF;
 }
 .metropolitan {
-	background-color: #893267;
+	background-color: #8a134d;
 	color: #FFFFFF;
 }
 .northern {
 	background-color: #000000;
 	color: #FFFFFF;
 }
-.overground {
-	background-color: #F86;
-	color: #FFFFFF;
-}
-.london-overground {
-	background-color: #e86a10;
-	color: #000;
-}
 .piccadilly {
-	background-color: #0450A1;
-	color: #FFFFFF;
-}
-.tfl-rail {
-	background-color: #0019a8;
+	background-color: #112d81;
 	color: #FFFFFF;
 }
 .tram {
-	background-color: #6c0;
+	background-color: #7db41d;
 	color: #FFFFFF;
 }
 .victoria {
-	background-color: #009FE0;
+	background-color: #009cd6;
 	color: #FFFFFF;
 }
 .waterloo-city {
-	background-color: #70C3CE;
+	background-color: #7ec4ab;
 	color: #113892;
+}
+/* Overgound */
+.liberty {
+	background-color: #656664;
+	color: #FFFFFF;
+}
+.lioness {
+	background-color: #f7a800;
+	color: #FFFFFF;
+}
+.mildmay {
+	background-color: #0076ac;
+	color: #FFFFFF;
+}
+.suffragette {
+	background-color: #65b361;
+	color: #FFFFFF;
+}
+.weaver {
+	background-color: #883960;
+	color: #FFFFFF;
+}
+.windrush {
+	background-color: #e20026;
+	color: #FFFFFF;
 }
 
 .mm .badge {
