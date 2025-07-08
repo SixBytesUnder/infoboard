@@ -11,5 +11,11 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/scripts',
     '@nuxt/test-utils'
-  ]
+  ],
+
+  fonts: {
+    families: [
+      { name: 'Cousine', provider: 'google' },
+    ]
+  }
 })

@@ -6,9 +6,9 @@
 
 <style>
 body {
-  background-color: black;
+  background-color: #292929;
   color: white;
-  font-family: sans-serif;
+  font-family: 'Cousine', sans-serif;
 }
 
 .main {

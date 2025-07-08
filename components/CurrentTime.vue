@@ -35,8 +35,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.container {
-}
 .time {
   font-size: 5rem;
 }
