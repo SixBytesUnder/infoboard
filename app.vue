@@ -1,6 +1,7 @@
 <template>
   <div class="main">
     <CurrentTime />
+    <WeatherInfo />
   </div>
 </template>
 
@@ -13,5 +14,8 @@ body {
 
 .main {
   padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 </style>
