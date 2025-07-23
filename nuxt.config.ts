@@ -17,5 +17,15 @@ export default defineNuxtConfig({
     families: [
       { name: 'Cousine', provider: 'google' },
     ]
+  },
+
+  runtimeConfig: {
+    public: {
+      infoboard: {
+        weather: {
+          refresh: process.env.WEATHER_REFRESH
+        }
+      }
+    }
   }
 })
