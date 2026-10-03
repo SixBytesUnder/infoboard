@@ -30,30 +30,30 @@
 	},
 	"dependencies": {
 		"@nuxtjs/axios": "^5.13.5",
-		"@nuxtjs/dotenv": "^1.4.1",
+		"@nuxtjs/dotenv": "^1.4.2",
 		"@nuxtjs/pwa": "^3.3.5",
-		"bootstrap": "^5.2.0",
-		"bootstrap-vue": "^2.22.0",
-		"core-js": "^3.25.0",
+		"bootstrap": "^5.3.6",
+		"bootstrap-vue": "^2.23.1",
+		"core-js": "^3.42.0",
 		"cross-env": "^7.0.3",
-		"dayjs": "^1.11.5",
-		"exifreader": "^4.5.1",
-		"express": "^4.18.1",
-		"flickr-sdk": "^6.0.0",
-		"glob": "^8.0.3",
+		"dayjs": "^1.11.13",
+		"exifreader": "^4.30.0",
+		"express": "^4.18.2",
+		"flickr-sdk": "^6.3.0",
+		"glob": "^8.1.0",
 		"ical": "^0.8.0",
 		"node-sense-hat": "^0.0.2",
 		"nuxt": "^2.15.6",
-		"unsplash-js": "^7.0.11"
+		"unsplash-js": "^7.0.19"
 	},
 	"devDependencies": {
-		"@babel/eslint-parser": "^7.18.9",
+		"@babel/eslint-parser": "^7.19.1",
 		"@nuxtjs/eslint-config": "^10.0.0",
 		"@nuxtjs/eslint-module": "^3.1.0",
 		"babel-core": "7.0.0-bridge.0",
-		"eslint": "^8.23.0",
+		"eslint": "^8.34.0",
 		"eslint-plugin-nuxt": "^3.2.0",
-		"eslint-plugin-promise": "^6.0.1",
-		"eslint-plugin-vue": "^9.4.0"
+		"eslint-plugin-promise": "^6.1.1",
+		"eslint-plugin-vue": "^9.9.0"
 	}
 }
