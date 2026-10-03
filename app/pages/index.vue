@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { usePolling } from '~/composables/usePolling'
 import type {
   ClientDashboardConfig,
@@ -102,18 +102,32 @@ import type {
 } from '~~/shared'
 
 const runtimeConfig = useRuntimeConfig()
-const config = runtimeConfig.public as unknown as ClientDashboardConfig
+const config = ref<ClientDashboardConfig>(runtimeConfig.public as unknown as ClientDashboardConfig)
 
-const isMagicMirror = computed(() => config.app.magicMirror)
-const hasSensorsEnabled = computed(() => {
-  return config.sensor.dhtEnabled || config.sensor.senseHatEnabled || config.sensor.sdsEnabled
+onMounted(async () => {
+  try {
+    const liveConfig = await $fetch<ClientDashboardConfig>('/api/config')
+    if (liveConfig) {
+      config.value = liveConfig
+      showForecast.value = liveConfig.app.autoExpandForecast
+      showWeatherMore.value = liveConfig.app.autoExpandWeather
+      isMuted.value = liveConfig.media.videoMuted
+    }
+  } catch (err) {
+    // Keep fallback
+  }
 })
-const isLocalMedia = computed(() => config.media.source === 'local' || config.media.source === 'single')
+
+const isMagicMirror = computed(() => config.value.app.magicMirror)
+const hasSensorsEnabled = computed(() => {
+  return config.value.sensor.dhtEnabled || config.value.sensor.senseHatEnabled || config.value.sensor.sdsEnabled
+})
+const isLocalMedia = computed(() => config.value.media.source === 'local' || config.value.media.source === 'single')
 
 // UI Expand/Collapse States
-const showForecast = ref(config.app.autoExpandForecast)
-const showWeatherMore = ref(config.app.autoExpandWeather)
-const isMuted = ref(config.media.videoMuted)
+const showForecast = ref(config.value.app.autoExpandForecast)
+const showWeatherMore = ref(config.value.app.autoExpandWeather)
+const isMuted = ref(config.value.media.videoMuted)
 const isVideoActive = ref(false)
 const activeAsset = ref<MediaAsset | null>(null)
 const showExifModal = ref(false)
@@ -124,25 +138,25 @@ const bgRef = ref<{ nextImage: () => void; nextFolder: () => void } | null>(null
 // 1. Weather Polling
 const { data: weatherData } = usePolling<WeatherPayload>({
   fn: (signal) => $fetch<WeatherPayload>('/api/weather', { signal }),
-  intervalMs: config.weather.refreshMs
+  intervalMs: config.value.weather.refreshMs
 })
 
 // 2. Transit Polling
 const { data: transitData } = usePolling<TransitPayload>({
   fn: (signal) => $fetch<TransitPayload>('/api/tfl', { signal }),
-  intervalMs: config.transit.refreshMs
+  intervalMs: config.value.transit.refreshMs
 })
 
 // 3. Calendar Polling
 const { data: calendarData } = usePolling<CalendarPayload>({
   fn: (signal) => $fetch<CalendarPayload>('/api/calendar', { signal }),
-  intervalMs: config.calendar.refreshMs
+  intervalMs: config.value.calendar.refreshMs
 })
 
 // 4. Sensors Polling
 const { data: sensorData } = usePolling<SensorReadings>({
   fn: (signal) => $fetch<SensorReadings>('/api/sensors', { signal }),
-  intervalMs: config.sensor.refreshMs
+  intervalMs: config.value.sensor.refreshMs
 })
 
 // EXIF modal handler

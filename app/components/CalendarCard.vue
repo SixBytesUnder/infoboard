@@ -1,28 +1,57 @@
 <template>
-  <div v-if="calendar && calendar.events.length > 0" class="glass-panel calendar-card">
+  <div class="glass-panel calendar-card">
     <button type="button" class="header-toggle" @click="isOpen = !isOpen">
       <img src="/images/calendar.svg" alt="Calendar" class="calendar-header-icon">
       <span class="header-title">Upcoming Agenda</span>
-      <span class="event-count">{{ calendar.events.length }} events</span>
+
+      <span v-if="calendar?.errorMessage" class="stale-pill" :title="calendar.errorMessage">
+        Sync Warning
+      </span>
+      <span v-else-if="!calendar" class="event-count loading">
+        Connecting...
+      </span>
+      <span v-else class="event-count">
+        {{ calendar.events.length }} {{ calendar.events.length === 1 ? 'event' : 'events' }}
+      </span>
+
       <span class="chevron">{{ isOpen ? '▼' : '▶' }}</span>
     </button>
 
     <div v-if="isOpen" class="agenda-content">
-      <div v-for="(dayEvents, dayLabel) in calendar.grouped" :key="dayLabel" class="day-group">
-        <div class="day-header">
-          <span class="day-badge">{{ formatDayHeading(dayLabel) }}</span>
-        </div>
+      <!-- Loading State -->
+      <div v-if="!calendar" class="calendar-status-box">
+        <span class="status-msg">Fetching calendar feed...</span>
+      </div>
 
-        <div class="events-list">
-          <div v-for="(ev, idx) in dayEvents" :key="idx" class="event-item">
-            <div class="event-time-col">
-              <span class="event-time" :class="{ 'all-day': ev.isAllDay }">
-                {{ ev.startTime }}
-              </span>
-            </div>
-            <div class="event-details">
-              <span class="event-title">{{ ev.title }}</span>
-              <span v-if="!ev.isAllDay && ev.duration" class="event-duration">{{ ev.duration }}</span>
+      <!-- Sync / Error State -->
+      <div v-else-if="calendar.errorMessage" class="calendar-error-banner">
+        <span class="error-badge">Sync Failed</span>
+        <p class="error-msg">{{ calendar.errorMessage }}</p>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="calendar.events.length === 0" class="calendar-status-box">
+        <span class="status-msg">No upcoming events scheduled in the next 60 days.</span>
+      </div>
+
+      <!-- Events List Grouped by Day -->
+      <div v-else class="days-container">
+        <div v-for="(dayEvents, dayLabel) in calendar.grouped" :key="dayLabel" class="day-group">
+          <div class="day-header">
+            <span class="day-badge">{{ formatDayHeading(dayLabel) }}</span>
+          </div>
+
+          <div class="events-list">
+            <div v-for="(ev, idx) in dayEvents" :key="idx" class="event-item">
+              <div class="event-time-col">
+                <span class="event-time" :class="{ 'all-day': ev.isAllDay }">
+                  {{ ev.startTime }}
+                </span>
+              </div>
+              <div class="event-details">
+                <span class="event-title">{{ ev.title }}</span>
+                <span v-if="!ev.isAllDay && ev.duration" class="event-duration">{{ ev.duration }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -91,6 +120,11 @@ const formatDayHeading = (dateStr: string) => {
   color: var(--text-muted);
 }
 
+.event-count.loading {
+  color: var(--accent-cyan);
+  animation: pulse-dot 1.5s infinite;
+}
+
 .chevron {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -100,6 +134,45 @@ const formatDayHeading = (dateStr: string) => {
   margin-top: 0.85rem;
   padding-top: 0.65rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.calendar-status-box {
+  padding: 0.75rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+}
+
+.calendar-error-banner {
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.error-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #f87171;
+  letter-spacing: 0.05em;
+}
+
+.error-msg {
+  font-size: 0.78rem;
+  color: #fca5a5;
+  line-height: 1.35;
+}
+
+.days-container {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;

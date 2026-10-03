@@ -11,4 +11,5 @@ export interface TransitPayload {
   buses: Record<string, Record<string, string[]>>
   fetchedAt: string
   isStale?: boolean
+  errorMessage?: string
 }

@@ -1,70 +1,96 @@
 <template>
-  <div v-if="transit" class="transit-container">
-    <!-- Bus Timetables Section -->
-    <div v-if="hasBuses" class="transit-block">
-      <div class="glass-panel transit-card">
-        <button type="button" class="header-toggle" @click="showBuses = !showBuses">
-          <img src="/images/bus.svg" alt="Buses" class="transit-header-icon">
-          <span class="header-title">Live Bus Arrivals</span>
-          <span class="chevron">{{ showBuses ? '▼' : '▶' }}</span>
-        </button>
+  <div class="transit-container">
+    <!-- Loading Placeholder -->
+    <div v-if="!transit" class="glass-panel transit-card">
+      <div class="header-toggle">
+        <img src="/images/bus.svg" alt="Transit" class="transit-header-icon">
+        <span class="header-title">Transport for London</span>
+        <span class="event-count loading">Connecting...</span>
+      </div>
+    </div>
 
-        <div v-if="showBuses" class="transit-content">
-          <div v-for="(lines, stopName) in transit.buses" :key="stopName" class="bus-stop-group">
-            <h4 class="stop-name">{{ stopName }}</h4>
-            <div class="bus-lines">
-              <div v-for="(times, lineNum) in lines" :key="lineNum" class="bus-line-row">
-                <span class="kiosk-badge bus-badge">{{ lineNum }}</span>
-                <div class="times-list">
-                  <span
-                    v-for="(t, idx) in times"
-                    :key="idx"
-                    class="time-item"
-                    :class="{ 'is-due': t === 'Due' }"
-                  >
-                    {{ t }}<span v-if="idx + 1 < times.length" class="comma">,</span>
-                  </span>
+    <!-- Error State -->
+    <div v-else-if="transit.errorMessage && !hasBuses && transit.lines.length === 0" class="glass-panel transit-card">
+      <div class="header-toggle">
+        <img src="/images/tube.svg" alt="Transit" class="transit-header-icon">
+        <span class="header-title">Transport for London</span>
+        <span class="stale-pill">Sync Error</span>
+      </div>
+      <div class="transit-content">
+        <p class="error-msg">{{ transit.errorMessage }}</p>
+      </div>
+    </div>
+
+    <template v-else>
+      <!-- Bus Timetables Section -->
+      <div v-if="hasBuses" class="transit-block">
+        <div class="glass-panel transit-card">
+          <button type="button" class="header-toggle" @click="showBuses = !showBuses">
+            <img src="/images/bus.svg" alt="Buses" class="transit-header-icon">
+            <span class="header-title">Live Bus Arrivals</span>
+            <span class="event-count">{{ busStopCount }} {{ busStopCount === 1 ? 'stop' : 'stops' }}</span>
+            <span class="chevron">{{ showBuses ? '▼' : '▶' }}</span>
+          </button>
+
+          <div v-if="showBuses" class="transit-content">
+            <div v-for="(lines, stopName) in transit.buses" :key="stopName" class="bus-stop-group">
+              <h4 class="stop-name">{{ stopName }}</h4>
+              <div class="bus-lines">
+                <div v-for="(times, lineNum) in lines" :key="lineNum" class="bus-line-row">
+                  <span class="kiosk-badge bus-badge">{{ lineNum }}</span>
+                  <div class="times-list">
+                    <span
+                      v-for="(t, idx) in times"
+                      :key="idx"
+                      class="time-item"
+                      :class="{ 'is-due': t === 'Due' }"
+                    >
+                      {{ t }}<span v-if="idx + 1 < times.length" class="comma">,</span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Rail & Tube Status Section -->
-    <div v-if="transit.lines.length > 0" class="transit-block">
-      <div class="glass-panel transit-card">
-        <button type="button" class="header-toggle" @click="showTube = !showTube">
-          <img src="/images/tube.svg" alt="Underground" class="transit-header-icon">
-          <span class="header-title">Transport Status</span>
-          <span class="chevron">{{ showTube ? '▼' : '▶' }}</span>
-        </button>
+      <!-- Rail & Tube Status Section -->
+      <div v-if="transit.lines.length > 0" class="transit-block">
+        <div class="glass-panel transit-card">
+          <button type="button" class="header-toggle" @click="showTube = !showTube">
+            <img src="/images/tube.svg" alt="Underground" class="transit-header-icon">
+            <span class="header-title">Transport Status</span>
+            <span v-if="hasDisruptions" class="stale-pill alert">Disruptions</span>
+            <span v-else class="event-count status-good">Good Service</span>
+            <span class="chevron">{{ showTube ? '▼' : '▶' }}</span>
+          </button>
 
-        <div v-if="showTube" class="transit-content">
-          <div class="tube-lines-grid">
-            <div
-              v-for="line in transit.lines"
-              :key="line.id"
-              class="tube-line-row"
-            >
-              <span
-                class="kiosk-badge tube-badge"
-                :style="getLineStyle(line.id)"
+          <div v-if="showTube" class="transit-content">
+            <div class="tube-lines-grid">
+              <div
+                v-for="line in transit.lines"
+                :key="line.id"
+                class="tube-line-row"
               >
-                {{ line.name }}
-              </span>
-              <span
-                class="tube-status"
-                :class="{ 'status-alert': line.statusSeverity < 10 }"
-              >
-                {{ line.statusSeverityDescription }}
-              </span>
+                <span
+                  class="kiosk-badge tube-badge"
+                  :style="getLineStyle(line.id)"
+                >
+                  {{ line.name }}
+                </span>
+                <span
+                  class="tube-status"
+                  :class="{ 'status-alert': line.statusSeverity < 10 }"
+                >
+                  {{ line.statusSeverityDescription }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -84,7 +110,15 @@ const showBuses = ref(props.initialExpand)
 const showTube = ref(props.initialExpand)
 
 const hasBuses = computed(() => {
-  return props.transit?.buses && Object.keys(props.transit.buses).length > 0
+  return !!(props.transit?.buses && Object.keys(props.transit.buses).length > 0)
+})
+
+const busStopCount = computed(() => {
+  return props.transit?.buses ? Object.keys(props.transit.buses).length : 0
+})
+
+const hasDisruptions = computed(() => {
+  return props.transit?.lines?.some(l => l.statusSeverity < 10) ?? false
 })
 
 const getLineStyle = (lineId: string) => {
@@ -134,6 +168,26 @@ const getLineStyle = (lineId: string) => {
   flex: 1;
 }
 
+.event-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.event-count.loading {
+  color: var(--accent-cyan);
+  animation: pulse-dot 1.5s infinite;
+}
+
+.event-count.status-good {
+  color: #34d399;
+}
+
+.stale-pill.alert {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
 .chevron {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -146,6 +200,12 @@ const getLineStyle = (lineId: string) => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.error-msg {
+  font-size: 0.78rem;
+  color: #fca5a5;
+  line-height: 1.35;
 }
 
 .bus-stop-group {

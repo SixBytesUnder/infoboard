@@ -14,4 +14,5 @@ export interface CalendarPayload {
   grouped: Record<string, CalendarEvent[]>
   fetchedAt: string
   isStale?: boolean
+  errorMessage?: string
 }

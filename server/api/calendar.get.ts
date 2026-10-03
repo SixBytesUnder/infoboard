@@ -39,17 +39,25 @@ export default defineEventHandler(async (event): Promise<CalendarPayload> => {
     lastKnownCalendar = payload
     return payload
   } catch (err) {
+    const msg = (err as Error).message || 'Failed to fetch calendar'
+    console.warn(`Calendar fetch failed (${calendarConf.icalUrl}):`, msg)
+    const friendlyError = msg.includes('404')
+      ? 'Calendar feed not found (HTTP 404). For Google Calendar, use the "Secret address in iCal format" from Settings.'
+      : `Calendar sync error: ${msg}`
+
     if (lastKnownCalendar) {
       return {
         ...lastKnownCalendar,
-        isStale: true
+        isStale: true,
+        errorMessage: friendlyError
       }
     }
     return {
       events: [],
       grouped: {},
       fetchedAt: new Date().toISOString(),
-      isStale: true
+      isStale: true,
+      errorMessage: friendlyError
     }
   }
 })

@@ -116,17 +116,22 @@ export default defineEventHandler(async (event): Promise<TransitPayload> => {
     lastKnownTransit = payload
     return payload
   } catch (err) {
+    const msg = (err as Error).message || 'TfL API request failed'
+    console.warn('TfL transit fetch failed:', msg)
+
     if (lastKnownTransit) {
       return {
         ...lastKnownTransit,
-        isStale: true
+        isStale: true,
+        errorMessage: `Transit sync error: ${msg}`
       }
     }
     return {
       lines: [],
       buses: {},
       fetchedAt: new Date().toISOString(),
-      isStale: true
+      isStale: true,
+      errorMessage: `Transit sync error: ${msg}`
     }
   }
 })
