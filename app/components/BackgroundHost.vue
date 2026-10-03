@@ -1,6 +1,6 @@
 <template>
   <div v-if="!magicMirror" class="background-host">
-    <!-- MP4 Video Player -->
+    <!-- Video Player -->
     <video
       v-if="currentAsset?.type === 'video'"
       ref="videoRef"
@@ -9,8 +9,9 @@
       playsinline
       :muted="isMuted"
       :src="currentAsset.url"
-      @ended="onVideoEnded"
       @play="onVideoPlay"
+      @ended="onVideoEnded"
+      @error="onVideoError"
     />
 
     <!-- Dual-Layer Image: Blurred Cover + Sharp Contain -->
@@ -24,6 +25,7 @@
       :src="currentAsset.url"
       :alt="currentAsset.title || 'Background'"
       class="bg-image-contain"
+      @error="onImageError"
     >
   </div>
 </template>
@@ -51,10 +53,9 @@ const emit = defineEmits<{
   'update:is-video': [val: boolean]
 }>()
 
+const playlist = ref<MediaAsset[]>([])
+const currentIndex = ref<number>(0)
 const currentAsset = ref<MediaAsset | null>(null)
-const queue = ref<MediaAsset[]>([])
-const currentFolder = ref<string | undefined>(undefined)
-const nextFolder = ref<string | undefined>(undefined)
 const videoRef = ref<HTMLVideoElement | null>(null)
 
 let rotationTimer: ReturnType<typeof setTimeout> | null = null
@@ -72,21 +73,49 @@ const scheduleNext = () => {
   if (isPlayingVideo || props.magicMirror || props.source === 'single') return
 
   rotationTimer = setTimeout(() => {
-    advanceNext()
+    advanceNext(false)
   }, props.intervalSeconds * 1000)
 }
 
-const fetchBatch = async (folder?: string) => {
-  if (props.source === 'local' || props.source === 'single') {
-    const query = folder ? `?folder=${encodeURIComponent(folder)}` : ''
-    const res = await $fetch<BackgroundBatch>(`/api/backgrounds${query}`)
-    queue.value = res.items
-    currentFolder.value = res.currentFolder
-    nextFolder.value = res.nextFolder
-  } else {
-    const query = props.weatherTag ? `?weatherTag=${encodeURIComponent(props.weatherTag)}` : ''
-    const items = await $fetch<MediaAsset[]>(`/api/photos${query}`)
-    queue.value = items
+const loadPlaylist = async (isBackgroundRefresh = false) => {
+  try {
+    let items: MediaAsset[] = []
+
+    if (props.source === 'local' || props.source === 'single') {
+      const res = await $fetch<BackgroundBatch>('/api/backgrounds')
+      items = res.items || []
+    } else {
+      const query = props.weatherTag ? `?weatherTag=${encodeURIComponent(props.weatherTag)}` : ''
+      items = await $fetch<MediaAsset[]>(`/api/photos${query}`)
+    }
+
+    if (items.length > 0) {
+      playlist.value = items
+      if (!isBackgroundRefresh) {
+        currentIndex.value = 0
+        displayCurrent()
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to load media playlist:', (err as Error).message)
+  }
+}
+
+const displayCurrent = () => {
+  if (playlist.value.length === 0) {
+    currentAsset.value = null
+    emit('update:active-asset', null)
+    emit('update:is-video', false)
+    return
+  }
+
+  const asset = playlist.value[currentIndex.value]
+  currentAsset.value = asset
+  emit('update:active-asset', asset)
+  emit('update:is-video', asset.type === 'video')
+
+  if (asset.type === 'image') {
+    scheduleNext()
   }
 }
 
@@ -94,22 +123,45 @@ const advanceNext = async (skipFolder = false) => {
   clearTimer()
   isPlayingVideo = false
 
-  if (skipFolder && nextFolder.value) {
-    await fetchBatch(nextFolder.value)
+  if (playlist.value.length === 0) {
+    await loadPlaylist()
+    return
   }
 
-  if (queue.value.length === 0) {
-    await fetchBatch(currentFolder.value)
+  if (props.source === 'single') {
+    return
   }
 
-  if (queue.value.length > 0) {
-    const nextItem = queue.value.shift()!
-    currentAsset.value = nextItem
-    emit('update:active-asset', nextItem)
-    emit('update:is-video', nextItem.type === 'video')
+  if (skipFolder) {
+    const curFolder = currentAsset.value?.folder || '[root]'
+    let targetIndex = -1
+
+    for (let offset = 1; offset < playlist.value.length; offset++) {
+      const candidateIdx = (currentIndex.value + offset) % playlist.value.length
+      const candidateFolder = playlist.value[candidateIdx]?.folder || '[root]'
+      if (candidateFolder !== curFolder) {
+        targetIndex = candidateIdx
+        break
+      }
+    }
+
+    if (targetIndex !== -1) {
+      currentIndex.value = targetIndex
+      displayCurrent()
+      return
+    }
   }
 
-  scheduleNext()
+  // Next image / sequential item
+  const nextIdx = (currentIndex.value + 1) % playlist.value.length
+
+  // If completing a full loop of the entire playlist, refresh from server
+  if (nextIdx === 0 && (props.source === 'local' || props.source === 'single')) {
+    await loadPlaylist(true)
+  }
+
+  currentIndex.value = nextIdx
+  displayCurrent()
 }
 
 const onVideoPlay = () => {
@@ -119,20 +171,33 @@ const onVideoPlay = () => {
 
 const onVideoEnded = () => {
   isPlayingVideo = false
-  advanceNext()
+  advanceNext(false)
 }
 
-// Watch weather condition tag changes for tagged photo rotation
+const onVideoError = () => {
+  console.warn('Video failed to play, skipping to next media item')
+  isPlayingVideo = false
+  advanceNext(false)
+}
+
+const onImageError = () => {
+  console.warn('Image failed to load, skipping in 1.5s')
+  clearTimer()
+  rotationTimer = setTimeout(() => {
+    advanceNext(false)
+  }, 1500)
+}
+
+// Watch weather tag changes for dynamic tagged photo sources
 watch(() => props.weatherTag, (newTag, oldTag) => {
   if (newTag && newTag !== oldTag && ['unsplash', 'pexels', 'flickr'].includes(props.source)) {
-    queue.value = []
-    advanceNext()
+    loadPlaylist()
   }
 })
 
 onMounted(async () => {
   if (!props.magicMirror) {
-    await advanceNext()
+    await loadPlaylist()
   }
 })
 

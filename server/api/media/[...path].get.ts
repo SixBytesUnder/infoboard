@@ -9,8 +9,11 @@ const MIME_MAP: Record<string, string> = {
   '.png': 'image/png',
   '.webp': 'image/webp',
   '.gif': 'image/gif',
+  '.avif': 'image/avif',
   '.mp4': 'video/mp4',
-  '.webm': 'video/webm'
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.m4v': 'video/mp4'
 }
 
 export default defineEventHandler(async (event) => {
@@ -21,8 +24,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Media directory not configured' })
   }
 
-  const rawPath = event.context.params?.path || ''
-  const decodedPath = decodeURIComponent(rawPath)
+  const param = getRouterParam(event, 'path') || event.context.params?.path || event.context.params?._ || ''
+  const rawPath = Array.isArray(param) ? param.join('/') : String(param)
+  let decodedPath = rawPath
+  try {
+    decodedPath = decodeURIComponent(rawPath)
+  } catch {
+    // Keep rawPath if malformed URI component
+  }
   const safeSubPath = sanitizeSubPath(decodedPath)
   const fullPath = path.join(baseDir, safeSubPath)
 

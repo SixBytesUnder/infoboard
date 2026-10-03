@@ -1,16 +1,82 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import type { BackgroundBatch, MediaAsset } from '~~/shared'
-import { isPathInsideDirectory, sanitizeSubPath } from '../utils/sandbox'
+import { isPathInsideDirectory } from '../utils/sandbox'
 
-const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif'])
-const VIDEO_EXTS = new Set(['.mp4', '.webm'])
+const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'])
+const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mov', '.m4v'])
+
+function naturalSort(a: string, b: string): number {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+}
+
+async function scanDirectoryRecursive(
+  baseDir: string,
+  relDir: string,
+  allowVideo: boolean
+): Promise<MediaAsset[]> {
+  const currentDir = relDir ? path.join(baseDir, relDir) : baseDir
+  let entries: import('node:fs').Dirent[] = []
+
+  try {
+    entries = await fs.readdir(currentDir, { withFileTypes: true })
+  } catch (err) {
+    console.warn(`Failed to read directory ${currentDir}:`, (err as Error).message)
+    return []
+  }
+
+  const subdirs: string[] = []
+  const files: string[] = []
+
+  for (const entry of entries) {
+    if (entry.name.startsWith('.')) continue
+
+    if (entry.isDirectory()) {
+      subdirs.push(entry.name)
+    } else if (entry.isFile()) {
+      const ext = path.extname(entry.name).toLowerCase()
+      if (IMAGE_EXTS.has(ext) || (allowVideo && VIDEO_EXTS.has(ext))) {
+        files.push(entry.name)
+      }
+    }
+  }
+
+  subdirs.sort(naturalSort)
+  files.sort(naturalSort)
+
+  let allAssets: MediaAsset[] = []
+
+  // 1. Process all folders (with their subfolders) first in alphabetical order
+  for (const sub of subdirs) {
+    const subRel = relDir ? `${relDir}/${sub}` : sub
+    const subAssets = await scanDirectoryRecursive(baseDir, subRel, allowVideo)
+    allAssets = allAssets.concat(subAssets)
+  }
+
+  // 2. Then files directly in this folder
+  for (const file of files) {
+    const fileRel = relDir ? `${relDir}/${file}` : file
+    const ext = path.extname(file).toLowerCase()
+    const isVideo = VIDEO_EXTS.has(ext)
+
+    // Encode path segments while keeping forward slashes intact
+    const encodedPath = fileRel.split('/').map(seg => encodeURIComponent(seg)).join('/')
+
+    allAssets.push({
+      type: isVideo ? 'video' : 'image',
+      url: `/api/media/${encodedPath}`,
+      identifier: fileRel,
+      title: file,
+      folder: relDir || '[root]'
+    })
+  }
+
+  return allAssets
+}
 
 export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
   const config = useRuntimeConfig(event)
   const mediaConf = config.media
-  const query = getQuery(event)
-  const requestedFolder = sanitizeSubPath((query.folder as string) || '')
 
   const baseDir = mediaConf.localDir
   if (!baseDir) {
@@ -20,69 +86,44 @@ export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
           type: 'image',
           url: '/images/nasa.jpg',
           identifier: 'nasa-default',
-          title: 'Default Background'
+          title: 'Default Background',
+          folder: '[default]'
         }
       ]
     }
   }
 
-  const targetDir = requestedFolder ? path.join(baseDir, requestedFolder) : baseDir
-
-  const isSafe = await isPathInsideDirectory(targetDir, baseDir)
+  const isSafe = await isPathInsideDirectory(baseDir, baseDir)
   if (!isSafe) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Forbidden: Path traversal outside media directory is not allowed'
+      statusMessage: 'Forbidden: Configured media directory is invalid or inaccessible'
     })
   }
 
   try {
-    const entries = await fs.readdir(targetDir, { withFileTypes: true })
-    const items: MediaAsset[] = []
-    const subdirs: string[] = []
+    const items = await scanDirectoryRecursive(baseDir, '', mediaConf.allowVideo)
 
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        subdirs.push(entry.name)
-      } else if (entry.isFile()) {
-        const ext = path.extname(entry.name).toLowerCase()
-        const relativeSub = requestedFolder ? `${requestedFolder}/${entry.name}` : entry.name
-
-        if (IMAGE_EXTS.has(ext)) {
-          items.push({
+    if (items.length === 0) {
+      return {
+        items: [
+          {
             type: 'image',
-            url: `/api/media/${encodeURIComponent(relativeSub)}`,
-            identifier: relativeSub,
-            title: entry.name,
-            folder: requestedFolder
-          })
-        } else if (mediaConf.allowVideo && VIDEO_EXTS.has(ext)) {
-          items.push({
-            type: 'video',
-            url: `/api/media/${encodeURIComponent(relativeSub)}`,
-            identifier: relativeSub,
-            title: entry.name,
-            folder: requestedFolder
-          })
-        }
+            url: '/images/nasa.jpg',
+            identifier: 'nasa-default',
+            title: 'No media found in folder',
+            folder: '[default]'
+          }
+        ]
       }
     }
 
-    subdirs.sort()
-    const nextFolder = subdirs.length > 0 ? (requestedFolder ? `${requestedFolder}/${subdirs[0]}` : subdirs[0]) : undefined
-
-    if (items.length === 0 && subdirs.length > 0 && !requestedFolder) {
-      // If root has no images but has subfolders, recursively find first folder with images
-      const firstFolder = subdirs[0]
-      if (firstFolder) {
-        return await $fetch<BackgroundBatch>(`/api/backgrounds?folder=${encodeURIComponent(firstFolder)}`)
-      }
-    }
+    const uniqueFolders = Array.from(new Set(items.map(it => it.folder || '[root]')))
 
     return {
       items,
-      currentFolder: requestedFolder,
-      nextFolder
+      currentFolder: items[0]?.folder,
+      nextFolder: uniqueFolders[1] || uniqueFolders[0]
     }
   } catch (err) {
     console.warn('Local background scan error:', (err as Error).message)
@@ -92,7 +133,8 @@ export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
           type: 'image',
           url: '/images/nasa.jpg',
           identifier: 'fallback',
-          title: 'Fallback Background'
+          title: 'Fallback Background',
+          folder: '[fallback]'
         }
       ]
     }

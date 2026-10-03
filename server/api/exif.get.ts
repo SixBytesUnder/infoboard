@@ -29,16 +29,25 @@ export default defineEventHandler(async (event): Promise<ExifMetadata> => {
 
     const tags = ExifReader.load(buffer.subarray(0, bytesRead))
 
+    const fn = tags.FNumber?.description
+    const fNumber = fn ? (fn.startsWith('f/') ? fn : `f/${fn}`) : undefined
+
+    const fl = tags.FocalLength?.description
+    const focalLength = fl ? (fl.endsWith('mm') ? fl : `${fl}mm`) : undefined
+
+    const et = tags.ExposureTime?.description
+    const exposureTime = et ? (et.endsWith('s') ? et : `${et}s`) : undefined
+
     return {
       Make: tags.Make?.description,
       Model: tags.Model?.description,
       DateTime: tags.DateTime?.description,
-      ExposureTime: tags.ExposureTime?.description ? `${tags.ExposureTime.description}s` : undefined,
+      ExposureTime: exposureTime,
       ExposureProgram: tags.ExposureProgram?.description,
-      FNumber: tags.FNumber?.description ? `f/${tags.FNumber.description}` : undefined,
+      FNumber: fNumber,
       ISO: tags.ISOSpeedRatings?.description,
       Flash: tags.Flash?.description,
-      FocalLength: tags.FocalLength?.description ? `${tags.FocalLength.description}mm` : undefined,
+      FocalLength: focalLength,
       PixelXDimension: tags.PixelXDimension?.description,
       PixelYDimension: tags.PixelYDimension?.description
     }
