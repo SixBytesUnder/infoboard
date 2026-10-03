@@ -1,0 +1,23 @@
+services:
+  infoboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: infoboard:latest
+    container_name: infoboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      # Optional: mount local media folder if using local background images/videos
+      - /media/photos:/media/photos:ro
+      # Optional: serial port for SDS011 sensor (uncomment if hardware present)
+      # - /dev/ttyUSB0:/dev/ttyUSB0
+    # devices:
+      # - /dev/ttyUSB0:/dev/ttyUSB0
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3000

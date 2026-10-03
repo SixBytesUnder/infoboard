@@ -1,234 +1,184 @@
-# infoboard
+# Infoboard v4
 
-> Infoboard showing time, weather, calendar events, photos from local folder or online sources as background and Transport for London status updates.  
-> Intended for Raspberry Pi, but should work on any machine with NodeJS available.
+> High-performance, resource-efficient 24/7 information dashboard designed for dedicated Raspberry Pi displays and modern browsers. Built with **Nuxt 4**, **Nitro**, **Vue 3**, and **TypeScript**.
 
-## Live demo
-Using NASA picture of the day https://infoboard.sixbytesunder.com/
+---
 
-## Examples
+## Key Features
 
-![Desktop landscape](https://i.imgur.com/iuyV0x9.jpg?raw=true "Desktop landscape - all options collapsed")
-![Galaxy S5 portrait](https://i.imgur.com/P5w1h0r.jpg?raw=true "Galaxy S5 portrait - all options collapsed")
-![iPad Pro landscape](https://i.imgur.com/Lfm25Uc.jpg?raw=true "iPad Pro landscape - all options expanded")
-![Magic Mirror mode](https://i.imgur.com/jBo1Gox.png?raw=true "Magic Mirror mode")
+- **Continuous 24/7 Uptime:** Engineered for zero memory leaks. Polling uses chained `setTimeout` execution and automatically pauses when the display is sleeping or the browser tab is hidden to minimize idle CPU and thermal footprint.
+- **Self-Contained Nitro Caching:** Integrated in-memory Stale-While-Revalidate (SWR) caching layer. Prevents exceeding third-party API rate limits and serves cached data seamlessly during network drops. No external services like Redis required.
+- **Zero Exposed Secrets:** All external API requests (Tomorrow.io, TfL, NASA, Unsplash, Pexels, Flickr, iCal) are brokered server-side. Zero API keys or tokens are bundled into client JavaScript.
+- **Hardware-Aware Design:**
+  - **Magic Mirror Mode:** Pure `#000000` background and high-contrast `#ffffff` typography for reflective mirror installations.
+  - **Low-Power Mode:** Disables backdrop blur and heavy box shadows for smooth 60fps rendering on low-RAM Raspberry Pi units (Pi 3B+, Pi Zero 2W).
+- **Widgets:**
+  - **Clock & Date:** Large monospace typography (Cousine), configurable format, synchronized to system seconds.
+  - **Weather & Forecast:** Real-time conditions from Tomorrow.io with 26 weather code icons, feels-like temperature, and 7-day forecast carousel.
+  - **Detailed Microclimate Metrics:** 16 expandable indicators including barometric pressure, wind speed/gust, solar GHI, moon phase, PM2.5, PM10, EPA air quality index, and tree/weed/grass pollen indices.
+  - **Transport for London (TfL):** Real-time line statuses with official brand colors (Tube, Overground, DLR, Elizabeth line, Tram), plus live bus arrivals grouped by stop point.
+  - **Calendar Agenda:** iCal ingestion with full RFC-5545 recurrence rule (RRULE) expansion, exception dates, 60-day horizon, and relative dates ("Today", "Tomorrow").
+  - **Local Hardware Sensors:** Kernel-level sysfs / iio support for DHT11/22 and Sense HAT, serial communication for Nova SDS011 air quality sensor, with automated simulation fallbacks.
+  - **Dynamic Backgrounds:** Local directory traversal, MP4 video streaming with byte-range support, NASA Astronomy Picture of the Day (APOD), and weather-tagged photos from Unsplash, Pexels, and Flickr.
 
-More example screenshots in [/static/examples/](/static/examples/) or https://imgur.com/a/Odm4haP
+---
 
-## Features
-* Almost everything is configurable in `.env` file;
-* Show current time and date;
-* Calendar events from an iCal format link,
-* Background images, changing every 60 seconds. Source of images can be:
-  * a local folder,
-  * view Exif information only for images from local folder,
-  * [NASA Picture of the day](https://apod.nasa.gov/apod/astropix.html),
-  * random image from [Unsplash](https://unsplash.com/),
-  * curated images from [Pexels](https://www.pexels.com/),
-  * both Unsplash and Pexels also support showing images tagged with current weather conditions: "light rain", "mostly clear" and so on,
-  * weather tagged photos from [Flickr](https://www.flickr.com/);
-* MP4 videos played as the background;
-* Current weather and weekly forecast from [Tomorrow.io](https://www.tomorrow.io/) formerly ClimaCell;
-* Additional weather details include:
-  * humidity,
-  * wind speed,
-  * barometric pressure,
-  * air quality (PM2.5 and PM10),
-  * many more.
-* Support for local [DHT sensor](https://www.google.com/search?q=DHT+sensor) (temperature and humidity); Check installation instructions [below](#dht-sensor-installing-and-troubleshooting);
-* Transport for London status updates for tube, overground, dlr, tfl rail and tram;
-* Transport for London bus timetable for bus stops you choose;
-* COVID-19 stats from [Our World in Data](https://ourworldindata.org/coronavirus). Their GitHub repo [here](https://github.com/owid/covid-19-data/tree/master/public/data);
-* [Magic Mirror](https://www.raspberrypi.org/blog/magic-mirror/) mode - no background images at all, just solid black background and all text is white. This gives best contrast to use behind a magic mirror.
-* Everything, except for time can be folded or expanded by clicking on their icons;
-* Two buttons at the bottom right corner allow skipping to the next image or skip the entire folder to the next one (for local images source only);
-* If your browser supports programmatic fullscreen mode, a third button will appear to switch browser to fullscreen;
-* Runs as a responsive website therefore can be accessed on any device;
-* Available as [PWA](https://developers.google.com/web/progressive-web-apps/) (Progressive Web Application) - add a shortcut to infoboard that looks just like an app on your phone or tablet and don't bother using a browser.
+## Architecture Overview
 
-## Raspberry Pi production deployment steps
-``` bash
-# create a new folder to hold app files
-$ sudo mkdir /srv/http
-$ chown pi:pi /srv/http/
-# go to project folder
-$ cd /srv/http/
-
-# clone this repo to current folder
-$ git clone https://github.com/SixBytesUnder/infoboard.git .
-
-# IMPORTANT! copy or rename config file .env.example to .env
-$ cp .env.example .env
-
-# then edit it to provide all necessary variables and API keys
-$ vim.tiny .env
-
-# install dependencies
-$ npm install
-
-# add DHT sensor package if you have the sensor
-$ npm install node-dht-sensor
-
-# build production bundle
-$ npm run build
-# Note, if you get build errors, scroll down for workarounds
-
-# I recommend a fantastic persistent app manager pm2, but you can use any other you wish
-# install pm2
-$ sudo npm i -g pm2
-
-# start pm2, see below for detailed instructions
-$ pm2 start npm --name "infoboard" -- start
-
-# install additional nginx modules - needed to serve mp4 directive
-$ sudo apt install nginx-extras
-
-# configure nginx
-$ sudo vim.tiny /etc/nginx/sites-enabled/default
-
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-
-    access_log /var/log/nginx/infoboard-access.log;
-    error_log /var/log/nginx/infoboard-error.log;
-
-    gzip            on;
-    gzip_types      text/plain application/xml text/css application/javascript;
-    gzip_min_length 1000;
-
-    # change 192.168.1.99 to your RPi's local IP address
-    server_name _ 192.168.1.99 infoboard.local;
-
-    location / {
-        proxy_redirect                      off;
-        proxy_set_header Host               $host;
-        proxy_set_header X-Real-IP          $remote_addr;
-        proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto  $scheme;
-        proxy_read_timeout                  1m;
-        proxy_connect_timeout               1m;
-        proxy_pass                          http://127.0.0.1:3000;
-    }
-
-    location ~* .(mp4)$ {
-      mp4;
-      mp4_buffer_size                       1M;
-      mp4_max_buffer_size                   5M;
-      proxy_pass                            http://127.0.0.1:3000;
-    }
-}
-
-# test new nginx configuration
-$ sudo nginx -t
-
-# reload nginx with new configuration
-$ sudo nginx -s reload
+```
+infoboard-v4/
+├── app/                  # Frontend Application Layer (Vue 3 Composition API)
+│   ├── assets/           # CSS tokens (glassmorphism, monospace, typography) & SVGs
+│   ├── components/       # Dashboard widgets and kiosk controls
+│   ├── composables/      # usePolling (visibility-aware), useSystemClock, useKioskState
+│   └── pages/            # Responsive kiosk layout
+├── server/               # Nitro Engine Backend
+│   ├── api/              # Cached proxy endpoints with SWR & hard timeouts
+│   └── utils/            # Sandboxing (path traversal prevention), iCal & sensor drivers
+├── shared/               # Universal TypeScript definitions, constants & schemas
+├── public/               # Static assets & icons served at root
+├── nuxt.config.ts        # Typed runtime configuration
+├── Dockerfile            # Multi-stage lightweight ARM64/AMD64 container
+└── docker-compose.yml    # Standalone container orchestration
 ```
 
-If your Raspberry is accessible on local network, open your browser and navigate to your RPi's IP address. In this example `http://192.168.1.99/`
+---
 
-## Updating to latest version
-``` bash
-# go to project folder
-$ cd /srv/http/
+## Quick Start (Local Development)
 
-# pull latest files from GitHub
-$ git pull
+### Prerequisites
+- Node.js 22 LTS or newer
+- npm 10 or newer
 
-# check .env.example file and compare to existing .env to see if any new settings are needed
-$ vim.tiny .env.example
-$ vim.tiny .env
+```bash
+# 1. Clone repository
+git clone https://github.com/SixBytesUnder/infoboard.git
+cd infoboard
 
-# install dependencies
-$ npm install
+# 2. Copy environment template
+cp .env.example .env
 
-# build production bundle
-$ npm run build
-# Note, if you get build errors, delete `node_modules` and `.nuxt` directories, then run `npm install` and `npm run build` again
-# if above doesn't help, make a backup copy of your .env file, then delete the whole app and remove persistent pm2 process
-$ pm2 stop infoboard
-$ pm2 delete infoboard
-# and follow `production deployment steps` above
-# If this still does not resolve the issue, run `npm run build` on your dev machine (i.e. your laptop) and just simply copy `.nuxt` directory to your RaspberryPi web directory. Leave all the other project files there
+# 3. Install dependencies
+npm install
 
-# restart persistent app manager
-$ pm2 restart infoboard
-
-# the app takes a minute to compile, to see the progress
-# run below command and watch "Global Logs" window
-# app will be ready when you see something similar to "Listening on http://localhost:3000"
-$ pm2 monit
+# 4. Start development server with hot-reload
+npm run dev
 ```
 
-## Development setup
+Visit `http://localhost:3000` in your browser.
 
-``` bash
-# clone this repo to current directory
-$ git clone https://github.com/SixBytesUnder/infoboard.git .
+---
 
-# copy or rename config file .env.example to .env
-$ cp .env.example .env
+## Production Build & Preview
 
-# then edit it to provide all necessary variables and API keys
-$ vim.tiny .env
+```bash
+# Typecheck TypeScript
+npm run typecheck
 
-# install dependencies
-$ npm install
+# Build optimized production bundle
+npm run build
 
-# serve with hot reload at localhost:3000
-$ npm run dev
+# Preview production build locally
+node .output/server/index.mjs
 ```
 
-For full documentation on NuxtJS go to [Nuxt.js docs](https://nuxtjs.org/guide).
+---
 
-## Other helpful commands and notes
+## Configuration Reference
 
-Current code has been tested with node v16.13.0
+All settings can be placed in your `.env` file. Modern `NUXT_` prefixed variables are recommended; legacy variable names from v2.x are supported automatically for backwards compatibility.
 
-To make sure `pm2` restarts the service after your server (Raspberry) restarts, run `pm2 startup` command. It should tell you exactly what you need to do next.
+| Variable | Default | Description |
+|---|---|---|
+| `NUXT_APP_MAGIC_MIRROR` | `false` | Enable high-contrast black/white display |
+| `NUXT_APP_LOW_POWER_MODE` | `false` | Disable blur/shadows on low-RAM Raspberry Pis |
+| `NUXT_APP_TIME_FORMAT` | `HH:mm:ss` | Day.js time format |
+| `NUXT_APP_DATE_FORMAT` | `dddd, Do MMMM YYYY` | Day.js date format |
+| `NUXT_APP_NAV_BUTTONS` | `true` | Show kiosk action bar |
+| `NUXT_APP_SHOW_EXIF` | `true` | Show EXIF button on local photos |
+| `NUXT_WEATHER_ENABLED` | `true` | Enable weather module |
+| `NUXT_WEATHER_API_KEY` | `""` | Tomorrow.io API v4 key |
+| `NUXT_WEATHER_LATITUDE` | `51.5074` | Latitude |
+| `NUXT_WEATHER_LONGITUDE` | `-0.1278` | Longitude |
+| `NUXT_WEATHER_LOCATION_NAME`| `London, UK` | Header location name |
+| `NUXT_WEATHER_UNITS` | `metric` | `metric` (°C, m/s, hPa) or `imperial` (°F, mph, inHg) |
+| `NUXT_WEATHER_ROUND_TEMP` | `true` | Round temperatures to whole degrees |
+| `NUXT_WEATHER_CACHE_TTL` | `300` | Weather cache time in seconds (5 min) |
+| `NUXT_TRANSIT_ENABLED` | `true` | Enable Transport for London module |
+| `NUXT_TRANSIT_TFL_APP_ID` | `""` | Optional TfL App ID |
+| `NUXT_TRANSIT_TFL_APP_KEY`| `""` | Optional TfL App Key |
+| `NUXT_TRANSIT_BUS_STOPS` | `""` | Comma-separated TfL bus stop codes |
+| `NUXT_TRANSIT_LINE_MODES` | `tube,overground,dlr,elizabeth-line,tram` | Rail & tube line modes |
+| `NUXT_CALENDAR_ENABLED` | `true` | Enable iCal calendar module |
+| `NUXT_CALENDAR_ICAL_URL` | `""` | iCal / ICS feed URL |
+| `NUXT_CALENDAR_MAX_EVENTS`| `10` | Maximum upcoming events |
+| `NUXT_MEDIA_SOURCE` | `nasa` | `local`, `single`, `nasa`, `unsplash`, `pexels`, `flickr` |
+| `NUXT_MEDIA_INTERVAL` | `60` | Background rotation interval in seconds |
+| `NUXT_MEDIA_LOCAL_DIR` | `"/media/photos"` | Absolute path to local photos/videos |
+| `NUXT_MEDIA_ALLOW_VIDEO` | `false` | Enable MP4 video playback |
+| `NUXT_MEDIA_VIDEO_MUTED` | `true` | Default video audio state |
+| `NUXT_MEDIA_NASA_API_KEY` | `DEMO_KEY` | NASA APOD API key |
+| `NUXT_SENSOR_DHT_ENABLED` | `false` | Read DHT11/22 via Linux sysfs |
+| `NUXT_SENSOR_SENSEHAT_ENABLED` | `false` | Read Raspberry Pi Sense HAT via sysfs |
+| `NUXT_SENSOR_SDS_ENABLED`| `false` | Read SDS011 air quality via serial port |
 
-``` bash
-# find out what to do to make sure pm2 runs after restart
-$ pm2 startup
-# above will ask you to run commands similar to this
-$ sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u pi --hp /home/pi
-$ pm2 save
+---
 
-# show apps managed by pm2, all three below commands show pretty much the same result
-$ pm2 status
-$ pm2 list
-$ pm2 ls
+## Deployment on Raspberry Pi
 
-# monitor resources your apps take on pm2
-$ pm2 monit
+### Option A: Docker (Recommended)
+
+Running the pre-built container ensures consistent dependencies and low memory usage.
+
+```bash
+# 1. On your Raspberry Pi, clone or copy the repository
+cd /srv/infoboard
+
+# 2. Configure .env with your credentials
+cp .env.example .env
+nano .env
+
+# 3. Start container in background
+docker compose up -d
 ```
 
-nginx setup on RPi: https://nuxtjs.org/deployments/nginx/  
-Production Process Manager for Node.js applications with a built-in Load Balancer: https://pm2.keymetrics.io/docs/usage/quick-start/  
+### Cross-Compiling for Raspberry Pi (Docker Buildx)
 
-## DHT sensor installing and troubleshooting
-DHT module in not included by default as it causes a lot of issues on Windows, which is my development environment.
+To avoid heavy memory and CPU usage during compilation on 1GB/2GB Raspberry Pi units, build the container image on your workstation (Mac, Linux, or Windows WSL) using Docker Buildx and deploy the image:
 
-### Raspberry Pi
-After installing everything on your Raspberry, just run `npm install node-dht-sensor`, add correct settigs in .env file, restart the app and it'll automatically detect the module and use it.  
-If you get build errors, it'll most likely be due to the old version of Python. node-dht-sensor package requires Python 3.6 or above and `apt` claims the latest available version in official repo is 3.5.3  
-To intall a more up to date version follow instructions in my [blog post](https://allurcode.com/install-latest-version-of-python-on-raspberry-pi/).
+```bash
+# Enable multi-architecture builder
+docker buildx create --name pibuilder --use
+docker buildx inspect --bootstrap
 
-### Windows
-If you're on Windows and still want to see it, you'll quite likely get build errors on DHT module while running `npm install`. This is due to node-gyp or MSBuild issues on Windows. There could be a hundred reasons for it. You can check if solutions proposed [here](https://github.com/nodejs/node-gyp/issues/119), [here](https://github.com/nodejs/node-gyp/issues/1663) or [here](https://github.com/nodejs/node-gyp/issues/1747) work for you.
+# Build and push directly for ARM64 target (Raspberry Pi 3/4/5)
+docker buildx build \
+  --platform linux/arm64 \
+  -t your-registry/infoboard:latest \
+  --push .
 
-Otherwise, just use WSL (Windows Subsystem for Linux) to install DHT module. If you do so the DHT module will return random numbers to show you how it'd look like.  
-Note, you can install DHT package on WSL, but still execute `npm run dev` on Windows. It'll still work just fine.
+# On the Raspberry Pi, simply run:
+docker pull your-registry/infoboard:latest
+docker compose up -d
+```
 
-If you don't have the DHT sensor at all, you can ignore all of the above or just run `npm uninstall node-dht-sensor` or simply remove `node-dht-sensor` line from your package.json file.
+---
 
-## Donate
+## Raspberry Pi Chromium Kiosk Autostart
 
-If this project helps you or makes you happy in any way, please consider giving me a cup of ~~coffee~~ tea :) I'm one of those weird people who don't drink cofee, sorry ;)
+To automatically launch Infoboard fullscreen on Raspberry Pi OS without window frames or mouse cursor:
 
-[![asd](https://img.shields.io/badge/Donate-PayPal-brightgreen?logo=paypal)](https://paypal.me/SixBytesUnder)
+Create or edit `~/.config/wayfire.ini` (on modern Wayland Bookworm) or `~/.config/lxsession/LXDE-pi/autostart`:
+
+```ini
+[autostart]
+screensaver = false
+dpms = false
+infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-for-update-interval=31536000 --disable-pinch http://localhost:3000
+```
+
+---
 
 ## License
 
-[MIT](https://github.com/SixBytesUnder/infoboard/blob/master/LICENSE)
+[MIT](LICENSE)

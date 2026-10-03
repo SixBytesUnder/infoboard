@@ -1,0 +1,16 @@
+.git
+.github
+.nuxt
+.output
+.data
+.nitro
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+scratch
+test-results
+.env
+.env.*
+!.env.example
+*.md

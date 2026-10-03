@@ -1,0 +1,223 @@
+<template>
+  <div v-if="transit" class="transit-container">
+    <!-- Bus Timetables Section -->
+    <div v-if="hasBuses" class="transit-block">
+      <div class="glass-panel transit-card">
+        <button type="button" class="header-toggle" @click="showBuses = !showBuses">
+          <img src="/images/bus.svg" alt="Buses" class="transit-header-icon">
+          <span class="header-title">Live Bus Arrivals</span>
+          <span class="chevron">{{ showBuses ? '▼' : '▶' }}</span>
+        </button>
+
+        <div v-if="showBuses" class="transit-content">
+          <div v-for="(lines, stopName) in transit.buses" :key="stopName" class="bus-stop-group">
+            <h4 class="stop-name">{{ stopName }}</h4>
+            <div class="bus-lines">
+              <div v-for="(times, lineNum) in lines" :key="lineNum" class="bus-line-row">
+                <span class="kiosk-badge bus-badge">{{ lineNum }}</span>
+                <div class="times-list">
+                  <span
+                    v-for="(t, idx) in times"
+                    :key="idx"
+                    class="time-item"
+                    :class="{ 'is-due': t === 'Due' }"
+                  >
+                    {{ t }}<span v-if="idx + 1 < times.length" class="comma">,</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rail & Tube Status Section -->
+    <div v-if="transit.lines.length > 0" class="transit-block">
+      <div class="glass-panel transit-card">
+        <button type="button" class="header-toggle" @click="showTube = !showTube">
+          <img src="/images/tube.svg" alt="Underground" class="transit-header-icon">
+          <span class="header-title">Transport Status</span>
+          <span class="chevron">{{ showTube ? '▼' : '▶' }}</span>
+        </button>
+
+        <div v-if="showTube" class="transit-content">
+          <div class="tube-lines-grid">
+            <div
+              v-for="line in transit.lines"
+              :key="line.id"
+              class="tube-line-row"
+            >
+              <span
+                class="kiosk-badge tube-badge"
+                :style="getLineStyle(line.id)"
+              >
+                {{ line.name }}
+              </span>
+              <span
+                class="tube-status"
+                :class="{ 'status-alert': line.statusSeverity < 10 }"
+              >
+                {{ line.statusSeverityDescription }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { TFL_LINE_COLORS } from '~~/shared'
+import type { TransitPayload } from '~~/shared'
+
+const props = withDefaults(defineProps<{
+  transit: TransitPayload | null
+  initialExpand?: boolean
+}>(), {
+  initialExpand: false
+})
+
+const showBuses = ref(props.initialExpand)
+const showTube = ref(props.initialExpand)
+
+const hasBuses = computed(() => {
+  return props.transit?.buses && Object.keys(props.transit.buses).length > 0
+})
+
+const getLineStyle = (lineId: string) => {
+  const normalizedId = lineId.toLowerCase().replace(/\s+/g, '-')
+  const colors = TFL_LINE_COLORS[normalizedId] || { bg: '#475569', text: '#ffffff' }
+  return {
+    backgroundColor: colors.bg,
+    color: colors.text
+  }
+}
+</script>
+
+<style scoped>
+.transit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.transit-card {
+  padding: 0.85rem 1.1rem;
+}
+
+.header-toggle {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.transit-header-icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  object-fit: contain;
+}
+
+.header-title {
+  flex: 1;
+}
+
+.chevron {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.transit-content {
+  margin-top: 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bus-stop-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.stop-name {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.bus-line-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.bus-badge {
+  background: #ffffff;
+  color: #0f172a;
+  min-width: 2.2rem;
+  font-weight: 700;
+}
+
+.times-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.time-item {
+  color: var(--text-primary);
+}
+
+.time-item.is-due {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.tube-lines-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.tube-line-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tube-badge {
+  min-width: 130px;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.tube-status {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.tube-status.status-alert {
+  color: #f87171;
+  font-weight: 600;
+}
+</style>
