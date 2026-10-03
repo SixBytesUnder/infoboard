@@ -87,7 +87,8 @@ const formatDayHeading = (dateStr: string) => {
 <style scoped>
 .calendar-card {
   padding: 0.85rem 1.1rem;
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .header-toggle {

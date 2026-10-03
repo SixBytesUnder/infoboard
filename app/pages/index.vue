@@ -204,7 +204,8 @@ const toggleExifModal = async () => {
 }
 
 .forecast-section {
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .bottom-grid {
@@ -218,6 +219,10 @@ const toggleExifModal = async () => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.left-col {
+  align-items: flex-start;
 }
 
 .right-col {

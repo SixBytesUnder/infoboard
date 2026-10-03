@@ -136,11 +136,19 @@ const getLineStyle = (lineId: string) => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.transit-block {
+  width: fit-content;
+  max-width: 100%;
 }
 
 .transit-card {
   padding: 0.85rem 1.1rem;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .header-toggle {
