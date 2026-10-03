@@ -110,6 +110,13 @@ const displayCurrent = () => {
   }
 
   const asset = playlist.value[currentIndex.value]
+  if (!asset) {
+    currentAsset.value = null
+    emit('update:active-asset', null)
+    emit('update:is-video', false)
+    return
+  }
+
   currentAsset.value = asset
   emit('update:active-asset', asset)
   emit('update:is-video', asset.type === 'video')
@@ -138,7 +145,8 @@ const advanceNext = async (skipFolder = false) => {
 
     for (let offset = 1; offset < playlist.value.length; offset++) {
       const candidateIdx = (currentIndex.value + offset) % playlist.value.length
-      const candidateFolder = playlist.value[candidateIdx]?.folder || '[root]'
+      const candidate = playlist.value[candidateIdx]
+      const candidateFolder = candidate?.folder || '[root]'
       if (candidateFolder !== curFolder) {
         targetIndex = candidateIdx
         break
@@ -156,7 +164,7 @@ const advanceNext = async (skipFolder = false) => {
   const nextIdx = (currentIndex.value + 1) % playlist.value.length
 
   // If completing a full loop of the entire playlist, refresh from server
-  if (nextIdx === 0 && (props.source === 'local' || props.source === 'single')) {
+  if (nextIdx === 0 && props.source === 'local') {
     await loadPlaylist(true)
   }
 
