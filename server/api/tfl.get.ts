@@ -31,9 +31,23 @@ export default defineEventHandler(async (event): Promise<TransitPayload> => {
   const linesList: TfLLineStatus[] = []
   const busesMap: Record<string, Record<string, string[]>> = {}
 
+  const rawLineModes = transitConf.lineModes as unknown
+  const lineModes: string[] = Array.isArray(rawLineModes)
+    ? (rawLineModes as string[])
+    : (typeof rawLineModes === 'string' ? (rawLineModes as string).split(',') : [])
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+
+  const rawBusStops = transitConf.busStops as unknown
+  const busStops: string[] = Array.isArray(rawBusStops)
+    ? (rawBusStops as string[])
+    : (typeof rawBusStops === 'string' ? (rawBusStops as string).split(',') : [])
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+
   try {
     // 1. Fetch Line statuses
-    const modeParam = transitConf.lineModes.join(',')
+    const modeParam = lineModes.join(',')
     if (modeParam) {
       try {
         const rawLines = await $fetch<RawTfLLine[]>(
@@ -57,9 +71,9 @@ export default defineEventHandler(async (event): Promise<TransitPayload> => {
     }
 
     // 2. Fetch Bus stop arrivals in parallel
-    if (transitConf.busStops.length > 0) {
+    if (busStops.length > 0) {
       const arrivalsResults = await Promise.allSettled(
-        transitConf.busStops.map(stopId =>
+        busStops.map(stopId =>
           $fetch<RawTfLArrival[]>(`https://api.tfl.gov.uk/StopPoint/${stopId}/Arrivals${authQuery}`, {
             signal: AbortSignal.timeout(8000)
           })
