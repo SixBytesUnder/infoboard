@@ -20,6 +20,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    nasaKey: process.env.NASA_KEY,
     public: {
       infoboard: {
         weather: {
