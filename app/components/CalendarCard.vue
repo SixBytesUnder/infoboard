@@ -4,8 +4,11 @@
       <img src="/images/calendar.svg" alt="Calendar" class="calendar-header-icon">
       <span class="header-title">Upcoming Agenda</span>
 
-      <span v-if="calendar?.errorMessage" class="stale-pill" :title="calendar.errorMessage">
+      <span v-if="calendar?.errorMessage && calendar.events.length > 0" class="stale-pill" :title="calendar.errorMessage">
         Sync Warning
+      </span>
+      <span v-else-if="calendar?.errorMessage && calendar.events.length === 0" class="stale-pill alert" :title="calendar.errorMessage">
+        Sync Failed
       </span>
       <span v-else-if="!calendar" class="event-count loading">
         Connecting...
@@ -23,8 +26,8 @@
         <span class="status-msg">Fetching calendar feed...</span>
       </div>
 
-      <!-- Sync / Error State -->
-      <div v-else-if="calendar.errorMessage" class="calendar-error-banner">
+      <!-- Sync / Error State (only shown when no events can be displayed) -->
+      <div v-else-if="calendar.errorMessage && calendar.events.length === 0" class="calendar-error-banner">
         <span class="error-badge">Sync Failed</span>
         <p class="error-msg">{{ calendar.errorMessage }}</p>
       </div>
