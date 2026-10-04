@@ -51,6 +51,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:active-asset': [asset: MediaAsset | null]
   'update:is-video': [val: boolean]
+  'update:can-skip': [val: boolean]
 }>()
 
 const playlist = ref<MediaAsset[]>([])
@@ -70,7 +71,7 @@ const clearTimer = () => {
 
 const scheduleNext = () => {
   clearTimer()
-  if (isPlayingVideo || props.magicMirror || props.source === 'single') return
+  if (isPlayingVideo || props.magicMirror || props.source === 'single' || playlist.value.length <= 1) return
 
   rotationTimer = setTimeout(() => {
     advanceNext(false)
@@ -93,6 +94,7 @@ const loadPlaylist = async (isBackgroundRefresh = false) => {
 
     if (items.length > 0) {
       playlist.value = items
+      emit('update:can-skip', items.length > 1)
       if (!isBackgroundRefresh) {
         let startIdx = 0
         if (typeof window !== 'undefined' && props.source === 'local') {
@@ -111,9 +113,13 @@ const loadPlaylist = async (isBackgroundRefresh = false) => {
         currentIndex.value = startIdx
         displayCurrent()
       }
+    } else {
+      playlist.value = []
+      emit('update:can-skip', false)
     }
   } catch (err) {
     console.warn('Failed to load media playlist:', (err as Error).message)
+    emit('update:can-skip', false)
   }
 }
 

@@ -1,11 +1,24 @@
 import type { MediaAsset } from '~~/shared'
 
-interface NasaResponse {
-  media_type?: string
-  hdurl?: string
-  url?: string
-  title?: string
-  copyright?: string
+interface NasaLibraryItem {
+  data?: Array<{
+    center?: string
+    title?: string
+    photographer?: string
+    nasa_id?: string
+    media_type?: string
+  }>
+  links?: Array<{
+    href: string
+    rel?: string
+    render?: string
+  }>
+}
+
+interface NasaLibraryResponse {
+  collection?: {
+    items?: NasaLibraryItem[]
+  }
 }
 
 interface UnsplashPhoto {
@@ -51,30 +64,72 @@ export default defineEventHandler(async (event): Promise<MediaAsset[]> => {
 
   const source = mediaConf.source
 
-  // 1. NASA APOD
+  // 1. NASA Space Gallery (images-api.nasa.gov) with APOD & local fallback
   if (source === 'nasa') {
     try {
-      const apiKey = mediaConf.nasaApiKey || 'DEMO_KEY'
-      const data = await $fetch<NasaResponse>(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}&hd=true`, {
-        signal: AbortSignal.timeout(8000)
-      })
+      const userQuery = (query.q as string) || (mediaConf as { nasaQuery?: string }).nasaQuery || ''
+      const defaultKeywords = ['nebula', 'galaxy', 'deep space', 'carina nebula', 'supernova']
+      const searchTopic: string = userQuery || defaultKeywords[Math.floor(Math.random() * defaultKeywords.length)] || 'nebula'
 
-      if (data.media_type === 'image' && (data.hdurl || data.url)) {
+      const resp = await $fetch<NasaLibraryResponse>(
+        `https://images-api.nasa.gov/search?q=${encodeURIComponent(searchTopic)}&media_type=image`,
+        { signal: AbortSignal.timeout(9000) }
+      )
+
+      const rawItems = resp?.collection?.items || []
+      const assets: MediaAsset[] = []
+
+      for (const item of rawItems) {
+        const d = item.data?.[0]
+        const links = item.links || []
+        if (!d || d.media_type !== 'image') continue
+
+        // Select optimal resolution: prefer large (~1080p) or medium, fallback to original
+        const imgUrl = links.find(l => l.href?.includes('~large'))?.href
+          || links.find(l => l.href?.includes('~medium'))?.href
+          || links.find(l => l.href?.includes('~orig'))?.href
+
+        if (!imgUrl) continue
+
+        assets.push({
+          type: 'image',
+          url: imgUrl,
+          identifier: `nasa-${d.nasa_id || assets.length}`,
+          title: d.title || 'NASA Deep Space',
+          credit: d.photographer || d.center || 'NASA'
+        })
+      }
+
+      if (assets.length > 0) {
+        return assets
+      }
+    } catch (err) {
+      console.warn('NASA Image Library fetch failed, trying APOD fallback:', (err as Error).message)
+    }
+
+    // Secondary fallback: Try modern APOD endpoint from science.nasa.gov
+    try {
+      const apodBasic = await $fetch<Array<{ title?: string; hdurl?: string; url?: string; media_type?: string }>>(
+        'https://science.nasa.gov/wp-json/wp/v2/apod-basic',
+        { signal: AbortSignal.timeout(6000) }
+      )
+      const valid = apodBasic?.find(it => it.media_type === 'image' && (it.hdurl || it.url))
+      if (valid) {
         return [
           {
             type: 'image',
-            url: data.hdurl || data.url || '/images/nasa.jpg',
+            url: valid.hdurl || valid.url || '/images/nasa.jpg',
             identifier: 'nasa-apod',
-            title: data.title || 'Astronomy Picture of the Day',
-            credit: data.copyright || 'NASA'
+            title: valid.title || 'Astronomy Picture of the Day',
+            credit: 'NASA'
           }
         ]
       }
-    } catch (err) {
-      console.warn('NASA APOD failed, using bundled fallback:', (err as Error).message)
+    } catch (apodErr) {
+      console.warn('NASA APOD fallback also failed:', (apodErr as Error).message)
     }
 
-    // Fallback to bundled NASA asset
+    // Ultimate fallback: Bundled NASA asset
     return [
       {
         type: 'image',

@@ -38,7 +38,7 @@
 
     <!-- Next Image -->
     <button
-      v-if="showNavButtons"
+      v-if="showNavButtons && canSkipImage !== false"
       type="button"
       class="kiosk-btn control-btn"
       title="Skip to next image"
@@ -72,6 +72,7 @@ defineProps<{
   showNavButtons: boolean
   isLocalSource: boolean
   isNavDisabled: boolean
+  canSkipImage?: boolean
 }>()
 
 defineEmits<{

@@ -69,6 +69,7 @@ export default defineNuxtConfig({
       videoMuted: (process.env.NUXT_MEDIA_VIDEO_MUTED || process.env.VIDEO_MUTED || 'true') === 'true',
       weatherTagged: (process.env.NUXT_MEDIA_WEATHER_TAGGED || process.env.UNSPLASH_WEATHER_TAGGED || process.env.PEXELS_WEATHER_TAGGED || 'true') === 'true',
       nasaApiKey: process.env.NUXT_MEDIA_NASA_API_KEY || process.env.NASA_KEY || 'DEMO_KEY',
+      nasaQuery: process.env.NUXT_MEDIA_NASA_QUERY || process.env.NASA_QUERY || '',
       unsplashKey: process.env.NUXT_MEDIA_UNSPLASH_KEY || process.env.UNSPLASH_ACCESS || '',
       pexelsKey: process.env.NUXT_MEDIA_PEXELS_KEY || process.env.PEXELS_KEY || '',
       flickrKey: process.env.NUXT_MEDIA_FLICKR_KEY || process.env.FLICKR_API_KEY || ''

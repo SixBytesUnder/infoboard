@@ -10,6 +10,7 @@
       :weather-tag="weatherData?.current?.conditionText"
       @update:active-asset="activeAsset = $event"
       @update:is-video="isVideoActive = $event"
+      @update:can-skip="canSkipImage = $event"
     />
 
     <!-- Foreground Content Layer -->
@@ -74,6 +75,7 @@
       :show-nav-buttons="config.app.navButtons"
       :is-local-source="isLocalMedia"
       :is-nav-disabled="false"
+      :can-skip-image="canSkipImage"
       @toggle-mute="isMuted = !isMuted"
       @toggle-exif="toggleExifModal"
       @next-image="bgRef?.nextImage()"
@@ -132,6 +134,7 @@ const isVideoActive = ref(false)
 const activeAsset = ref<MediaAsset | null>(null)
 const showExifModal = ref(false)
 const exifData = ref<ExifMetadata | null>(null)
+const canSkipImage = ref(true)
 
 const bgRef = ref<{ nextImage: () => void; nextFolder: () => void } | null>(null)
 
