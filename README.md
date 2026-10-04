@@ -103,6 +103,7 @@ All settings can be placed in your `.env` file. Modern `NUXT_` prefixed variable
 | `NUXT_WEATHER_LOCATION_NAME`| `London, UK` | Header location name |
 | `NUXT_WEATHER_UNITS` | `metric` | `metric` (°C, m/s, hPa) or `imperial` (°F, mph, inHg) |
 | `NUXT_WEATHER_ROUND_TEMP` | `true` | Round temperatures to whole degrees |
+| `NUXT_WEATHER_FORECAST_DAYS` | `7` | Forecast days to display (1 to API max) |
 | `NUXT_WEATHER_CACHE_TTL` | `300` | Weather cache time in seconds (5 min) |
 | `NUXT_TRANSIT_ENABLED` | `true` | Enable Transport for London module |
 | `NUXT_TRANSIT_TFL_APP_ID` | `""` | Optional TfL App ID |

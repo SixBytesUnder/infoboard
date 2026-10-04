@@ -47,7 +47,8 @@ export default defineNuxtConfig({
       longitude: Number(process.env.NUXT_WEATHER_LONGITUDE || process.env.WEATHER_LON || -0.1278),
       units: (process.env.NUXT_WEATHER_UNITS || process.env.WEATHER_UNITS || 'metric') as 'metric' | 'imperial',
       roundTemp: (process.env.NUXT_WEATHER_ROUND_TEMP || process.env.WEATHER_ROUNDED || 'true') === 'true',
-      cacheTtl: Number(process.env.NUXT_WEATHER_CACHE_TTL || 300)
+      cacheTtl: Number(process.env.NUXT_WEATHER_CACHE_TTL || 300),
+      forecastDays: Number(process.env.NUXT_WEATHER_FORECAST_DAYS || process.env.WEATHER_FORECAST_DAYS || 7)
     },
     transit: {
       tflAppId: process.env.NUXT_TRANSIT_TFL_APP_ID || process.env.TFL_APP_ID || '',

@@ -57,13 +57,16 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
     }
 
     const mockForecast: DayForecast[] = []
-    for (let i = 0; i < 6; i++) {
+    const mockCodes = [1000, 1100, 1101, 4001, 1001, 1100, 1000]
+    const count = Math.min(Math.max(weatherConf.forecastDays || 7, 1), 14)
+    for (let i = 0; i < count; i++) {
       const day = now.add(i, 'day')
+      const code = mockCodes[i % mockCodes.length] ?? 1000
       mockForecast.push({
         date: day.format('YYYY-MM-DD'),
         dayName: i === 0 ? 'Today' : day.format('dddd'),
-        weatherCode: [1000, 1100, 1101, 4001, 1001, 1100][i % 6] ?? 1000,
-        conditionText: WEATHER_CODES[[1000, 1100, 1101, 4001, 1001, 1100][i % 6] ?? 1000] || 'Clear',
+        weatherCode: code,
+        conditionText: WEATHER_CODES[code] || 'Clear',
         tempMax: baseTemp + Math.round(Math.sin(i) * 3) + 2,
         tempMin: baseTemp - Math.round(Math.cos(i) * 2) - 3
       })
@@ -157,7 +160,9 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
     const forecast: DayForecast[] = []
 
     if (forecastTimeline?.intervals) {
-      for (let i = 0; i < forecastTimeline.intervals.length; i++) {
+      const maxDays = Math.max(weatherConf.forecastDays || 7, 1)
+      const targetCount = Math.min(forecastTimeline.intervals.length, maxDays)
+      for (let i = 0; i < targetCount; i++) {
         const interval = forecastTimeline.intervals[i]
         if (!interval) continue
         const dayTime = dayjs(interval.startTime)
