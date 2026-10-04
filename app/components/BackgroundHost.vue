@@ -15,23 +15,23 @@
     />
 
     <!-- Dual-Layer Image: Blurred Cover + Sharp Contain -->
-    <div
-      v-else-if="currentAsset?.type === 'image'"
-      class="bg-image-blur"
-      :style="{ backgroundImage: `url('${currentAsset.url}')` }"
-    />
-    <img
-      v-if="currentAsset?.type === 'image'"
-      :src="currentAsset.url"
-      :alt="currentAsset.title || 'Background'"
-      class="bg-image-contain"
-      @error="onImageError"
-    >
+    <template v-else-if="currentAsset?.type === 'image'">
+      <div
+        class="bg-image-blur"
+        :style="blurStyle"
+      />
+      <img
+        :src="currentAsset.url"
+        :alt="currentAsset.title || 'Background'"
+        class="bg-image-contain"
+        @error="onImageError"
+      >
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onScopeDispose, watch } from 'vue'
+import { ref, computed, onMounted, onScopeDispose, watch } from 'vue'
 import type { MediaAsset, BackgroundBatch } from '~~/shared'
 
 const props = withDefaults(defineProps<{
@@ -58,6 +58,14 @@ const playlist = ref<MediaAsset[]>([])
 const currentIndex = ref<number>(0)
 const currentAsset = ref<MediaAsset | null>(null)
 const videoRef = ref<HTMLVideoElement | null>(null)
+
+const blurStyle = computed(() => {
+  if (!currentAsset.value?.url || currentAsset.value.type !== 'image') return {}
+  const safeUrl = currentAsset.value.url.replace(/'/g, '%27')
+  return {
+    backgroundImage: `url('${safeUrl}')`
+  }
+})
 
 let rotationTimer: ReturnType<typeof setTimeout> | null = null
 let isPlayingVideo = false
@@ -269,6 +277,8 @@ defineExpose({
   filter: blur(24px) brightness(0.6);
   transform: scale(1.06);
   transition: background-image 0.8s ease-in-out;
+  animation: fade-in 0.8s ease-in-out;
+  z-index: 0;
 }
 
 .bg-image-contain,

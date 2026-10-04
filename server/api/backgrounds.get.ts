@@ -59,8 +59,11 @@ async function scanDirectoryRecursive(
     const ext = path.extname(file).toLowerCase()
     const isVideo = VIDEO_EXTS.has(ext)
 
-    // Encode path segments while keeping forward slashes intact
-    const encodedPath = fileRel.split('/').map(seg => encodeURIComponent(seg)).join('/')
+    // Encode path segments while keeping forward slashes intact and escaping quotes for CSS safety
+    const encodedPath = fileRel
+      .split('/')
+      .map(seg => encodeURIComponent(seg).replace(/'/g, '%27'))
+      .join('/')
 
     allAssets.push({
       type: isVideo ? 'video' : 'image',
