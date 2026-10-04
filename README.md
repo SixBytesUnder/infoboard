@@ -86,7 +86,7 @@ node .output/server/index.mjs
 
 ## Configuration Reference
 
-All settings can be placed in your `.env` file. Modern `NUXT_` prefixed variables are recommended; legacy variable names from v2.x are supported automatically for backwards compatibility.
+All settings can be placed in your `.env` file using modern `NUXT_` prefixed environment variables.
 
 | Variable | Default | Description |
 |---|---|---|

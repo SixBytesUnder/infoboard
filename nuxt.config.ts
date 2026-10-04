@@ -42,88 +42,88 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Private server-only runtime config
     weather: {
-      apiKey: process.env.NUXT_WEATHER_API_KEY || process.env.WEATHER_API_KEY || '',
-      latitude: Number(process.env.NUXT_WEATHER_LATITUDE || process.env.WEATHER_LAT || 51.5074),
-      longitude: Number(process.env.NUXT_WEATHER_LONGITUDE || process.env.WEATHER_LON || -0.1278),
-      units: (process.env.NUXT_WEATHER_UNITS || process.env.WEATHER_UNITS || 'metric') as 'metric' | 'imperial',
-      roundTemp: (process.env.NUXT_WEATHER_ROUND_TEMP || process.env.WEATHER_ROUNDED || 'true') === 'true',
+      apiKey: process.env.NUXT_WEATHER_API_KEY || '',
+      latitude: Number(process.env.NUXT_WEATHER_LATITUDE || 51.5074),
+      longitude: Number(process.env.NUXT_WEATHER_LONGITUDE || -0.1278),
+      units: (process.env.NUXT_WEATHER_UNITS || 'metric') as 'metric' | 'imperial',
+      roundTemp: (process.env.NUXT_WEATHER_ROUND_TEMP || 'true') === 'true',
       cacheTtl: Number(process.env.NUXT_WEATHER_CACHE_TTL || 300),
-      forecastDays: Number(process.env.NUXT_WEATHER_FORECAST_DAYS || process.env.WEATHER_FORECAST_DAYS || 7)
+      forecastDays: Number(process.env.NUXT_WEATHER_FORECAST_DAYS || 7)
     },
     transit: {
-      tflAppId: process.env.NUXT_TRANSIT_TFL_APP_ID || process.env.TFL_APP_ID || '',
-      tflAppKey: process.env.NUXT_TRANSIT_TFL_APP_KEY || process.env.TFL_APP_KEY || '',
-      busStops: (process.env.NUXT_TRANSIT_BUS_STOPS || process.env.TFL_BUS_STOPS || '').split(',').map(s => s.trim()).filter(Boolean),
-      lineModes: (process.env.NUXT_TRANSIT_LINE_MODES || process.env.TFL_STATUS || 'tube,overground,dlr,elizabeth-line,tram').split(',').map(s => s.trim()).filter(Boolean),
+      tflAppId: process.env.NUXT_TRANSIT_TFL_APP_ID || '',
+      tflAppKey: process.env.NUXT_TRANSIT_TFL_APP_KEY || '',
+      busStops: (process.env.NUXT_TRANSIT_BUS_STOPS || '').split(',').map(s => s.trim()).filter(Boolean),
+      lineModes: (process.env.NUXT_TRANSIT_LINE_MODES || 'tube,overground,dlr,elizabeth-line,tram').split(',').map(s => s.trim()).filter(Boolean),
       cacheTtl: Number(process.env.NUXT_TRANSIT_CACHE_TTL || 60)
     },
     calendar: {
-      icalUrl: process.env.NUXT_CALENDAR_ICAL_URL || process.env.CALENDAR_ICAL || '',
-      maxEvents: Number(process.env.NUXT_CALENDAR_MAX_EVENTS || process.env.CALENDAR_LIMIT || 10),
+      icalUrl: process.env.NUXT_CALENDAR_ICAL_URL || '',
+      maxEvents: Number(process.env.NUXT_CALENDAR_MAX_EVENTS || 10),
       cacheTtl: Number(process.env.NUXT_CALENDAR_CACHE_TTL || 900)
     },
     media: {
-      source: (process.env.NUXT_MEDIA_SOURCE || process.env.IMAGES_SOURCE || 'local') as 'local' | 'single' | 'nasa' | 'unsplash' | 'pexels' | 'flickr',
-      localDir: process.env.NUXT_MEDIA_LOCAL_DIR || process.env.IMAGES_DIR || '',
-      interval: Number(process.env.NUXT_MEDIA_INTERVAL || process.env.IMAGE_INTERVAL || 60),
-      allowVideo: (process.env.NUXT_MEDIA_ALLOW_VIDEO || process.env.VIDEO || 'false') === 'true',
-      videoMuted: (process.env.NUXT_MEDIA_VIDEO_MUTED || process.env.VIDEO_MUTED || 'true') === 'true',
-      weatherTagged: (process.env.NUXT_MEDIA_WEATHER_TAGGED || process.env.UNSPLASH_WEATHER_TAGGED || process.env.PEXELS_WEATHER_TAGGED || 'true') === 'true',
-      unsplashKey: process.env.NUXT_MEDIA_UNSPLASH_KEY || process.env.UNSPLASH_ACCESS || '',
-      pexelsKey: process.env.NUXT_MEDIA_PEXELS_KEY || process.env.PEXELS_KEY || '',
-      flickrKey: process.env.NUXT_MEDIA_FLICKR_KEY || process.env.FLICKR_API_KEY || ''
+      source: (process.env.NUXT_MEDIA_SOURCE || 'local') as 'local' | 'single' | 'nasa' | 'unsplash' | 'pexels' | 'flickr',
+      localDir: process.env.NUXT_MEDIA_LOCAL_DIR || '',
+      interval: Number(process.env.NUXT_MEDIA_INTERVAL || 60),
+      allowVideo: (process.env.NUXT_MEDIA_ALLOW_VIDEO || 'false') === 'true',
+      videoMuted: (process.env.NUXT_MEDIA_VIDEO_MUTED || 'true') === 'true',
+      weatherTagged: (process.env.NUXT_MEDIA_WEATHER_TAGGED || 'true') === 'true',
+      unsplashKey: process.env.NUXT_MEDIA_UNSPLASH_KEY || '',
+      pexelsKey: process.env.NUXT_MEDIA_PEXELS_KEY || '',
+      flickrKey: process.env.NUXT_MEDIA_FLICKR_KEY || ''
     },
     sensor: {
-      dhtEnabled: (process.env.NUXT_SENSOR_DHT_ENABLED || process.env.DHT || 'false') === 'true',
-      dhtType: (process.env.NUXT_SENSOR_DHT_TYPE || process.env.DHT_SENSOR_TYPE || '22') === '11' ? 'dht11' : 'dht22',
-      dhtPin: Number(process.env.NUXT_SENSOR_DHT_PIN || process.env.DHT_GPIO_PIN || 4),
-      senseHatEnabled: (process.env.NUXT_SENSOR_SENSEHAT_ENABLED || process.env.SENSE_HAT || 'false') === 'true',
-      sdsEnabled: (process.env.NUXT_SENSOR_SDS_ENABLED || process.env.SDS011 || 'false') === 'true',
-      sdsPort: process.env.NUXT_SENSOR_SDS_PORT || process.env.SDS_PORT || '/dev/ttyUSB0'
+      dhtEnabled: (process.env.NUXT_SENSOR_DHT_ENABLED || 'false') === 'true',
+      dhtType: (process.env.NUXT_SENSOR_DHT_TYPE || '22') === '11' ? 'dht11' : 'dht22',
+      dhtPin: Number(process.env.NUXT_SENSOR_DHT_PIN || 4),
+      senseHatEnabled: (process.env.NUXT_SENSOR_SENSEHAT_ENABLED || 'false') === 'true',
+      sdsEnabled: (process.env.NUXT_SENSOR_SDS_ENABLED || 'false') === 'true',
+      sdsPort: process.env.NUXT_SENSOR_SDS_PORT || '/dev/ttyUSB0'
     },
     // Public keys exposed to the client
     public: {
       app: {
-        magicMirror: (process.env.NUXT_APP_MAGIC_MIRROR || process.env.MAGIC_MIRROR || 'false') === 'true',
+        magicMirror: (process.env.NUXT_APP_MAGIC_MIRROR || 'false') === 'true',
         lowPowerMode: (process.env.NUXT_APP_LOW_POWER_MODE || 'false') === 'true',
-        timeFormat: process.env.NUXT_APP_TIME_FORMAT || process.env.TIME_FORMAT || 'HH:mm:ss',
-        dateFormat: process.env.NUXT_APP_DATE_FORMAT || process.env.DATE_FORMAT || 'dddd, Do MMMM YYYY',
-        autoExpandWeather: (process.env.NUXT_APP_AUTO_EXPAND_WEATHER || process.env.AE_WEATHER_DETAILS || 'false') === 'true',
-        autoExpandForecast: (process.env.NUXT_APP_AUTO_EXPAND_FORECAST || process.env.AE_FORECAST || 'false') === 'true',
-        autoExpandTransit: (process.env.NUXT_APP_AUTO_EXPAND_TRANSIT || process.env.AE_TFL || 'false') === 'true',
-        autoExpandCalendar: (process.env.NUXT_APP_AUTO_EXPAND_CALENDAR || process.env.AE_CALENDAR || 'false') === 'true',
-        navButtons: (process.env.NUXT_APP_NAV_BUTTONS || process.env.NAV_BUTTONS || 'true') === 'true',
-        showExif: (process.env.NUXT_APP_SHOW_EXIF || process.env.EXIF || 'true') === 'true'
+        timeFormat: process.env.NUXT_APP_TIME_FORMAT || 'HH:mm:ss',
+        dateFormat: process.env.NUXT_APP_DATE_FORMAT || 'dddd, Do MMMM YYYY',
+        autoExpandWeather: (process.env.NUXT_APP_AUTO_EXPAND_WEATHER || 'false') === 'true',
+        autoExpandForecast: (process.env.NUXT_APP_AUTO_EXPAND_FORECAST || 'false') === 'true',
+        autoExpandTransit: (process.env.NUXT_APP_AUTO_EXPAND_TRANSIT || 'false') === 'true',
+        autoExpandCalendar: (process.env.NUXT_APP_AUTO_EXPAND_CALENDAR || 'false') === 'true',
+        navButtons: (process.env.NUXT_APP_NAV_BUTTONS || 'true') === 'true',
+        showExif: (process.env.NUXT_APP_SHOW_EXIF || 'true') === 'true'
       },
       weather: {
-        enabled: (process.env.NUXT_WEATHER_ENABLED || process.env.WEATHER || 'true') === 'true',
-        locationName: process.env.NUXT_WEATHER_LOCATION_NAME || process.env.WEATHER_LOCATION_NAME || 'London, UK',
-        units: (process.env.NUXT_WEATHER_UNITS || process.env.WEATHER_UNITS || 'metric') as 'metric' | 'imperial',
-        roundTemp: (process.env.NUXT_WEATHER_ROUND_TEMP || process.env.WEATHER_ROUNDED || 'true') === 'true',
-        refreshMs: Number(process.env.NUXT_WEATHER_REFRESH_MS || process.env.WEATHER_REFRESH || 300000)
+        enabled: (process.env.NUXT_WEATHER_ENABLED || 'true') === 'true',
+        locationName: process.env.NUXT_WEATHER_LOCATION_NAME || 'London, UK',
+        units: (process.env.NUXT_WEATHER_UNITS || 'metric') as 'metric' | 'imperial',
+        roundTemp: (process.env.NUXT_WEATHER_ROUND_TEMP || 'true') === 'true',
+        refreshMs: Number(process.env.NUXT_WEATHER_REFRESH_MS || 300000)
       },
       transit: {
-        enabled: (process.env.NUXT_TRANSIT_ENABLED || process.env.TFL || 'true') === 'true',
+        enabled: (process.env.NUXT_TRANSIT_ENABLED || 'true') === 'true',
         refreshMs: 60000
       },
       calendar: {
-        enabled: (process.env.NUXT_CALENDAR_ENABLED || process.env.CALENDAR_ENABLE || 'true') === 'true',
-        dateFormat: process.env.NUXT_CALENDAR_DATE_FORMAT || process.env.CALENDAR_DATE_FORMAT || 'YYYY-MM-DD',
-        timeFormat: process.env.NUXT_CALENDAR_TIME_FORMAT || process.env.CALENDAR_TIME_FORMAT || 'HH:mm',
+        enabled: (process.env.NUXT_CALENDAR_ENABLED || 'true') === 'true',
+        dateFormat: process.env.NUXT_CALENDAR_DATE_FORMAT || 'YYYY-MM-DD',
+        timeFormat: process.env.NUXT_CALENDAR_TIME_FORMAT || 'HH:mm',
         refreshMs: 900000
       },
       media: {
-        source: (process.env.NUXT_MEDIA_SOURCE || process.env.IMAGES_SOURCE || 'local') as 'local' | 'single' | 'nasa' | 'unsplash' | 'pexels' | 'flickr',
-        interval: Number(process.env.NUXT_MEDIA_INTERVAL || process.env.IMAGE_INTERVAL || 60),
-        allowVideo: (process.env.NUXT_MEDIA_ALLOW_VIDEO || process.env.VIDEO || 'false') === 'true',
-        videoMuted: (process.env.NUXT_MEDIA_VIDEO_MUTED || process.env.VIDEO_MUTED || 'true') === 'true',
-        weatherTagged: (process.env.NUXT_MEDIA_WEATHER_TAGGED || process.env.UNSPLASH_WEATHER_TAGGED || process.env.PEXELS_WEATHER_TAGGED || 'true') === 'true'
+        source: (process.env.NUXT_MEDIA_SOURCE || 'local') as 'local' | 'single' | 'nasa' | 'unsplash' | 'pexels' | 'flickr',
+        interval: Number(process.env.NUXT_MEDIA_INTERVAL || 60),
+        allowVideo: (process.env.NUXT_MEDIA_ALLOW_VIDEO || 'false') === 'true',
+        videoMuted: (process.env.NUXT_MEDIA_VIDEO_MUTED || 'true') === 'true',
+        weatherTagged: (process.env.NUXT_MEDIA_WEATHER_TAGGED || 'true') === 'true'
       },
       sensor: {
-        dhtEnabled: (process.env.NUXT_SENSOR_DHT_ENABLED || process.env.DHT || 'false') === 'true',
-        senseHatEnabled: (process.env.NUXT_SENSOR_SENSEHAT_ENABLED || process.env.SENSE_HAT || 'false') === 'true',
-        sdsEnabled: (process.env.NUXT_SENSOR_SDS_ENABLED || process.env.SDS011 || 'false') === 'true',
-        refreshMs: Number(process.env.NUXT_SENSOR_REFRESH_MS || process.env.DHT_TIMER || 300) * 1000
+        dhtEnabled: (process.env.NUXT_SENSOR_DHT_ENABLED || 'false') === 'true',
+        senseHatEnabled: (process.env.NUXT_SENSOR_SENSEHAT_ENABLED || 'false') === 'true',
+        sdsEnabled: (process.env.NUXT_SENSOR_SDS_ENABLED || 'false') === 'true',
+        refreshMs: Number(process.env.NUXT_SENSOR_REFRESH_MS || 300000)
       }
     }
   }
