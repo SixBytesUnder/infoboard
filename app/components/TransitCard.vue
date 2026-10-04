@@ -162,7 +162,7 @@ const getLineStyle = (lineId: string) => {
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 400;
   text-align: left;
 }
 

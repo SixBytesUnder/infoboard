@@ -108,8 +108,8 @@ const handleIconError = (e: Event) => {
 }
 
 .weather-icon {
-  width: 4.6rem;
-  height: 4.6rem;
+  width: 7rem;
+  height: 7rem;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
 }
@@ -147,8 +147,8 @@ const handleIconError = (e: Event) => {
 
 .temp-val {
   font-family: var(--font-mono);
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 3.5rem;
+  font-weight: 500;
   line-height: 1;
   color: var(--text-primary);
   text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
@@ -170,7 +170,7 @@ const handleIconError = (e: Event) => {
 .condition-text {
   font-family: var(--font-sans);
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-primary);
 }
 
