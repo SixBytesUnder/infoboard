@@ -1,24 +1,13 @@
 import type { MediaAsset } from '~~/shared'
 
-interface NasaLibraryItem {
-  data?: Array<{
-    center?: string
-    title?: string
-    photographer?: string
-    nasa_id?: string
-    media_type?: string
-  }>
-  links?: Array<{
-    href: string
-    rel?: string
-    render?: string
-  }>
-}
-
-interface NasaLibraryResponse {
-  collection?: {
-    items?: NasaLibraryItem[]
-  }
+interface NasaApodBasicItem {
+  date?: string
+  title?: string
+  media_type?: string
+  hdurl?: string
+  url?: string
+  explanation?: string
+  copyright?: string
 }
 
 interface UnsplashPhoto {
@@ -64,72 +53,37 @@ export default defineEventHandler(async (event): Promise<MediaAsset[]> => {
 
   const source = mediaConf.source
 
-  // 1. NASA Space Gallery (images-api.nasa.gov) with APOD & local fallback
+  // 1. NASA APOD (science.nasa.gov Modern Service)
   if (source === 'nasa') {
     try {
-      const userQuery = (query.q as string) || (mediaConf as { nasaQuery?: string }).nasaQuery || ''
-      const defaultKeywords = ['nebula', 'galaxy', 'deep space', 'carina nebula', 'supernova']
-      const searchTopic: string = userQuery || defaultKeywords[Math.floor(Math.random() * defaultKeywords.length)] || 'nebula'
-
-      const resp = await $fetch<NasaLibraryResponse>(
-        `https://images-api.nasa.gov/search?q=${encodeURIComponent(searchTopic)}&media_type=image`,
+      const items = await $fetch<NasaApodBasicItem[]>(
+        'https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=30',
         { signal: AbortSignal.timeout(9000) }
       )
 
-      const rawItems = resp?.collection?.items || []
       const assets: MediaAsset[] = []
-
-      for (const item of rawItems) {
-        const d = item.data?.[0]
-        const links = item.links || []
-        if (!d || d.media_type !== 'image') continue
-
-        // Select optimal resolution: prefer large (~1080p) or medium, fallback to original
-        const imgUrl = links.find(l => l.href?.includes('~large'))?.href
-          || links.find(l => l.href?.includes('~medium'))?.href
-          || links.find(l => l.href?.includes('~orig'))?.href
-
-        if (!imgUrl) continue
-
-        assets.push({
-          type: 'image',
-          url: imgUrl,
-          identifier: `nasa-${d.nasa_id || assets.length}`,
-          title: d.title || 'NASA Deep Space',
-          credit: d.photographer || d.center || 'NASA'
-        })
+      if (Array.isArray(items)) {
+        for (const it of items) {
+          if (it.media_type === 'image' && (it.hdurl || it.url)) {
+            assets.push({
+              type: 'image',
+              url: it.hdurl || it.url || '/images/nasa.jpg',
+              identifier: `nasa-apod-${it.date || assets.length}`,
+              title: it.title || 'Astronomy Picture of the Day',
+              credit: it.date ? `NASA APOD (${it.date})` : 'NASA'
+            })
+          }
+        }
       }
 
       if (assets.length > 0) {
         return assets
       }
     } catch (err) {
-      console.warn('NASA Image Library fetch failed, trying APOD fallback:', (err as Error).message)
+      console.warn('NASA APOD (science.nasa.gov) failed, using bundled fallback:', (err as Error).message)
     }
 
-    // Secondary fallback: Try modern APOD endpoint from science.nasa.gov
-    try {
-      const apodBasic = await $fetch<Array<{ title?: string; hdurl?: string; url?: string; media_type?: string }>>(
-        'https://science.nasa.gov/wp-json/wp/v2/apod-basic',
-        { signal: AbortSignal.timeout(6000) }
-      )
-      const valid = apodBasic?.find(it => it.media_type === 'image' && (it.hdurl || it.url))
-      if (valid) {
-        return [
-          {
-            type: 'image',
-            url: valid.hdurl || valid.url || '/images/nasa.jpg',
-            identifier: 'nasa-apod',
-            title: valid.title || 'Astronomy Picture of the Day',
-            credit: 'NASA'
-          }
-        ]
-      }
-    } catch (apodErr) {
-      console.warn('NASA APOD fallback also failed:', (apodErr as Error).message)
-    }
-
-    // Ultimate fallback: Bundled NASA asset
+    // Fallback to bundled NASA asset
     return [
       {
         type: 'image',

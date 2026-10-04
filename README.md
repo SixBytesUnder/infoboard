@@ -117,7 +117,6 @@ All settings can be placed in your `.env` file. Modern `NUXT_` prefixed variable
 | `NUXT_MEDIA_LOCAL_DIR` | `"/media/photos"` | Absolute path to local photos/videos |
 | `NUXT_MEDIA_ALLOW_VIDEO` | `false` | Enable MP4 video playback |
 | `NUXT_MEDIA_VIDEO_MUTED` | `true` | Default video audio state |
-| `NUXT_MEDIA_NASA_API_KEY` | `DEMO_KEY` | NASA APOD API key |
 | `NUXT_SENSOR_DHT_ENABLED` | `false` | Read DHT11/22 via Linux sysfs |
 | `NUXT_SENSOR_SENSEHAT_ENABLED` | `false` | Read Raspberry Pi Sense HAT via sysfs |
 | `NUXT_SENSOR_SDS_ENABLED`| `false` | Read SDS011 air quality via serial port |
