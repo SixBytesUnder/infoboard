@@ -25,7 +25,7 @@
           </span>
         </div>
 
-        <div class="temp-row">
+        <div class="temp-section">
           <span class="temp-val">{{ weather.current.temperature }}°{{ tempUnitLetter }}</span>
           <span class="feels-like">Feels like {{ weather.current.temperatureApparent }}°{{ tempUnitLetter }}</span>
         </div>
@@ -42,8 +42,8 @@
           </button>
         </div>
 
-        <div class="attribution-row">
-          <a href="https://www.tomorrow.io/" target="_blank" rel="noopener noreferrer">Powered by Tomorrow.io</a>
+        <div class="attribution-section">
+          <a href="https://www.tomorrow.io/" target="_blank" rel="noopener noreferrer" class="attribution-link">Powered by Tomorrow.io</a>
           <span class="updated-time">Updated: {{ weather.current.updatedAt }}</span>
         </div>
       </div>
@@ -77,15 +77,15 @@ const handleIconError = (e: Event) => {
 
 <style scoped>
 .weather-card {
-  padding: 1.25rem 1.75rem;
+  padding: 0.85rem 1.25rem;
   width: fit-content;
-  max-width: 480px;
+  max-width: 440px;
 }
 
 .weather-main {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.1rem;
 }
 
 .weather-icon-btn {
@@ -100,7 +100,7 @@ const handleIconError = (e: Event) => {
 }
 
 .weather-icon-btn:hover {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
 .weather-icon-btn:active {
@@ -108,46 +108,46 @@ const handleIconError = (e: Event) => {
 }
 
 .weather-icon {
-  width: 6.5rem;
-  height: 6.5rem;
+  width: 4.6rem;
+  height: 4.6rem;
   object-fit: contain;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
 }
 
 .weather-info {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .location-row {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .pin-icon {
-  width: 1rem;
-  height: 1rem;
+  width: 0.9rem;
+  height: 0.9rem;
   opacity: 0.85;
 }
 
 .location-name {
   font-family: var(--font-sans);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
 
-.temp-row {
+.temp-section {
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .temp-val {
   font-family: var(--font-mono);
-  font-size: 3.25rem;
+  font-size: 2.5rem;
   font-weight: 700;
   line-height: 1;
   color: var(--text-primary);
@@ -155,7 +155,7 @@ const handleIconError = (e: Event) => {
 }
 
 .feels-like {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -163,19 +163,20 @@ const handleIconError = (e: Event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.85rem;
+  margin-top: 0.1rem;
 }
 
 .condition-text {
   font-family: var(--font-sans);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .more-btn {
-  padding: 0.2rem 0.6rem;
-  font-size: 0.75rem;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.7rem;
 }
 
 .more-btn.active {
@@ -183,37 +184,42 @@ const handleIconError = (e: Event) => {
   border-color: rgba(255, 255, 255, 0.4);
 }
 
-.attribution-row {
+.attribution-section {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.65rem;
-  color: var(--text-muted);
+  flex-direction: column;
+  gap: 0.1rem;
   margin-top: 0.2rem;
-  gap: 0.75rem;
 }
 
-.attribution-row a {
+.attribution-link {
+  font-size: 0.55rem;
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.15s ease;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
 }
 
-.attribution-row a:hover {
-  color: var(--text-secondary);
+.attribution-link:hover {
+  opacity: 1;
   text-decoration: underline;
+}
+
+.updated-time {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  opacity: 0.75;
 }
 
 @media (max-width: 576px) {
   .weather-card {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
   .weather-icon {
-    width: 4.8rem;
-    height: 4.8rem;
+    width: 3.6rem;
+    height: 3.6rem;
   }
   .temp-val {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 }
 </style>

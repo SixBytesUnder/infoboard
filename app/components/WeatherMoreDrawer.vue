@@ -51,7 +51,7 @@ const metricItems = computed(() => {
 
 <style scoped>
 .weather-more-drawer {
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   width: fit-content;
   max-width: 480px;
   animation: slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);

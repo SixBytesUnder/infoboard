@@ -1,12 +1,12 @@
 :root {
   --bg-kiosk: #121316;
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --glass-bg: rgba(22, 27, 34, 0.65);
+  --text-secondary: #bec4cd;
+  --text-muted: #bbc1c9;
+  --glass-bg: rgba(22, 27, 34, 0.3);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-hover: rgba(255, 255, 255, 0.12);
-  --glass-blur: 16px;
+  --glass-blur: 2px;
   --accent-cyan: #06b6d4;
   --accent-amber: #f59e0b;
   --accent-emerald: #10b981;

@@ -160,21 +160,38 @@ const { data: sensorData } = usePolling<SensorReadings>({
 })
 
 // EXIF modal handler
+const refreshExif = async () => {
+  if (!showExifModal.value || !activeAsset.value?.identifier) return
+  if (activeAsset.value.type !== 'image') {
+    showExifModal.value = false
+    return
+  }
+
+  try {
+    const data = await $fetch<ExifMetadata>(`/api/exif?file=${encodeURIComponent(activeAsset.value.identifier)}`)
+    exifData.value = data || {}
+  } catch (err) {
+    console.warn('Failed to load EXIF:', (err as Error).message)
+    exifData.value = {}
+  }
+}
+
 const toggleExifModal = async () => {
   if (showExifModal.value) {
     showExifModal.value = false
     return
   }
   if (!activeAsset.value?.identifier) return
-
-  try {
-    const data = await $fetch<ExifMetadata>(`/api/exif?file=${encodeURIComponent(activeAsset.value.identifier)}`)
-    exifData.value = data
-    showExifModal.value = true
-  } catch (err) {
-    console.warn('Failed to load EXIF:', (err as Error).message)
-  }
+  showExifModal.value = true
+  await refreshExif()
 }
+
+// Automatically refresh open EXIF panel when the displayed image changes
+watch(activeAsset, () => {
+  if (showExifModal.value) {
+    refreshExif()
+  }
+})
 </script>
 
 <style scoped>
@@ -204,8 +221,7 @@ const toggleExifModal = async () => {
 }
 
 .forecast-section {
-  width: fit-content;
-  max-width: 100%;
+  width: 100%;
 }
 
 .bottom-grid {

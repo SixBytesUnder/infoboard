@@ -33,7 +33,8 @@ const handleIconError = (e: Event) => {
 <style scoped>
 .forecast-container {
   display: flex;
-  gap: 0.75rem;
+  width: 100%;
+  gap: 0.65rem;
   overflow-x: auto;
   padding: 0.25rem 0;
   scrollbar-width: none;
@@ -50,14 +51,14 @@ const handleIconError = (e: Event) => {
 }
 
 .forecast-card {
-  flex: 1 0 110px;
-  min-width: 100px;
-  padding: 0.85rem 0.6rem;
+  flex: 1 1 0;
+  min-width: 85px;
+  padding: 0.65rem 0.4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .day-name {
@@ -68,10 +69,10 @@ const handleIconError = (e: Event) => {
 }
 
 .forecast-icon {
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 2.8rem;
+  height: 2.8rem;
   object-fit: contain;
-  margin: 0.2rem 0;
+  margin: 0.15rem 0;
 }
 
 .forecast-temps {

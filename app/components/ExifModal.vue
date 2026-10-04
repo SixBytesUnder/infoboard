@@ -1,38 +1,43 @@
 <template>
-  <div v-if="exif && hasAnyData" class="glass-panel exif-panel">
+  <div class="glass-panel exif-panel">
     <div class="exif-header">
-      <span class="exif-title">EXIF Photo Metadata</span>
+      <span class="exif-title">EXIF Photo Info</span>
       <button type="button" class="close-btn" @click="$emit('close')">✕</button>
     </div>
-    <div class="exif-body">
-      <div v-if="exif.Make || exif.Model" class="exif-row">
+
+    <div v-if="hasAnyData" class="exif-body">
+      <div v-if="exif?.Make || exif?.Model" class="exif-row">
         <span class="lbl">Camera:</span>
-        <span class="val">{{ [exif.Make, exif.Model].filter(Boolean).join(' ') }}</span>
+        <span class="val">{{ [exif?.Make, exif?.Model].filter(Boolean).join(' ') }}</span>
       </div>
-      <div v-if="exif.DateTime" class="exif-row">
+      <div v-if="exif?.DateTime" class="exif-row">
         <span class="lbl">Date:</span>
-        <span class="val">{{ exif.DateTime }}</span>
+        <span class="val">{{ exif?.DateTime }}</span>
       </div>
-      <div v-if="exif.ExposureTime" class="exif-row">
+      <div v-if="exif?.ExposureTime" class="exif-row">
         <span class="lbl">Exposure:</span>
-        <span class="val">{{ exif.ExposureTime }}</span>
+        <span class="val">{{ exif?.ExposureTime }}</span>
       </div>
-      <div v-if="exif.FNumber" class="exif-row">
+      <div v-if="exif?.FNumber" class="exif-row">
         <span class="lbl">Aperture:</span>
-        <span class="val">{{ exif.FNumber }}</span>
+        <span class="val">{{ exif?.FNumber }}</span>
       </div>
-      <div v-if="exif.ISO" class="exif-row">
+      <div v-if="exif?.ISO" class="exif-row">
         <span class="lbl">ISO:</span>
-        <span class="val">{{ exif.ISO }}</span>
+        <span class="val">{{ exif?.ISO }}</span>
       </div>
-      <div v-if="exif.FocalLength" class="exif-row">
+      <div v-if="exif?.FocalLength" class="exif-row">
         <span class="lbl">Focal Length:</span>
-        <span class="val">{{ exif.FocalLength }}</span>
+        <span class="val">{{ exif?.FocalLength }}</span>
       </div>
-      <div v-if="exif.PixelXDimension && exif.PixelYDimension" class="exif-row">
+      <div v-if="exif?.PixelXDimension && exif?.PixelYDimension" class="exif-row">
         <span class="lbl">Dimensions:</span>
-        <span class="val">{{ exif.PixelXDimension }} × {{ exif.PixelYDimension }} px</span>
+        <span class="val">{{ exif?.PixelXDimension }} × {{ exif?.PixelYDimension }} px</span>
       </div>
+    </div>
+
+    <div v-else class="exif-empty">
+      <p class="empty-text">No EXIF metadata available for this image.</p>
     </div>
   </div>
 </template>
@@ -60,7 +65,7 @@ const hasAnyData = computed(() => {
   position: fixed;
   bottom: 4rem;
   right: 1.5rem;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   max-width: 320px;
   z-index: 40;
   font-size: 0.78rem;
@@ -76,8 +81,8 @@ const hasAnyData = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.6rem;
-  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -92,6 +97,8 @@ const hasAnyData = computed(() => {
   color: var(--text-muted);
   cursor: pointer;
   font-size: 0.9rem;
+  line-height: 1;
+  padding: 0.1rem 0.3rem;
 }
 
 .close-btn:hover {
@@ -101,7 +108,7 @@ const hasAnyData = computed(() => {
 .exif-body {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.3rem;
 }
 
 .exif-row {
@@ -118,5 +125,17 @@ const hasAnyData = computed(() => {
   font-weight: 600;
   color: var(--text-primary);
   text-align: right;
+}
+
+.exif-empty {
+  padding: 0.4rem 0.2rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 0.75rem;
+  line-height: 1.3;
 }
 </style>

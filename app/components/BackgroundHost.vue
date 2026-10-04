@@ -77,6 +77,8 @@ const scheduleNext = () => {
   }, props.intervalSeconds * 1000)
 }
 
+const STORAGE_KEY_ASSET = 'infoboard_active_media_id'
+
 const loadPlaylist = async (isBackgroundRefresh = false) => {
   try {
     let items: MediaAsset[] = []
@@ -92,7 +94,21 @@ const loadPlaylist = async (isBackgroundRefresh = false) => {
     if (items.length > 0) {
       playlist.value = items
       if (!isBackgroundRefresh) {
-        currentIndex.value = 0
+        let startIdx = 0
+        if (typeof window !== 'undefined' && props.source === 'local') {
+          try {
+            const savedId = localStorage.getItem(STORAGE_KEY_ASSET)
+            if (savedId) {
+              const foundIdx = items.findIndex(it => it.identifier === savedId)
+              if (foundIdx !== -1) {
+                startIdx = foundIdx
+              }
+            }
+          } catch {
+            // LocalStorage restricted or disabled
+          }
+        }
+        currentIndex.value = startIdx
         displayCurrent()
       }
     }
@@ -120,6 +136,15 @@ const displayCurrent = () => {
   currentAsset.value = asset
   emit('update:active-asset', asset)
   emit('update:is-video', asset.type === 'video')
+
+  // Persist current media position in localStorage for seamless resume
+  if (typeof window !== 'undefined' && props.source === 'local') {
+    try {
+      localStorage.setItem(STORAGE_KEY_ASSET, asset.identifier)
+    } catch {
+      // Ignore quota errors
+    }
+  }
 
   if (asset.type === 'image') {
     scheduleNext()

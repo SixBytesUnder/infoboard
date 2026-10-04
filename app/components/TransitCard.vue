@@ -146,7 +146,7 @@ const getLineStyle = (lineId: string) => {
 }
 
 .transit-card {
-  padding: 0.85rem 1.1rem;
+  padding: 0.65rem 0.95rem;
   width: fit-content;
   max-width: 100%;
 }

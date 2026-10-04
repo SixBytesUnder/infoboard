@@ -21,7 +21,7 @@ const { time, date } = useSystemClock(props.timeFormat, props.dateFormat)
 
 <style scoped>
 .datetime-card {
-  padding: 1.25rem 1.75rem;
+  padding: 0.85rem 1.25rem;
   display: inline-flex;
   flex-direction: column;
   justify-content: center;
