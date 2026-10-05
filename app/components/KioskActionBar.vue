@@ -6,6 +6,7 @@
       type="button"
       class="kiosk-btn control-btn"
       :title="isMuted ? 'Unmute' : 'Mute'"
+      :aria-label="isMuted ? 'Unmute video audio' : 'Mute video audio'"
       @click="$emit('toggle-mute')"
     >
       <img
@@ -21,6 +22,7 @@
       type="button"
       class="kiosk-btn control-btn"
       title="View EXIF photo info"
+      aria-label="View EXIF photo info"
       @click="$emit('toggle-exif')"
     >
       i
@@ -31,6 +33,7 @@
       type="button"
       class="kiosk-btn control-btn"
       title="Toggle Fullscreen"
+      :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
       @click="toggleFullscreen"
     >
       {{ isFullscreen ? 'Exit Fullscreen' : 'Fullscreen' }}
@@ -42,6 +45,7 @@
       type="button"
       class="kiosk-btn control-btn"
       title="Skip to next image"
+      aria-label="Skip to next image"
       :disabled="isNavDisabled"
       @click="$emit('next-image')"
     >
@@ -54,6 +58,7 @@
       type="button"
       class="kiosk-btn control-btn"
       title="Skip to next folder"
+      aria-label="Skip to next folder"
       :disabled="isNavDisabled"
       @click="$emit('next-folder')"
     >
