@@ -13,7 +13,7 @@ services:
       - .env
     volumes:
       # Optional: mount local media folder if using local background images/videos
-      - /media/photos:/media/photos:ro
+      - ${HOST_MEDIA_DIR:-/media/photos}:/media/photos:ro
       # Optional: serial port for SDS011 sensor (uncomment if hardware present)
       # - /dev/ttyUSB0:/dev/ttyUSB0
     # devices:
