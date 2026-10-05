@@ -47,6 +47,7 @@ infoboard-v4/
 ## Quick Start (Local Development)
 
 ### Prerequisites
+
 - Node.js 22 LTS or newer
 - npm 10 or newer
 
@@ -86,41 +87,41 @@ node .output/server/index.mjs
 
 ## Configuration Reference
 
-All settings can be placed in your `.env` file using modern `NUXT_` prefixed environment variables.
+All settings can be placed in your `.env` file using `NUXT_` prefixed environment variables.
 
-| Variable | Default | Description |
-|---|---|---|
-| `NUXT_APP_MAGIC_MIRROR` | `false` | Enable high-contrast black/white display |
-| `NUXT_APP_LOW_POWER_MODE` | `false` | Disable blur/shadows on low-RAM Raspberry Pis |
-| `NUXT_APP_TIME_FORMAT` | `HH:mm:ss` | Day.js time format |
-| `NUXT_APP_DATE_FORMAT` | `dddd, Do MMMM YYYY` | Day.js date format |
-| `NUXT_APP_NAV_BUTTONS` | `true` | Show kiosk action bar |
-| `NUXT_APP_SHOW_EXIF` | `true` | Show EXIF button on local photos |
-| `NUXT_WEATHER_ENABLED` | `true` | Enable weather module |
-| `NUXT_WEATHER_API_KEY` | `""` | Tomorrow.io API v4 key |
-| `NUXT_WEATHER_LATITUDE` | `51.5074` | Latitude |
-| `NUXT_WEATHER_LONGITUDE` | `-0.1278` | Longitude |
-| `NUXT_WEATHER_LOCATION_NAME`| `London, UK` | Header location name |
-| `NUXT_WEATHER_UNITS` | `metric` | `metric` (°C, m/s, hPa) or `imperial` (°F, mph, inHg) |
-| `NUXT_WEATHER_ROUND_TEMP` | `true` | Round temperatures to whole degrees |
-| `NUXT_WEATHER_FORECAST_DAYS` | `7` | Forecast days to display (1 to API max) |
-| `NUXT_WEATHER_CACHE_TTL` | `300` | Weather cache time in seconds (5 min) |
-| `NUXT_TRANSIT_ENABLED` | `true` | Enable Transport for London module |
-| `NUXT_TRANSIT_TFL_APP_ID` | `""` | Optional TfL App ID |
-| `NUXT_TRANSIT_TFL_APP_KEY`| `""` | Optional TfL App Key |
-| `NUXT_TRANSIT_BUS_STOPS` | `""` | Comma-separated TfL bus stop codes |
-| `NUXT_TRANSIT_LINE_MODES` | `tube,overground,dlr,elizabeth-line,tram` | Rail & tube line modes |
-| `NUXT_CALENDAR_ENABLED` | `true` | Enable iCal calendar module |
-| `NUXT_CALENDAR_ICAL_URL` | `""` | iCal / ICS feed URL |
-| `NUXT_CALENDAR_MAX_EVENTS`| `10` | Maximum upcoming events |
-| `NUXT_MEDIA_SOURCE` | `nasa` | `local`, `single`, `nasa`, `unsplash`, `pexels`, `flickr` |
-| `NUXT_MEDIA_INTERVAL` | `60` | Background rotation interval in seconds |
-| `NUXT_MEDIA_LOCAL_DIR` | `"/media/photos"` | Absolute path to local photos/videos |
-| `NUXT_MEDIA_ALLOW_VIDEO` | `false` | Enable MP4 video playback |
-| `NUXT_MEDIA_VIDEO_MUTED` | `true` | Default video audio state |
-| `NUXT_SENSOR_DHT_ENABLED` | `false` | Read DHT11/22 via Linux sysfs |
-| `NUXT_SENSOR_SENSEHAT_ENABLED` | `false` | Read Raspberry Pi Sense HAT via sysfs |
-| `NUXT_SENSOR_SDS_ENABLED`| `false` | Read SDS011 air quality via serial port |
+| Variable                       | Default                                   | Description                                               |
+| ------------------------------ | ----------------------------------------- | --------------------------------------------------------- |
+| `NUXT_APP_MAGIC_MIRROR`        | `false`                                   | Enable high-contrast black/white display                  |
+| `NUXT_APP_LOW_POWER_MODE`      | `false`                                   | Disable blur/shadows on low-RAM Raspberry Pis             |
+| `NUXT_APP_TIME_FORMAT`         | `HH:mm:ss`                                | Day.js time format                                        |
+| `NUXT_APP_DATE_FORMAT`         | `dddd, Do MMMM YYYY`                      | Day.js date format                                        |
+| `NUXT_APP_NAV_BUTTONS`         | `true`                                    | Show kiosk action bar                                     |
+| `NUXT_APP_SHOW_EXIF`           | `true`                                    | Show EXIF button on local photos                          |
+| `NUXT_WEATHER_ENABLED`         | `true`                                    | Enable weather module                                     |
+| `NUXT_WEATHER_API_KEY`         | `""`                                      | Tomorrow.io API v4 key                                    |
+| `NUXT_WEATHER_LATITUDE`        | `51.5074`                                 | Latitude                                                  |
+| `NUXT_WEATHER_LONGITUDE`       | `-0.1278`                                 | Longitude                                                 |
+| `NUXT_WEATHER_LOCATION_NAME`   | `London, UK`                              | Header location name                                      |
+| `NUXT_WEATHER_UNITS`           | `metric`                                  | `metric` (°C, m/s, hPa) or `imperial` (°F, mph, inHg)     |
+| `NUXT_WEATHER_ROUND_TEMP`      | `true`                                    | Round temperatures to whole degrees                       |
+| `NUXT_WEATHER_FORECAST_DAYS`   | `7`                                       | Forecast days to display (1 to API max)                   |
+| `NUXT_WEATHER_CACHE_TTL`       | `300`                                     | Weather cache time in seconds (5 min)                     |
+| `NUXT_TRANSIT_ENABLED`         | `true`                                    | Enable Transport for London module                        |
+| `NUXT_TRANSIT_TFL_APP_ID`      | `""`                                      | Optional TfL App ID                                       |
+| `NUXT_TRANSIT_TFL_APP_KEY`     | `""`                                      | Optional TfL App Key                                      |
+| `NUXT_TRANSIT_BUS_STOPS`       | `""`                                      | Comma-separated TfL bus stop codes                        |
+| `NUXT_TRANSIT_LINE_MODES`      | `tube,overground,dlr,elizabeth-line,tram` | Rail & tube line modes                                    |
+| `NUXT_CALENDAR_ENABLED`        | `true`                                    | Enable iCal calendar module                               |
+| `NUXT_CALENDAR_ICAL_URL`       | `""`                                      | iCal / ICS feed URL                                       |
+| `NUXT_CALENDAR_MAX_EVENTS`     | `10`                                      | Maximum upcoming events                                   |
+| `NUXT_MEDIA_SOURCE`            | `nasa`                                    | `local`, `single`, `nasa`, `unsplash`, `pexels`, `flickr` |
+| `NUXT_MEDIA_INTERVAL`          | `60`                                      | Background rotation interval in seconds                   |
+| `NUXT_MEDIA_LOCAL_DIR`         | `"/media/photos"`                         | Absolute path to local photos/videos                      |
+| `NUXT_MEDIA_ALLOW_VIDEO`       | `false`                                   | Enable MP4 video playback                                 |
+| `NUXT_MEDIA_VIDEO_MUTED`       | `true`                                    | Default video audio state                                 |
+| `NUXT_SENSOR_DHT_ENABLED`      | `false`                                   | Read DHT11/22 via Linux sysfs                             |
+| `NUXT_SENSOR_SENSEHAT_ENABLED` | `false`                                   | Read Raspberry Pi Sense HAT via sysfs                     |
+| `NUXT_SENSOR_SDS_ENABLED`      | `false`                                   | Read SDS011 air quality via serial port                   |
 
 ---
 
@@ -136,7 +137,7 @@ cd /srv/infoboard
 
 # 2. Configure .env with your credentials
 cp .env.example .env
-nano .env
+vim .env
 
 # 3. Start container in background
 docker compose up -d

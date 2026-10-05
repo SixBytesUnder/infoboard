@@ -45,7 +45,7 @@
       :disabled="isNavDisabled"
       @click="$emit('next-image')"
     >
-      Image ➔
+      Image
     </button>
 
     <!-- Next Folder (Local source only) -->
@@ -57,7 +57,7 @@
       :disabled="isNavDisabled"
       @click="$emit('next-folder')"
     >
-      Folder ➔
+      Folder
     </button>
   </div>
 </template>
