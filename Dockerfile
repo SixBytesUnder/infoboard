@@ -9,7 +9,7 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
 
-COPY package.json ./
+COPY package.json package-lock.json* ./
 
 # Install all dependencies (clean non-interactive)
 RUN npm install

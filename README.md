@@ -140,7 +140,7 @@ cp .env.example .env
 vim .env
 
 # 3. Start container in background
-docker compose up -d
+docker compose up -d --build
 ```
 
 ### Cross-Compiling for Raspberry Pi (Docker Buildx)
@@ -160,7 +160,7 @@ docker buildx build \
 
 # On the Raspberry Pi, simply run:
 docker pull your-registry/infoboard:latest
-docker compose up -d
+docker compose up -d --build
 ```
 
 ---
