@@ -34,8 +34,8 @@
         >
       </div>
       <div class="sds-text">
-        <span>PM2.5: {{ formatVal(sensors.pm25) }}</span>
-        <span v-if="sensors.pm10 !== undefined">PM10: {{ formatVal(sensors.pm10) }}</span>
+        <span>PM2.5: {{ formatVal(sensors.pm25, 2) }}</span>
+        <span v-if="sensors.pm10 !== undefined">PM10: {{ formatVal(sensors.pm10, 2) }}</span>
       </div>
     </div>
   </div>
@@ -55,9 +55,10 @@ const hasAnySensor = computed(() => {
   return s.temperature !== undefined || s.humidity !== undefined || s.pressure !== undefined || s.pm25 !== undefined
 })
 
-const formatVal = (val?: number) => {
+const formatVal = (val?: number, maxDecimals = 1) => {
   if (val === undefined || Number.isNaN(val)) return ''
-  return Math.round(val * 10) / 10
+  const factor = 10 ** maxDecimals
+  return Math.round(val * factor) / factor
 }
 </script>
 

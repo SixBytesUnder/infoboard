@@ -90,8 +90,8 @@ export async function readSensorData(config: {
           cachedSDS = { pm25, pm10, lastRead: Date.now() }
         } else {
           isSimulated = true
-          pm25 = 9.2 + Math.round((Math.random() * 2) * 10) / 10
-          pm10 = 15.4 + Math.round((Math.random() * 3) * 10) / 10
+          pm25 = Number((9.2 + Math.random() * 2).toFixed(2))
+          pm10 = Number((15.4 + Math.random() * 3).toFixed(2))
           cachedSDS = { pm25, pm10, lastRead: Date.now() }
         }
       } catch {
@@ -100,6 +100,14 @@ export async function readSensorData(config: {
         pm10 = 14.0
       }
     }
+  }
+
+  // Ensure PM values have at most 2 decimal places
+  if (pm25 !== undefined) {
+    pm25 = Number(pm25.toFixed(2))
+  }
+  if (pm10 !== undefined) {
+    pm10 = Number(pm10.toFixed(2))
   }
 
   // Calculate SDS011 face icon
