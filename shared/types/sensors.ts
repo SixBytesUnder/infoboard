@@ -9,5 +9,7 @@ export interface SensorReadings {
   hasSenseHat: boolean
   hasSds: boolean
   isSimulated: boolean
+  hasError?: boolean
+  error?: string
   updatedAt: string
 }

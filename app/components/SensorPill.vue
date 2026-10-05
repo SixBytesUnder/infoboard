@@ -25,17 +25,24 @@
     </div>
 
     <!-- SDS011 Air Quality PM2.5 / PM10 -->
-    <div v-if="sensors?.pm25 !== undefined" class="sensor-chip sds-chip">
+    <div v-if="sensors?.pm25 !== undefined || (sensors?.hasSds && sensors?.hasError)" class="sensor-chip sds-chip">
       <div class="sensor-icon-wrap">
         <img
+          v-if="!sensors?.hasError || sensors?.pm25 !== undefined"
           :src="`/images/sds_${sensors.airQualityRating || 'smile'}.svg`"
           :alt="sensors.airQualityRating || 'smile'"
           class="sensor-icon sds-icon"
         >
+        <span v-else class="sensor-error-badge" :title="sensors.error || 'Sensor read error'">!</span>
       </div>
       <div class="sds-text">
-        <span>PM2.5: {{ formatVal(sensors.pm25, 2) }}</span>
-        <span v-if="sensors.pm10 !== undefined">PM10: {{ formatVal(sensors.pm10, 2) }}</span>
+        <template v-if="sensors.pm25 !== undefined">
+          <span>PM2.5: {{ formatVal(sensors.pm25, 2) }}</span>
+          <span v-if="sensors.pm10 !== undefined">PM10: {{ formatVal(sensors.pm10, 2) }}</span>
+        </template>
+        <template v-else>
+          <span class="sensor-error-label" :title="sensors.error || 'Sensor read error'">ERR</span>
+        </template>
       </div>
     </div>
   </div>
@@ -52,7 +59,7 @@ const props = defineProps<{
 const hasAnySensor = computed(() => {
   const s = props.sensors
   if (!s) return false
-  return s.temperature !== undefined || s.humidity !== undefined || s.pressure !== undefined || s.pm25 !== undefined
+  return s.temperature !== undefined || s.humidity !== undefined || s.pressure !== undefined || s.pm25 !== undefined || s.pm10 !== undefined || s.hasError === true
 })
 
 const formatVal = (val?: number, maxDecimals = 1) => {
@@ -120,5 +127,27 @@ const formatVal = (val?: number, maxDecimals = 1) => {
   flex-direction: column;
   font-size: 0.72rem;
   line-height: 1.2;
+}
+
+.sensor-error-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sensor-error-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f87171;
+  letter-spacing: 0.04em;
 }
 </style>
