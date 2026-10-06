@@ -12,6 +12,7 @@
 - **Hardware-Aware Design:**
   - **Magic Mirror Mode:** Pure `#000000` background and high-contrast `#ffffff` typography for reflective mirror installations.
   - **Low-Power Mode:** Disables backdrop blur and heavy box shadows for smooth 60fps rendering on low-RAM Raspberry Pi units (Pi 3B+, Pi Zero 2W).
+  - **PWA & Standalone Kiosk:** Installable Progressive Web App (PWA) with service worker offline shell caching, standalone display mode, and adaptive maskable icons for desktops, tablets, and kiosks.
 - **Widgets:**
   - **Clock & Date:** Large monospace typography (Cousine), configurable format, synchronized to system seconds.
   - **Weather & Forecast:** Real-time conditions from Tomorrow.io with 26 weather code icons, feels-like temperature, and 7-day forecast carousel.
@@ -177,6 +178,17 @@ screensaver = false
 dpms = false
 infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-for-update-interval=31536000 --disable-pinch http://localhost:3000
 ```
+
+---
+
+## Version History
+
+### v4.1.0
+- **Progressive Web App (PWA):** Web App Manifests, service worker offline shell precaching, standalone kiosk display mode, and client registration.
+- **Refreshed Dashboard Iconography:** 512×512 PNG, multi-resolution 256×256 ICO, and adaptive maskable launcher icons representing the four core modules (Clock, Weather, Sensors, Calendar).
+
+### v4.0.0
+- Baseline Infoboard v4 release built with Nuxt 4, Nitro, Vue 3, and TypeScript.
 
 ---
 

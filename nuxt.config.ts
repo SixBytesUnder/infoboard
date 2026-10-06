@@ -14,6 +14,19 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: true
   },
+  routeRules: {
+    '/sw.js': {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Content-Type': 'application/javascript; charset=utf-8'
+      }
+    },
+    '/manifest.webmanifest': {
+      headers: {
+        'Content-Type': 'application/manifest+json; charset=utf-8'
+      }
+    }
+  },
   app: {
     head: {
       htmlAttrs: {
@@ -26,10 +39,17 @@ export default defineNuxtConfig({
         { name: 'description', content: '24/7 Raspberry Pi Infoboard Kiosk' },
         { name: 'theme-color', content: '#121316' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
-        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-mobile-web-app-title', content: 'Infoboard' },
+        { name: 'application-name', content: 'Infoboard' },
+        { name: 'mobile-web-app-capable', content: 'yes' }
       ],
       link: [
+        { rel: 'manifest', href: '/manifest.webmanifest' },
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/icon-192.png' },
+        { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/icon-512.png' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cousine:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap' }
