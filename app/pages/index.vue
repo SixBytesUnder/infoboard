@@ -43,6 +43,7 @@
             v-if="config.transit.enabled"
             :transit="transitData"
             :initial-expand="config.app.autoExpandTransit"
+            :button-style="config.transit.buttonStyle"
           />
 
           <CalendarCard

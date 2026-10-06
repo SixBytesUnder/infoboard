@@ -20,6 +20,7 @@ export interface ClientDashboardConfig {
   }
   transit: {
     enabled: boolean
+    buttonStyle: 'verbose' | 'minimal'
     refreshMs: number
   }
   calendar: {

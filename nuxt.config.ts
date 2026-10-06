@@ -104,6 +104,7 @@ export default defineNuxtConfig({
       },
       transit: {
         enabled: (process.env.NUXT_TRANSIT_ENABLED || 'true') === 'true',
+        buttonStyle: ((process.env.NUXT_TRANSIT_BUTTON_STYLE || process.env.NUXT_TRANSIT_DISPLAY_MODE || 'verbose').toLowerCase() === 'minimal' ? 'minimal' : 'verbose') as 'verbose' | 'minimal',
         refreshMs: 60000
       },
       calendar: {

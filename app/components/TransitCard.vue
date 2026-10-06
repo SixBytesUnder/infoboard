@@ -1,20 +1,32 @@
 <template>
-  <div class="transit-container">
+  <div class="transit-container" :class="{ 'is-minimal': isMinimal }">
     <!-- Loading Placeholder -->
-    <div v-if="!transit" class="glass-panel transit-card">
-      <div class="header-toggle">
+    <div v-if="!transit" class="glass-panel transit-card" :class="{ 'is-minimal': isMinimal }">
+      <div
+        class="header-toggle"
+        :class="{ 'is-minimal': isMinimal }"
+        :title="isMinimal ? 'Transport for London: Connecting...' : undefined"
+      >
         <img src="/images/bus.svg" alt="Transit" class="transit-header-icon">
-        <span class="header-title">Transport for London</span>
-        <span class="event-count loading">Connecting...</span>
+        <template v-if="!isMinimal">
+          <span class="header-title">Transport for London</span>
+          <span class="event-count loading">Connecting...</span>
+        </template>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="transit.errorMessage && !hasBuses && transit.lines.length === 0" class="glass-panel transit-card">
-      <div class="header-toggle">
+    <div v-else-if="transit.errorMessage && !hasBuses && transit.lines.length === 0" class="glass-panel transit-card" :class="{ 'is-minimal': isMinimal }">
+      <div
+        class="header-toggle"
+        :class="{ 'is-minimal': isMinimal }"
+        :title="isMinimal ? 'Transport for London: Sync Error' : undefined"
+      >
         <img src="/images/tube.svg" alt="Transit" class="transit-header-icon">
-        <span class="header-title">Transport for London</span>
-        <span class="stale-pill">Sync Error</span>
+        <template v-if="!isMinimal">
+          <span class="header-title">Transport for London</span>
+          <span class="stale-pill">Sync Error</span>
+        </template>
       </div>
       <div class="transit-content">
         <p class="error-msg">{{ transit.errorMessage }}</p>
@@ -24,12 +36,22 @@
     <template v-else>
       <!-- Bus Timetables Section -->
       <div v-if="hasBuses" class="transit-block">
-        <div class="glass-panel transit-card">
-          <button type="button" class="header-toggle" @click="showBuses = !showBuses">
+        <div class="glass-panel transit-card" :class="{ 'is-minimal': isMinimal, 'is-expanded': showBuses }">
+          <button
+            type="button"
+            class="header-toggle"
+            :class="{ 'is-minimal': isMinimal && !showBuses }"
+            :aria-label="isMinimal && !showBuses ? 'Live Bus Arrivals' : undefined"
+            :aria-expanded="showBuses"
+            :title="isMinimal && !showBuses ? `Live Bus Arrivals (${busStopCount} ${busStopCount === 1 ? 'stop' : 'stops'})` : undefined"
+            @click="showBuses = !showBuses"
+          >
             <img src="/images/bus.svg" alt="Buses" class="transit-header-icon">
-            <span class="header-title">Live Bus Arrivals</span>
-            <span class="event-count">{{ busStopCount }} {{ busStopCount === 1 ? 'stop' : 'stops' }}</span>
-            <span class="chevron">{{ showBuses ? '▼' : '▶' }}</span>
+            <template v-if="!isMinimal || showBuses">
+              <span class="header-title">Live Bus Arrivals</span>
+              <span class="event-count">{{ busStopCount }} {{ busStopCount === 1 ? 'stop' : 'stops' }}</span>
+              <span class="chevron">{{ showBuses ? '▼' : '▶' }}</span>
+            </template>
           </button>
 
           <div v-if="showBuses" class="transit-content">
@@ -57,13 +79,23 @@
 
       <!-- Rail & Tube Status Section -->
       <div v-if="transit.lines.length > 0" class="transit-block">
-        <div class="glass-panel transit-card">
-          <button type="button" class="header-toggle" @click="showTube = !showTube">
+        <div class="glass-panel transit-card" :class="{ 'is-minimal': isMinimal, 'is-expanded': showTube }">
+          <button
+            type="button"
+            class="header-toggle"
+            :class="{ 'is-minimal': isMinimal && !showTube }"
+            :aria-label="isMinimal && !showTube ? 'Transport Status' : undefined"
+            :aria-expanded="showTube"
+            :title="isMinimal && !showTube ? (hasDisruptions ? 'Transport Status: Disruptions' : 'Transport Status: Good Service') : undefined"
+            @click="showTube = !showTube"
+          >
             <img src="/images/tube.svg" alt="Underground" class="transit-header-icon">
-            <span class="header-title">Transport Status</span>
-            <span v-if="hasDisruptions" class="stale-pill alert">Disruptions</span>
-            <span v-else class="event-count status-good">Good Service</span>
-            <span class="chevron">{{ showTube ? '▼' : '▶' }}</span>
+            <template v-if="!isMinimal || showTube">
+              <span class="header-title">Transport Status</span>
+              <span v-if="hasDisruptions" class="stale-pill alert">Disruptions</span>
+              <span v-else class="event-count status-good">Good Service</span>
+              <span class="chevron">{{ showTube ? '▼' : '▶' }}</span>
+            </template>
           </button>
 
           <div v-if="showTube" class="transit-content">
@@ -97,13 +129,22 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { TFL_LINE_COLORS } from '~~/shared'
-import type { TransitPayload } from '~~/shared'
+import type { TransitPayload, ClientDashboardConfig } from '~~/shared'
 
 const props = withDefaults(defineProps<{
   transit: TransitPayload | null
   initialExpand?: boolean
+  buttonStyle?: 'verbose' | 'minimal'
 }>(), {
-  initialExpand: false
+  initialExpand: false,
+  buttonStyle: undefined
+})
+
+const runtimeConfig = useRuntimeConfig()
+
+const isMinimal = computed(() => {
+  const style = props.buttonStyle || (runtimeConfig.public as unknown as ClientDashboardConfig)?.transit?.buttonStyle
+  return style === 'minimal'
 })
 
 const showBuses = ref(props.initialExpand)
@@ -149,6 +190,11 @@ const getLineStyle = (lineId: string) => {
   padding: 0.65rem 0.95rem;
   width: fit-content;
   max-width: 100%;
+  transition: padding 0.15s ease;
+}
+
+.transit-card.is-minimal:not(.is-expanded) {
+  padding: 0.55rem 0.65rem;
 }
 
 .header-toggle {
@@ -166,10 +212,24 @@ const getLineStyle = (lineId: string) => {
   text-align: left;
 }
 
+.header-toggle.is-minimal {
+  gap: 0;
+  justify-content: flex-start;
+}
+
 .transit-header-icon {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 3rem;
+  height: 3rem;
   object-fit: contain;
+  transition: transform 0.15s ease;
+}
+
+.header-toggle:hover .transit-header-icon {
+  transform: scale(1.08);
+}
+
+.header-toggle:active .transit-header-icon {
+  transform: scale(0.95);
 }
 
 .header-title {

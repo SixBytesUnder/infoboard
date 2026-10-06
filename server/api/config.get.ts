@@ -17,7 +17,8 @@ export default defineEventHandler((event): ClientDashboardConfig => {
     },
     transit: {
       ...pub.transit,
-      enabled: (env.NUXT_TRANSIT_ENABLED || env.NUXT_PUBLIC_TRANSIT_ENABLED || String(pub.transit.enabled)) === 'true'
+      enabled: (env.NUXT_TRANSIT_ENABLED || env.NUXT_PUBLIC_TRANSIT_ENABLED || String(pub.transit.enabled)) === 'true',
+      buttonStyle: ((env.NUXT_TRANSIT_BUTTON_STYLE || env.NUXT_PUBLIC_TRANSIT_BUTTON_STYLE || env.NUXT_TRANSIT_DISPLAY_MODE || env.NUXT_PUBLIC_TRANSIT_DISPLAY_MODE || pub.transit?.buttonStyle || 'verbose').toLowerCase() === 'minimal' ? 'minimal' : 'verbose') as 'verbose' | 'minimal'
     },
     calendar: {
       ...pub.calendar,
