@@ -25,6 +25,7 @@ export interface ClientDashboardConfig {
   }
   calendar: {
     enabled: boolean
+    buttonStyle: 'verbose' | 'minimal'
     dateFormat: string
     timeFormat: string
     refreshMs: number

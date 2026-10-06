@@ -22,7 +22,8 @@ export default defineEventHandler((event): ClientDashboardConfig => {
     },
     calendar: {
       ...pub.calendar,
-      enabled: (env.NUXT_CALENDAR_ENABLED || env.NUXT_PUBLIC_CALENDAR_ENABLED || String(pub.calendar.enabled)) === 'true'
+      enabled: (env.NUXT_CALENDAR_ENABLED || env.NUXT_PUBLIC_CALENDAR_ENABLED || String(pub.calendar.enabled)) === 'true',
+      buttonStyle: ((env.NUXT_CALENDAR_BUTTON_STYLE || env.NUXT_PUBLIC_CALENDAR_BUTTON_STYLE || env.NUXT_CALENDAR_DISPLAY_MODE || env.NUXT_PUBLIC_CALENDAR_DISPLAY_MODE || pub.calendar?.buttonStyle || 'verbose').toLowerCase() === 'minimal' ? 'minimal' : 'verbose') as 'verbose' | 'minimal'
     }
   }
 })

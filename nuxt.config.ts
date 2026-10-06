@@ -109,6 +109,7 @@ export default defineNuxtConfig({
       },
       calendar: {
         enabled: (process.env.NUXT_CALENDAR_ENABLED || 'true') === 'true',
+        buttonStyle: ((process.env.NUXT_CALENDAR_BUTTON_STYLE || process.env.NUXT_CALENDAR_DISPLAY_MODE || 'verbose').toLowerCase() === 'minimal' ? 'minimal' : 'verbose') as 'verbose' | 'minimal',
         dateFormat: process.env.NUXT_CALENDAR_DATE_FORMAT || 'YYYY-MM-DD',
         timeFormat: process.env.NUXT_CALENDAR_TIME_FORMAT || 'HH:mm',
         refreshMs: 900000

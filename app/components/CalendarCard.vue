@@ -1,23 +1,33 @@
 <template>
-  <div class="glass-panel calendar-card">
-    <button type="button" class="header-toggle" @click="isOpen = !isOpen">
+  <div class="glass-panel calendar-card" :class="{ 'is-minimal': isMinimal, 'is-expanded': isOpen }">
+    <button
+      type="button"
+      class="header-toggle"
+      :class="{ 'is-minimal': isMinimal && !isOpen }"
+      :aria-label="isMinimal && !isOpen ? 'Upcoming Agenda' : undefined"
+      :aria-expanded="isOpen"
+      :title="calendarTooltip"
+      @click="isOpen = !isOpen"
+    >
       <img src="/images/calendar.svg" alt="Calendar" class="calendar-header-icon">
-      <span class="header-title">Upcoming Agenda</span>
+      <template v-if="!isMinimal || isOpen">
+        <span class="header-title">Upcoming Agenda</span>
 
-      <span v-if="calendar?.errorMessage && calendar.events.length > 0" class="stale-pill" :title="calendar.errorMessage">
-        Sync Warning
-      </span>
-      <span v-else-if="calendar?.errorMessage && calendar.events.length === 0" class="stale-pill alert" :title="calendar.errorMessage">
-        Sync Failed
-      </span>
-      <span v-else-if="!calendar" class="event-count loading">
-        Connecting...
-      </span>
-      <span v-else class="event-count">
-        {{ calendar.events.length }} {{ calendar.events.length === 1 ? 'event' : 'events' }}
-      </span>
+        <span v-if="calendar?.errorMessage && calendar.events.length > 0" class="stale-pill" :title="calendar.errorMessage">
+          Sync Warning
+        </span>
+        <span v-else-if="calendar?.errorMessage && calendar.events.length === 0" class="stale-pill alert" :title="calendar.errorMessage">
+          Sync Failed
+        </span>
+        <span v-else-if="!calendar" class="event-count loading">
+          Connecting...
+        </span>
+        <span v-else class="event-count">
+          {{ calendar.events.length }} {{ calendar.events.length === 1 ? 'event' : 'events' }}
+        </span>
 
-      <span class="chevron">{{ isOpen ? '▼' : '▶' }}</span>
+        <span class="chevron">{{ isOpen ? '▼' : '▶' }}</span>
+      </template>
     </button>
 
     <div v-if="isOpen" class="agenda-content">
@@ -64,18 +74,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
-import type { CalendarPayload } from '~~/shared'
+import type { CalendarPayload, ClientDashboardConfig } from '~~/shared'
 
 const props = withDefaults(defineProps<{
   calendar: CalendarPayload | null
   initialExpand?: boolean
+  buttonStyle?: 'verbose' | 'minimal'
 }>(), {
-  initialExpand: false
+  initialExpand: false,
+  buttonStyle: undefined
+})
+
+const runtimeConfig = useRuntimeConfig()
+
+const isMinimal = computed(() => {
+  const style = props.buttonStyle || (runtimeConfig.public as unknown as ClientDashboardConfig)?.calendar?.buttonStyle
+  return style === 'minimal'
 })
 
 const isOpen = ref(props.initialExpand)
+
+const calendarTooltip = computed(() => {
+  if (!isMinimal.value || isOpen.value) return undefined
+  if (!props.calendar) return 'Upcoming Agenda: Connecting...'
+  if (props.calendar.errorMessage && props.calendar.events.length === 0) return 'Upcoming Agenda: Sync Failed'
+  const count = props.calendar.events.length
+  return `Upcoming Agenda (${count} ${count === 1 ? 'event' : 'events'})`
+})
 
 const formatDayHeading = (dateStr: string) => {
   const target = dayjs(dateStr)
@@ -92,6 +119,11 @@ const formatDayHeading = (dateStr: string) => {
   padding: 0.65rem 0.95rem;
   width: fit-content;
   max-width: 100%;
+  transition: padding 0.15s ease;
+}
+
+.calendar-card.is-minimal:not(.is-expanded) {
+  padding: 0.55rem 0.65rem;
 }
 
 .header-toggle {
@@ -109,10 +141,24 @@ const formatDayHeading = (dateStr: string) => {
   text-align: left;
 }
 
+.header-toggle.is-minimal {
+  gap: 0;
+  justify-content: flex-start;
+}
+
 .calendar-header-icon {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 3rem;
+  height: 3rem;
   object-fit: contain;
+  transition: transform 0.15s ease;
+}
+
+.header-toggle:hover .calendar-header-icon {
+  transform: scale(1.08);
+}
+
+.header-toggle:active .calendar-header-icon {
+  transform: scale(0.95);
 }
 
 .header-title {

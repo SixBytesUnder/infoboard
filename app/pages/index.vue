@@ -50,6 +50,7 @@
             v-if="config.calendar.enabled"
             :calendar="calendarData"
             :initial-expand="config.app.autoExpandCalendar"
+            :button-style="config.calendar.buttonStyle"
           />
         </section>
 
