@@ -31,7 +31,7 @@ const { time, date } = useSystemClock(props.timeFormat, props.dateFormat)
 
 .time-display {
   font-family: var(--font-mono);
-  font-size: 4.5rem;
+  font-size: 5.5rem;
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.04em;
