@@ -274,7 +274,7 @@ defineExpose({
   inset: -20px;
   background-size: cover;
   background-position: center;
-  filter: blur(24px) brightness(0.6);
+  filter: blur(10px) brightness(0.9);
   transform: scale(1.06);
   transition: background-image 0.8s ease-in-out;
   animation: fade-in 0.8s ease-in-out;
