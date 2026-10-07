@@ -14,24 +14,32 @@
       @error="onVideoError"
     />
 
-    <!-- Dual-Layer Image: Blurred Cover + Sharp Contain -->
-    <template v-else-if="currentAsset?.type === 'image'">
+    <!-- Dual-Layer Ping-Pong Crossfading Image Slots -->
+    <div
+      v-for="slot in slots"
+      :key="slot.id"
+      class="bg-media-layer"
+      :class="{ 'is-active': slot.isActive, 'is-top': slot.isTop }"
+    >
       <div
+        v-if="slot.asset?.url"
         class="bg-image-blur"
-        :style="blurStyle"
+        :style="{ backgroundImage: getSafeBackgroundUrl(slot.asset.url) }"
       />
       <img
-        :src="currentAsset.url"
-        :alt="currentAsset.title || 'Background'"
+        v-if="slot.asset?.url"
+        :src="slot.asset.url"
+        :alt="slot.asset.title || 'Background'"
         class="bg-image-contain"
+        decoding="async"
         @error="onImageError"
       >
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onScopeDispose, watch } from 'vue'
+import { ref, nextTick, onMounted, onScopeDispose, watch } from 'vue'
 import type { MediaAsset, BackgroundBatch } from '~~/shared'
 
 const props = withDefaults(defineProps<{
@@ -54,26 +62,78 @@ const emit = defineEmits<{
   'update:can-skip': [val: boolean]
 }>()
 
+interface ImageSlot {
+  id: number
+  asset: MediaAsset | null
+  isActive: boolean
+  isTop: boolean
+}
+
+// Fixed 2-slot ping-pong buffer to guarantee zero DOM or bitmap memory growth
+const slots = ref<[ImageSlot, ImageSlot]>([
+  { id: 0, asset: null, isActive: false, isTop: false },
+  { id: 1, asset: null, isActive: false, isTop: false }
+])
+
+const activeSlotIndex = ref<0 | 1>(0)
 const playlist = ref<MediaAsset[]>([])
 const currentIndex = ref<number>(0)
 const currentAsset = ref<MediaAsset | null>(null)
 const videoRef = ref<HTMLVideoElement | null>(null)
 
-const blurStyle = computed(() => {
-  if (!currentAsset.value?.url || currentAsset.value.type !== 'image') return {}
-  const safeUrl = currentAsset.value.url.replace(/'/g, '%27')
-  return {
-    backgroundImage: `url('${safeUrl}')`
-  }
-})
-
 let rotationTimer: ReturnType<typeof setTimeout> | null = null
+let transitionTimer: ReturnType<typeof setTimeout> | null = null
+let preloadTimeoutId: ReturnType<typeof setTimeout> | null = null
+let activePreloadImg: HTMLImageElement | null = null
 let isPlayingVideo = false
+let currentLoadToken = 0
+
+const STORAGE_KEY_ASSET = 'infoboard_active_media_id'
+
+const getSafeBackgroundUrl = (url?: string) => {
+  if (!url) return 'none'
+  const safeUrl = url.replace(/'/g, '%27')
+  return `url('${safeUrl}')`
+}
 
 const clearTimer = () => {
   if (rotationTimer !== null) {
     clearTimeout(rotationTimer)
     rotationTimer = null
+  }
+}
+
+const cancelPreload = () => {
+  currentLoadToken++
+  if (preloadTimeoutId !== null) {
+    clearTimeout(preloadTimeoutId)
+    preloadTimeoutId = null
+  }
+  if (activePreloadImg) {
+    activePreloadImg.onload = null
+    activePreloadImg.onerror = null
+    activePreloadImg.src = ''
+    activePreloadImg = null
+  }
+}
+
+const finalizeTransition = () => {
+  if (transitionTimer !== null) {
+    clearTimeout(transitionTimer)
+    transitionTimer = null
+  }
+
+  const incomingSlotIdx = (1 - activeSlotIndex.value) as 0 | 1
+  if (slots.value[incomingSlotIdx].asset) {
+    activeSlotIndex.value = incomingSlotIdx
+    slots.value[incomingSlotIdx].isActive = true
+    slots.value[incomingSlotIdx].isTop = false
+
+    const oldSlotIdx = (1 - incomingSlotIdx) as 0 | 1
+    // Unmount outgoing slot elements to free decoded bitmap memory in WebKit
+    slots.value[oldSlotIdx].isActive = false
+    slots.value[oldSlotIdx].asset = null
+    slots.value[oldSlotIdx].isTop = false
   }
 }
 
@@ -86,7 +146,211 @@ const scheduleNext = () => {
   }, props.intervalSeconds * 1000)
 }
 
-const STORAGE_KEY_ASSET = 'infoboard_active_media_id'
+const persistActiveAsset = (identifier?: string) => {
+  if (typeof window !== 'undefined' && props.source === 'local' && identifier) {
+    try {
+      localStorage.setItem(STORAGE_KEY_ASSET, identifier)
+    } catch {
+      // LocalStorage restricted or quota exceeded
+    }
+  }
+}
+
+const preloadImage = (url: string, token: number): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') {
+      return resolve()
+    }
+
+    if (activePreloadImg) {
+      activePreloadImg.onload = null
+      activePreloadImg.onerror = null
+      activePreloadImg.src = ''
+      activePreloadImg = null
+    }
+    if (preloadTimeoutId !== null) {
+      clearTimeout(preloadTimeoutId)
+      preloadTimeoutId = null
+    }
+
+    const img = new Image()
+    activePreloadImg = img
+
+    const cleanup = () => {
+      if (preloadTimeoutId !== null) {
+        clearTimeout(preloadTimeoutId)
+        preloadTimeoutId = null
+      }
+      if (activePreloadImg === img) {
+        activePreloadImg = null
+      }
+      img.onload = null
+      img.onerror = null
+    }
+
+    preloadTimeoutId = setTimeout(() => {
+      cleanup()
+      img.src = ''
+      reject(new Error('Image preload timed out after 15s'))
+    }, 15000)
+
+    img.onload = async () => {
+      cleanup()
+      if (token !== currentLoadToken) {
+        img.src = ''
+        return reject(new Error('Image preload superseded'))
+      }
+
+      // Off-thread bitmap decoding avoids UI frame stutter on older iPad Pro chips
+      if (typeof img.decode === 'function') {
+        try {
+          await img.decode()
+        } catch {
+          // Continue if browser cannot decode asynchronously
+        }
+      }
+
+      if (token !== currentLoadToken) {
+        img.src = ''
+        return reject(new Error('Image preload superseded'))
+      }
+
+      resolve()
+    }
+
+    img.onerror = () => {
+      cleanup()
+      img.src = ''
+      reject(new Error('Image failed to download'))
+    }
+
+    img.src = url
+  })
+}
+
+const displayCurrent = async (isInitial = false) => {
+  if (playlist.value.length === 0) {
+    currentAsset.value = null
+    cancelPreload()
+    finalizeTransition()
+    slots.value[0].asset = null
+    slots.value[0].isActive = false
+    slots.value[1].asset = null
+    slots.value[1].isActive = false
+    emit('update:active-asset', null)
+    emit('update:is-video', false)
+    return
+  }
+
+  const asset = playlist.value[currentIndex.value]
+  if (!asset) {
+    currentAsset.value = null
+    emit('update:active-asset', null)
+    emit('update:is-video', false)
+    return
+  }
+
+  // Handle Video Asset
+  if (asset.type === 'video') {
+    cancelPreload()
+    finalizeTransition()
+    slots.value[0].asset = null
+    slots.value[0].isActive = false
+    slots.value[1].asset = null
+    slots.value[1].isActive = false
+
+    currentAsset.value = asset
+    emit('update:active-asset', asset)
+    emit('update:is-video', true)
+    persistActiveAsset(asset.identifier)
+    return
+  }
+
+  // Handle Image Asset
+  const token = ++currentLoadToken
+
+  try {
+    await preloadImage(asset.url, token)
+  } catch (err) {
+    if (token !== currentLoadToken) return
+    console.warn(`Failed to preload image (${asset.url}):`, (err as Error).message)
+    clearTimer()
+    rotationTimer = setTimeout(() => {
+      advanceNext(false)
+    }, 1500)
+    return
+  }
+
+  if (token !== currentLoadToken) return
+
+  // Settle any active transition cleanly before starting next
+  finalizeTransition()
+
+  if (isInitial || !currentAsset.value) {
+    // Initial mount: load directly into slot 0 and fade in
+    activeSlotIndex.value = 0
+    slots.value[0].asset = asset
+    slots.value[0].isTop = true
+    slots.value[0].isActive = false
+    slots.value[1].asset = null
+    slots.value[1].isActive = false
+
+    currentAsset.value = asset
+    emit('update:active-asset', asset)
+    emit('update:is-video', false)
+    persistActiveAsset(asset.identifier)
+
+    await nextTick()
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (token !== currentLoadToken) return
+        slots.value[0].isActive = true
+        transitionTimer = setTimeout(() => {
+          slots.value[0].isTop = false
+          scheduleNext()
+        }, 1200)
+      })
+    })
+  } else {
+    // Ping-pong crossfade: incoming slot fades in over outgoing slot
+    const incomingSlotIdx = (1 - activeSlotIndex.value) as 0 | 1
+    const outgoingSlotIdx = activeSlotIndex.value
+
+    slots.value[incomingSlotIdx].asset = asset
+    slots.value[incomingSlotIdx].isTop = true
+    slots.value[incomingSlotIdx].isActive = false
+    slots.value[outgoingSlotIdx].isTop = false
+
+    await nextTick()
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (token !== currentLoadToken) return
+
+        // Both blurred background & contained photo fade in simultaneously
+        slots.value[incomingSlotIdx].isActive = true
+
+        currentAsset.value = asset
+        emit('update:active-asset', asset)
+        emit('update:is-video', false)
+        persistActiveAsset(asset.identifier)
+
+        // After crossfade ends, unmount old slot to free WebKit bitmap memory
+        transitionTimer = setTimeout(() => {
+          if (token !== currentLoadToken) return
+          activeSlotIndex.value = incomingSlotIdx
+          slots.value[incomingSlotIdx].isTop = false
+
+          slots.value[outgoingSlotIdx].isActive = false
+          slots.value[outgoingSlotIdx].asset = null
+          slots.value[outgoingSlotIdx].isTop = false
+
+          transitionTimer = null
+          scheduleNext()
+        }, 1200)
+      })
+    })
+  }
+}
 
 const loadPlaylist = async (isBackgroundRefresh = false) => {
   try {
@@ -115,11 +379,11 @@ const loadPlaylist = async (isBackgroundRefresh = false) => {
               }
             }
           } catch {
-            // LocalStorage restricted or disabled
+            // LocalStorage restricted
           }
         }
         currentIndex.value = startIdx
-        displayCurrent()
+        displayCurrent(true)
       }
     } else {
       playlist.value = []
@@ -128,40 +392,6 @@ const loadPlaylist = async (isBackgroundRefresh = false) => {
   } catch (err) {
     console.warn('Failed to load media playlist:', (err as Error).message)
     emit('update:can-skip', false)
-  }
-}
-
-const displayCurrent = () => {
-  if (playlist.value.length === 0) {
-    currentAsset.value = null
-    emit('update:active-asset', null)
-    emit('update:is-video', false)
-    return
-  }
-
-  const asset = playlist.value[currentIndex.value]
-  if (!asset) {
-    currentAsset.value = null
-    emit('update:active-asset', null)
-    emit('update:is-video', false)
-    return
-  }
-
-  currentAsset.value = asset
-  emit('update:active-asset', asset)
-  emit('update:is-video', asset.type === 'video')
-
-  // Persist current media position in localStorage for seamless resume
-  if (typeof window !== 'undefined' && props.source === 'local') {
-    try {
-      localStorage.setItem(STORAGE_KEY_ASSET, asset.identifier)
-    } catch {
-      // Ignore quota errors
-    }
-  }
-
-  if (asset.type === 'image') {
-    scheduleNext()
   }
 }
 
@@ -194,7 +424,7 @@ const advanceNext = async (skipFolder = false) => {
 
     if (targetIndex !== -1) {
       currentIndex.value = targetIndex
-      displayCurrent()
+      displayCurrent(false)
       return
     }
   }
@@ -208,7 +438,7 @@ const advanceNext = async (skipFolder = false) => {
   }
 
   currentIndex.value = nextIdx
-  displayCurrent()
+  displayCurrent(false)
 }
 
 const onVideoPlay = () => {
@@ -228,11 +458,24 @@ const onVideoError = () => {
 }
 
 const onImageError = () => {
-  console.warn('Image failed to load, skipping in 1.5s')
+  console.warn('Image failed to render, skipping in 1.5s')
   clearTimer()
   rotationTimer = setTimeout(() => {
     advanceNext(false)
   }, 1500)
+}
+
+const handleVisibilityChange = () => {
+  if (typeof document === 'undefined') return
+  if (document.hidden) {
+    clearTimer()
+    cancelPreload()
+    finalizeTransition()
+  } else {
+    if (currentAsset.value?.type === 'image') {
+      scheduleNext()
+    }
+  }
 }
 
 // Watch weather tag changes for dynamic tagged photo sources
@@ -242,7 +485,33 @@ watch(() => props.weatherTag, (newTag, oldTag) => {
   }
 })
 
+// Watch interval changes to immediately reschedule next rotation
+watch(() => props.intervalSeconds, () => {
+  if (currentAsset.value?.type === 'image') {
+    scheduleNext()
+  }
+})
+
+// Watch magic mirror mode to release resources
+watch(() => props.magicMirror, (val) => {
+  if (val) {
+    clearTimer()
+    cancelPreload()
+    finalizeTransition()
+    slots.value[0].asset = null
+    slots.value[1].asset = null
+    slots.value[0].isActive = false
+    slots.value[1].isActive = false
+  } else {
+    displayCurrent(true)
+  }
+})
+
 onMounted(async () => {
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+  }
+
   if (!props.magicMirror) {
     await loadPlaylist()
   }
@@ -250,6 +519,14 @@ onMounted(async () => {
 
 onScopeDispose(() => {
   clearTimer()
+  cancelPreload()
+  if (transitionTimer !== null) {
+    clearTimeout(transitionTimer)
+    transitionTimer = null
+  }
+  if (typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }
 })
 
 defineExpose({
@@ -269,16 +546,37 @@ defineExpose({
   background-color: #0b0c0e;
 }
 
+.bg-media-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 1200ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+  transform: translateZ(0);
+  contain: layout style;
+}
+
+.bg-media-layer.is-active {
+  opacity: 1;
+}
+
+.bg-media-layer.is-top {
+  z-index: 2;
+}
+
 .bg-image-blur {
   position: absolute;
-  inset: -20px;
+  inset: -30px;
   background-size: cover;
   background-position: center;
-  filter: blur(10px) brightness(0.9);
-  transform: scale(1.06);
-  transition: background-image 0.8s ease-in-out;
-  animation: fade-in 0.8s ease-in-out;
+  filter: blur(16px) brightness(0.85);
   z-index: 0;
+  pointer-events: none;
+  transform: translateZ(0);
 }
 
 .bg-image-contain,
@@ -290,14 +588,8 @@ defineExpose({
   object-fit: contain;
   margin: auto;
   z-index: 1;
-}
-
-.bg-image-contain {
-  animation: fade-in 0.8s ease-in-out;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  pointer-events: none;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 </style>
