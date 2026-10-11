@@ -69,8 +69,8 @@ const handleIconError = (e: Event) => {
 }
 
 .forecast-icon {
-  width: 2.8rem;
-  height: 2.8rem;
+  width: 4.5rem;
+  height: 4.5rem;
   object-fit: contain;
   margin: 0.15rem 0;
 }

@@ -108,8 +108,8 @@ const handleIconError = (e: Event) => {
 }
 
 .weather-icon {
-  width: 7rem;
-  height: 7rem;
+  width: 9rem;
+  height: 9rem;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
 }
