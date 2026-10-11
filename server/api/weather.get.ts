@@ -2,22 +2,107 @@ import { WEATHER_CODES } from '~~/shared'
 import type { WeatherPayload, DayForecast, CurrentWeather } from '~~/shared'
 import dayjs from 'dayjs'
 
-interface TomorrowTimelineItem {
-  timestep: 'current' | '1d' | '1h'
-  startTime: string
-  intervals: Array<{
-    startTime: string
-    values: Record<string, number>
-  }>
+interface OpenMeteoCurrent {
+  time: string
+  temperature_2m: number
+  relative_humidity_2m: number
+  apparent_temperature: number
+  is_day: number
+  precipitation: number
+  rain: number
+  showers: number
+  snowfall: number
+  weather_code: number
+  cloud_cover: number
+  pressure_msl: number
+  surface_pressure: number
+  wind_speed_10m: number
+  wind_direction_10m: number
+  wind_gusts_10m: number
+  uv_index: number
+  dew_point_2m?: number
+  visibility?: number
+  shortwave_radiation_instant?: number
 }
 
-interface TomorrowResponse {
-  data?: {
-    timelines?: TomorrowTimelineItem[]
+interface OpenMeteoDaily {
+  time: string[]
+  weather_code: number[]
+  temperature_2m_max: number[]
+  temperature_2m_min: number[]
+  apparent_temperature_max: number[]
+  apparent_temperature_min: number[]
+  sunrise?: string[]
+  sunset?: string[]
+  uv_index_max?: number[]
+  precipitation_sum?: number[]
+  precipitation_probability_max?: number[]
+  wind_speed_10m_max?: number[]
+  wind_gusts_10m_max?: number[]
+  daylight_duration?: number[]
+  sunshine_duration?: number[]
+}
+
+interface OpenMeteoForecastResponse {
+  current?: OpenMeteoCurrent
+  daily?: OpenMeteoDaily
+}
+
+interface OpenMeteoAirQualityCurrent {
+  time: string
+  pm10?: number
+  pm2_5?: number
+  carbon_monoxide?: number
+  nitrogen_dioxide?: number
+  sulphur_dioxide?: number
+  ozone?: number
+  european_aqi?: number
+  us_aqi?: number
+  alder_pollen?: number
+  birch_pollen?: number
+  grass_pollen?: number
+  mugwort_pollen?: number
+  olive_pollen?: number
+  ragweed_pollen?: number
+}
+
+interface OpenMeteoAirQualityResponse {
+  current?: OpenMeteoAirQualityCurrent
+}
+
+// Astronomical moon phase calculation based on synodic month (29.53 days)
+function calculateMoonPhase(date: Date): number {
+  let year = date.getFullYear()
+  let month = date.getMonth() + 1
+  const day = date.getDate()
+  if (month < 3) {
+    year--
+    month += 12
   }
+  month++
+  const c = 365.25 * year
+  const e = 30.6 * month
+  let jd = c + e + day - 694039.09
+  jd /= 29.5305882
+  const b = Math.floor(jd)
+  jd -= b
+  let phase = Math.round(jd * 8)
+  if (phase >= 8) phase = 0
+  return phase
 }
 
-// In-memory fallback in case of upstream rate-limiting or network outage
+// Maps US AQI (0-500) to standard EPA health concern index (0-5)
+function usAqiToEpaLevel(aqi: number | undefined): number | undefined {
+  if (aqi === undefined || aqi === null) return undefined
+  if (aqi <= 50) return 0 // Good
+  if (aqi <= 100) return 1 // Moderate
+  if (aqi <= 150) return 2 // Unhealthy for Sensitive Groups
+  if (aqi <= 200) return 3 // Unhealthy
+  if (aqi <= 300) return 4 // Very Unhealthy
+  return 5 // Hazardous
+}
+
+// In-memory fallback in case of upstream network outage
 let lastKnownGoodWeather: WeatherPayload | null = null
 
 export default defineEventHandler(async (event): Promise<WeatherPayload> => {
@@ -25,205 +110,158 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
   const weatherConf = config.weather
   const publicConf = config.public.weather
   const units: 'metric' | 'imperial' = weatherConf.units === 'imperial' ? 'imperial' : 'metric'
+  const isImperial = units === 'imperial'
 
-  if (!weatherConf.apiKey) {
-    // Generate realistic demo weather data if no API key is provided
-    const now = dayjs()
-    const isImperial = units === 'imperial'
-    const baseTemp = isImperial ? 62 : 17
-
-    const mockCurrent: CurrentWeather = {
-      temperature: baseTemp,
-      temperatureApparent: baseTemp - 1,
-      humidity: 68,
-      windSpeed: isImperial ? 8 : 3.6,
-      windGust: isImperial ? 14 : 6.2,
-      windDirection: 180,
-      pressureSurfaceLevel: isImperial ? 29.92 : 1014,
-      pressureSeaLevel: isImperial ? 30.01 : 1016,
-      precipitationProbability: 10,
-      visibility: isImperial ? 10 : 16,
-      cloudCover: 25,
-      dewPoint: isImperial ? 50 : 10,
-      uvIndex: 3,
-      uvHealthConcern: 1,
-      solarGHI: 240,
-      moonPhase: 2,
-      particulateMatter25: 7.2,
-      particulateMatter10: 12.8,
-      pollutantO3: 28,
-      pollutantNO2: 12,
-      pollutantCO: 0.4,
-      pollutantSO2: 1.1,
-      epaHealthConcern: 0,
-      treeIndex: 1,
-      weedIndex: 0,
-      grassIndex: 1,
-      weatherCode: 1100,
-      conditionText: WEATHER_CODES[1100] || 'Mostly Clear',
-      updatedAt: now.format('HH:mm:ss')
-    }
-
-    const mockForecast: DayForecast[] = []
-    const mockCodes = [1000, 1100, 1101, 4001, 1001, 1100, 1000]
-    const count = Math.min(Math.max(weatherConf.forecastDays || 7, 1), 14)
-    for (let i = 0; i < count; i++) {
-      const day = now.add(i, 'day')
-      const code = mockCodes[i % mockCodes.length] ?? 1000
-      mockForecast.push({
-        date: day.format('YYYY-MM-DD'),
-        dayName: i === 0 ? 'Today' : day.format('dddd'),
-        weatherCode: code,
-        conditionText: WEATHER_CODES[code] || 'Clear',
-        tempMax: baseTemp + Math.round(Math.sin(i) * 3) + 2,
-        tempMin: baseTemp - Math.round(Math.cos(i) * 2) - 3
-      })
-    }
-
-    return {
-      current: mockCurrent,
-      forecast: mockForecast,
-      locationName: publicConf.locationName,
-      units,
-      fetchedAt: now.toISOString(),
-      isPaidPlan: true,
-      hasAirQuality: true,
-      hasPollen: true
-    }
+  const round = (val: number | undefined) => {
+    if (val === undefined || val === null || Number.isNaN(val)) return 0
+    return weatherConf.roundTemp ? Math.round(val) : Math.round(val * 10) / 10
   }
 
-  try {
-    const fields = [
-      'temperature',
-      'temperatureApparent',
-      'temperatureMax',
-      'temperatureMin',
-      'humidity',
-      'windSpeed',
-      'windDirection',
-      'windGust',
-      'pressureSurfaceLevel',
-      'pressureSeaLevel',
-      'precipitationProbability',
-      'visibility',
-      'cloudCover',
-      'dewPoint',
-      'uvIndex',
-      'uvHealthConcern',
-      'solarGHI',
-      'moonPhase',
-      'weatherCode',
-      // Premium Tier Metrics (included if user account tier has access)
-      'particulateMatter25',
-      'particulateMatter10',
-      'pollutantO3',
-      'pollutantNO2',
-      'pollutantCO',
-      'pollutantSO2',
-      'epaHealthConcern',
-      'treeIndex',
-      'weedIndex',
-      'grassIndex'
-    ]
+  const roundOptional = (val: number | undefined) => {
+    if (val === undefined || val === null || Number.isNaN(val)) return undefined
+    return weatherConf.roundTemp ? Math.round(val) : Math.round(val * 10) / 10
+  }
 
-    const response = await $fetch<TomorrowResponse>('https://api.tomorrow.io/v4/timelines', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: weatherConf.apiKey
-      },
-      body: {
-        location: `${weatherConf.latitude},${weatherConf.longitude}`,
-        fields,
-        timesteps: ['current', '1d'],
-        units
-      },
-      signal: AbortSignal.timeout(8000)
+  const roundDecimals = (val: number | undefined, decimals = 0) => {
+    if (val === undefined || val === null || Number.isNaN(val)) return undefined
+    const factor = 10 ** decimals
+    return Math.round(val * factor) / factor
+  }
+
+  const now = dayjs()
+  const days = Math.min(Math.max(weatherConf.forecastDays || 7, 1), 16)
+
+  try {
+    const weatherParams = new URLSearchParams({
+      latitude: String(weatherConf.latitude),
+      longitude: String(weatherConf.longitude),
+      current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,dew_point_2m,visibility,shortwave_radiation_instant',
+      daily: 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,daylight_duration,sunshine_duration',
+      timezone: 'auto',
+      forecast_days: String(days),
+      temperature_unit: isImperial ? 'fahrenheit' : 'celsius',
+      wind_speed_unit: isImperial ? 'mph' : 'ms',
+      precipitation_unit: isImperial ? 'inch' : 'mm'
     })
 
-    const timelines = response.data?.timelines || []
-    const currentTimeline = timelines.find(t => t.timestep === 'current')
-    const currentInterval = currentTimeline?.intervals[0]
-    const values = currentInterval?.values || {}
-
-    const round = (val: number | undefined) => {
-      if (val === undefined || val === null || Number.isNaN(val)) return 0
-      return weatherConf.roundTemp ? Math.round(val) : Math.round(val * 10) / 10
+    if (weatherConf.apiKey) {
+      weatherParams.set('apikey', weatherConf.apiKey)
     }
 
-    const roundOptional = (val: number | undefined) => {
-      if (val === undefined || val === null || Number.isNaN(val)) return undefined
-      return weatherConf.roundTemp ? Math.round(val) : Math.round(val * 10) / 10
+    const aqParams = new URLSearchParams({
+      latitude: String(weatherConf.latitude),
+      longitude: String(weatherConf.longitude),
+      current: 'pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi,us_aqi,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen',
+      timezone: 'auto'
+    })
+
+    if (weatherConf.apiKey) {
+      aqParams.set('apikey', weatherConf.apiKey)
     }
 
-    const roundDecimals = (val: number | undefined, decimals = 0) => {
-      if (val === undefined || val === null || Number.isNaN(val)) return undefined
-      const factor = 10 ** decimals
-      return Math.round(val * factor) / factor
+    const [forecastData, aqData] = await Promise.all([
+      $fetch<OpenMeteoForecastResponse>(
+        `https://api.open-meteo.com/v1/forecast?${weatherParams.toString()}`,
+        { signal: AbortSignal.timeout(8000) }
+      ),
+      $fetch<OpenMeteoAirQualityResponse>(
+        `https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`,
+        { signal: AbortSignal.timeout(8000) }
+      ).catch(() => null)
+    ])
+
+    const cur = forecastData.current
+    const daily = forecastData.daily
+    const aq = aqData?.current
+
+    if (!cur) {
+      throw new Error('No current weather timeline returned from Open-Meteo')
     }
 
-    const weatherCode = values.weatherCode ?? 1000
-    const now = dayjs()
+    const code = cur.weather_code ?? 0
+    const moonPhase = calculateMoonPhase(now.toDate())
 
-    // Determine whether this Tomorrow.io account tier provides air quality or pollen data
-    const hasAirQuality = values.particulateMatter25 !== undefined || values.epaHealthConcern !== undefined
-    const hasPollen = values.treeIndex !== undefined || values.grassIndex !== undefined || values.weedIndex !== undefined
-    const isPaidPlan = hasAirQuality || hasPollen
+    // Unit conversions for pressure and visibility
+    const pressureSurface = isImperial
+      ? roundDecimals(cur.surface_pressure * 0.02953, 2) ?? 29.92
+      : round(cur.surface_pressure)
+    const pressureSea = isImperial
+      ? roundDecimals(cur.pressure_msl * 0.02953, 2)
+      : round(cur.pressure_msl)
+
+    const visibilityValue = cur.visibility !== undefined
+      ? (isImperial ? roundDecimals(cur.visibility / 1609.34, 1) : roundDecimals(cur.visibility / 1000, 1))
+      : undefined
+
+    const sunshineHours = daily?.sunshine_duration?.[0] !== undefined
+      ? roundDecimals(daily.sunshine_duration[0] / 3600, 1)
+      : undefined
+
+    const usAqi = aq?.us_aqi !== undefined ? Math.round(aq.us_aqi) : undefined
+    const epaHealthConcern = usAqiToEpaLevel(usAqi)
 
     const current: CurrentWeather = {
-      temperature: round(values.temperature),
-      temperatureApparent: round(values.temperatureApparent),
-      humidity: Math.round(values.humidity ?? 0),
-      windSpeed: roundDecimals(values.windSpeed, 1) ?? 0,
-      windGust: roundDecimals(values.windGust, 1) ?? 0,
-      windDirection: roundDecimals(values.windDirection),
-      pressureSurfaceLevel: Math.round(values.pressureSurfaceLevel ?? 1013),
-      pressureSeaLevel: roundDecimals(values.pressureSeaLevel),
-      precipitationProbability: roundDecimals(values.precipitationProbability),
-      visibility: roundDecimals(values.visibility, 1),
-      cloudCover: roundDecimals(values.cloudCover),
-      dewPoint: roundOptional(values.dewPoint),
-      uvIndex: roundDecimals(values.uvIndex),
-      uvHealthConcern: values.uvHealthConcern !== undefined ? Math.round(values.uvHealthConcern) : undefined,
-      solarGHI: roundDecimals(values.solarGHI),
-      moonPhase: values.moonPhase !== undefined ? Math.round(values.moonPhase) : undefined,
-      weatherCode,
-      conditionText: WEATHER_CODES[weatherCode] || 'Unknown',
-      updatedAt: dayjs(currentInterval?.startTime || now.toISOString()).format('HH:mm:ss'),
+      temperature: round(cur.temperature_2m),
+      temperatureApparent: round(cur.apparent_temperature),
+      humidity: Math.round(cur.relative_humidity_2m ?? 0),
+      windSpeed: roundDecimals(cur.wind_speed_10m, 1) ?? 0,
+      windGust: roundDecimals(cur.wind_gusts_10m, 1) ?? 0,
+      windDirection: round(cur.wind_direction_10m),
+      pressureSurfaceLevel: pressureSurface,
+      pressureSeaLevel: pressureSea,
+      precipitationProbability: daily?.precipitation_probability_max?.[0] !== undefined ? round(daily.precipitation_probability_max[0]) : undefined,
+      visibility: visibilityValue,
+      cloudCover: round(cur.cloud_cover),
+      dewPoint: roundOptional(cur.dew_point_2m),
+      uvIndex: roundDecimals(cur.uv_index, 1),
+      solarGHI: round(cur.shortwave_radiation_instant),
+      moonPhase,
+      weatherCode: code,
+      conditionText: WEATHER_CODES[code] || 'Unknown',
+      updatedAt: now.format('HH:mm:ss'),
 
-      // Premium metrics: only populated when actually returned by upstream plan
-      particulateMatter25: roundDecimals(values.particulateMatter25, 1),
-      particulateMatter10: roundDecimals(values.particulateMatter10, 1),
-      pollutantO3: roundDecimals(values.pollutantO3),
-      pollutantNO2: roundDecimals(values.pollutantNO2),
-      pollutantCO: roundDecimals(values.pollutantCO, 1),
-      pollutantSO2: roundDecimals(values.pollutantSO2, 1),
-      epaHealthConcern: values.epaHealthConcern !== undefined ? Math.round(values.epaHealthConcern) : undefined,
-      treeIndex: values.treeIndex !== undefined ? Math.round(values.treeIndex) : undefined,
-      weedIndex: values.weedIndex !== undefined ? Math.round(values.weedIndex) : undefined,
-      grassIndex: values.grassIndex !== undefined ? Math.round(values.grassIndex) : undefined
+      // Astronomy
+      sunrise: daily?.sunrise?.[0] ? dayjs(daily.sunrise[0]).format('HH:mm') : undefined,
+      sunset: daily?.sunset?.[0] ? dayjs(daily.sunset[0]).format('HH:mm') : undefined,
+      sunshineDuration: sunshineHours,
+
+      // Air Quality (Free on Open-Meteo)
+      usAqi,
+      europeanAqi: aq?.european_aqi !== undefined ? Math.round(aq.european_aqi) : undefined,
+      particulateMatter25: roundDecimals(aq?.pm2_5, 1),
+      particulateMatter10: roundDecimals(aq?.pm10, 1),
+      pollutantO3: roundDecimals(aq?.ozone, 1),
+      pollutantNO2: roundDecimals(aq?.nitrogen_dioxide, 1),
+      pollutantCO: roundDecimals(aq?.carbon_monoxide, 1),
+      pollutantSO2: roundDecimals(aq?.sulphur_dioxide, 1),
+      epaHealthConcern,
+
+      // Pollen (Free on Open-Meteo)
+      grassPollen: roundDecimals(aq?.grass_pollen, 1),
+      birchPollen: roundDecimals(aq?.birch_pollen, 1),
+      alderPollen: roundDecimals(aq?.alder_pollen, 1),
+      ragweedPollen: roundDecimals(aq?.ragweed_pollen, 1),
+      olivePollen: roundDecimals(aq?.olive_pollen, 1),
+      mugwortPollen: roundDecimals(aq?.mugwort_pollen, 1)
     }
 
-    const forecastTimeline = timelines.find(t => t.timestep === '1d')
     const forecast: DayForecast[] = []
-
-    if (forecastTimeline?.intervals) {
-      const maxDays = Math.max(weatherConf.forecastDays || 7, 1)
-      const targetCount = Math.min(forecastTimeline.intervals.length, maxDays)
-      for (let i = 0; i < targetCount; i++) {
-        const interval = forecastTimeline.intervals[i]
-        if (!interval) continue
-        const dayTime = dayjs(interval.startTime)
-        const code = interval.values.weatherCode ?? 1000
-        const temp = interval.values.temperature ?? current.temperature
-
+    if (daily && daily.time) {
+      const count = Math.min(daily.time.length, days)
+      for (let i = 0; i < count; i++) {
+        const dayTime = dayjs(daily.time[i])
+        const dayCode = daily.weather_code[i] ?? 0
         forecast.push({
           date: dayTime.format('YYYY-MM-DD'),
           dayName: i === 0 ? 'Today' : dayTime.format('dddd'),
-          weatherCode: code,
-          conditionText: WEATHER_CODES[code] || 'Unknown',
-          tempMax: round(interval.values.temperatureMax ?? temp),
-          tempMin: round(interval.values.temperatureMin ?? temp - 3)
+          weatherCode: dayCode,
+          conditionText: WEATHER_CODES[dayCode] || 'Unknown',
+          tempMax: round(daily.temperature_2m_max[i]),
+          tempMin: round(daily.temperature_2m_min[i]),
+          sunrise: daily.sunrise?.[i] ? dayjs(daily.sunrise[i]).format('HH:mm') : undefined,
+          sunset: daily.sunset?.[i] ? dayjs(daily.sunset[i]).format('HH:mm') : undefined,
+          uvIndex: daily.uv_index_max?.[i] !== undefined ? round(daily.uv_index_max[i]) : undefined,
+          precipitationProbability: daily.precipitation_probability_max?.[i] !== undefined ? round(daily.precipitation_probability_max[i]) : undefined
         })
       }
     }
@@ -234,9 +272,9 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
       locationName: publicConf.locationName,
       units,
       fetchedAt: now.toISOString(),
-      isPaidPlan,
-      hasAirQuality,
-      hasPollen
+      isPaidPlan: true, // Open-Meteo provides all layers for free
+      hasAirQuality: Boolean(aq),
+      hasPollen: Boolean(aq)
     }
 
     lastKnownGoodWeather = payload

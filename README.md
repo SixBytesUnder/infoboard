@@ -8,15 +8,15 @@
 
 - **Continuous 24/7 Uptime:** Engineered for zero memory leaks. Polling uses chained `setTimeout` execution and automatically pauses when the display is sleeping or the browser tab is hidden to minimize idle CPU and thermal footprint.
 - **Self-Contained Nitro Caching:** Integrated in-memory Stale-While-Revalidate (SWR) caching layer. Prevents exceeding third-party API rate limits and serves cached data seamlessly during network drops. No external services like Redis required.
-- **Zero Exposed Secrets:** All external API requests (Tomorrow.io, TfL, NASA, Unsplash, Pexels, Flickr, iCal) are brokered server-side. Zero API keys or tokens are bundled into client JavaScript.
+- **Zero Exposed Secrets:** All external API requests (Open-Meteo, TfL, NASA, Unsplash, Pexels, Flickr, iCal) are brokered server-side. Zero API keys or tokens are bundled into client JavaScript.
 - **Hardware-Aware Design:**
   - **Magic Mirror Mode:** Pure `#000000` background and high-contrast `#ffffff` typography for reflective mirror installations.
   - **Low-Power Mode:** Disables backdrop blur and heavy box shadows for smooth 60fps rendering on low-RAM Raspberry Pi units (Pi 3B+, Pi Zero 2W).
   - **PWA & Standalone Kiosk:** Installable Progressive Web App (PWA) with service worker offline shell caching, standalone display mode, and adaptive maskable icons for desktops, tablets, and kiosks.
 - **Widgets:**
   - **Clock & Date:** Large monospace typography (Cousine), configurable format, synchronized to system seconds.
-  - **Weather & Forecast:** Real-time conditions from Tomorrow.io with 26 weather code icons, feels-like temperature, and 7-day forecast carousel.
-  - **Detailed Microclimate Metrics:** 16 expandable indicators including barometric pressure, wind speed/gust, solar GHI, moon phase, PM2.5, PM10, EPA air quality index, and tree/weed/grass pollen indices.
+  - **Weather & Forecast:** Real-time conditions from Open-Meteo with 28 standard WMO weather code icons, feels-like temperature, and up to 16-day forecast carousel.
+  - **Detailed Microclimate Metrics:** Expandable indicators including barometric pressure, sea level pressure, wind speed/gust/direction, solar radiation (GHI), sunshine duration, sunrise/sunset, moon phase, PM2.5, PM10, US AQI, European AQI, NO2, O3, SO2, CO, and 6 pollen species forecasts (grass, birch, alder, ragweed, olive, mugwort).
   - **Transport for London (TfL):** Real-time line statuses with official brand colors (Tube, Overground, DLR, Elizabeth line, Tram), plus live bus arrivals grouped by stop point.
   - **Calendar Agenda:** iCal ingestion with full RFC-5545 recurrence rule (RRULE) expansion, exception dates, 60-day horizon, and relative dates ("Today", "Tomorrow").
   - **Local Hardware Sensors:** Kernel-level sysfs / iio support for DHT11/22 and Sense HAT, serial communication for Nova SDS011 air quality sensor, with automated simulation fallbacks.
@@ -99,13 +99,13 @@ All settings can be placed in your `.env` file using `NUXT_` prefixed environmen
 | `NUXT_APP_NAV_BUTTONS`         | `true`                                    | Show kiosk action bar                                     |
 | `NUXT_APP_SHOW_EXIF`           | `true`                                    | Show EXIF button on local photos                          |
 | `NUXT_WEATHER_ENABLED`         | `true`                                    | Enable weather module                                     |
-| `NUXT_WEATHER_API_KEY`         | `""`                                      | Tomorrow.io API v4 key                                    |
+| `NUXT_WEATHER_API_KEY`         | `""`                                      | Optional Open-Meteo commercial API key (free tier needs none) |
 | `NUXT_WEATHER_LATITUDE`        | `51.5074`                                 | Latitude                                                  |
 | `NUXT_WEATHER_LONGITUDE`       | `-0.1278`                                 | Longitude                                                 |
 | `NUXT_WEATHER_LOCATION_NAME`   | `London, UK`                              | Header location name                                      |
 | `NUXT_WEATHER_UNITS`           | `metric`                                  | `metric` (°C, m/s, hPa) or `imperial` (°F, mph, inHg)     |
 | `NUXT_WEATHER_ROUND_TEMP`      | `true`                                    | Round temperatures to whole degrees                       |
-| `NUXT_WEATHER_FORECAST_DAYS`   | `7`                                       | Forecast days to display (1 to API max)                   |
+| `NUXT_WEATHER_FORECAST_DAYS`   | `7`                                       | Forecast days to display (1 to 16, default 7)             |
 | `NUXT_WEATHER_CACHE_TTL`       | `300`                                     | Weather cache time in seconds (5 min)                     |
 | `NUXT_TRANSIT_ENABLED`         | `true`                                    | Enable Transport for London module                        |
 | `NUXT_TRANSIT_TFL_APP_ID`      | `""`                                      | Optional TfL App ID                                       |
@@ -182,6 +182,12 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 ---
 
 ## Version History
+
+### v4.3.0
+- **Full Migration to Open-Meteo Weather API:** Migrated from Tomorrow.io to Open-Meteo, delivering 10,000 requests/day with zero API key requirement, eliminating rate limit risks on 24/7 displays.
+- **Complete Air Quality & Pollen Suite for Free:** Integrated Open-Meteo's Air Quality API, displaying live US Air Quality Index (AQI), European AQI, PM2.5, PM10, Nitrogen Dioxide (NO₂), Ozone (O₃), Sulfur Dioxide (SO₂), Carbon Monoxide (CO), and 6 pollen species forecasts (grass, birch, alder, ragweed, olive, mugwort).
+- **Expanded Solar & Astronomical Metrics:** Added sunshine duration, daylight duration, sunrise/sunset times, sea level pressure, and precision synodic moon phase calculations.
+- **WMO Weather Interpretation Icons:** Added support for all 28 WMO weather interpretation codes (0–99) mapped to crisp white SVG weather glyphs.
 
 ### v4.2.0
 - **Adaptive Tomorrow.io Account Tier Handling:** Automatically detects whether the Tomorrow.io account tier supports air quality and pollen layers. On free accounts, unavailable metrics are omitted instead of falling back to misleading zeros (`0 μg/m³`, `Good`, or `None`). On paid accounts with air quality or pollen add-ons, all layers are rendered automatically with grouped section headers.

@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { WEATHER_UNITS, MOON_PHASES, EPA_HEALTH_CONCERN, POLLEN_INDEX } from '~~/shared'
+import { WEATHER_UNITS, MOON_PHASES, EPA_HEALTH_CONCERN } from '~~/shared'
 import type { WeatherPayload } from '~~/shared'
 
 const props = defineProps<{
@@ -35,6 +35,15 @@ const degreesToCompass = (deg: number): string => {
   const val = Math.floor((deg / 22.5) + 0.5)
   const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
   return directions[val % 16] || ''
+}
+
+const getEuropeanAqiLabel = (aqi: number): string => {
+  if (aqi <= 20) return 'Very Good'
+  if (aqi <= 40) return 'Good'
+  if (aqi <= 60) return 'Medium'
+  if (aqi <= 80) return 'Poor'
+  if (aqi <= 100) return 'Very Poor'
+  return 'Extremely Poor'
 }
 
 interface MetricItem {
@@ -54,7 +63,7 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
 
   const groups: MetricGroup[] = []
 
-  // 1. Core atmospheric metrics (supported on free and paid Tomorrow.io accounts)
+  // 1. Core atmospheric & astronomical metrics
   const atmosphericCandidates: Array<{ key: string; label: string; value: string | null }> = [
     {
       key: 'humidity',
@@ -97,6 +106,11 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
       value: c.pressureSurfaceLevel !== undefined ? `${c.pressureSurfaceLevel} ${u.pressureSurfaceLevel}` : null
     },
     {
+      key: 'pressureSeaLevel',
+      label: 'Sea level pressure',
+      value: c.pressureSeaLevel !== undefined ? `${c.pressureSeaLevel} ${u.pressureSeaLevel}` : null
+    },
+    {
       key: 'visibility',
       label: 'Visibility',
       value: c.visibility !== undefined ? `${c.visibility} ${u.visibility}` : null
@@ -112,6 +126,21 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
       value: c.solarGHI !== undefined ? `${c.solarGHI} ${u.solarGHI}` : null
     },
     {
+      key: 'sunshineDuration',
+      label: 'Sunshine duration',
+      value: c.sunshineDuration !== undefined ? `${c.sunshineDuration} ${u.sunshineDuration}` : null
+    },
+    {
+      key: 'sunrise',
+      label: 'Sunrise',
+      value: c.sunrise || null
+    },
+    {
+      key: 'sunset',
+      label: 'Sunset',
+      value: c.sunset || null
+    },
+    {
       key: 'moonPhase',
       label: 'Moon phase',
       value: c.moonPhase !== undefined && MOON_PHASES[c.moonPhase] ? MOON_PHASES[c.moonPhase] : null
@@ -124,17 +153,22 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
 
   if (atmosphericItems.length > 0) {
     groups.push({
-      title: 'Atmospheric Conditions',
+      title: 'Atmospheric & Solar',
       items: atmosphericItems
     })
   }
 
-  // 2. Air Quality metrics (only displayed if returned by a paid Tomorrow.io plan)
+  // 2. Air Quality metrics (Provided for free via Open-Meteo Air Quality API)
   const airQualityCandidates: Array<{ key: string; label: string; value: string | null }> = [
     {
-      key: 'epa',
-      label: 'US EPA Air Quality',
-      value: c.epaHealthConcern !== undefined && EPA_HEALTH_CONCERN[c.epaHealthConcern] ? EPA_HEALTH_CONCERN[c.epaHealthConcern] : null
+      key: 'usAqi',
+      label: 'US Air Quality (AQI)',
+      value: c.usAqi !== undefined ? `${c.usAqi} (${EPA_HEALTH_CONCERN[c.epaHealthConcern ?? 0] || 'Good'})` : null
+    },
+    {
+      key: 'europeanAqi',
+      label: 'European AQI',
+      value: c.europeanAqi !== undefined ? `${c.europeanAqi} (${getEuropeanAqiLabel(c.europeanAqi)})` : null
     },
     {
       key: 'pm25',
@@ -147,24 +181,24 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
       value: c.particulateMatter10 !== undefined ? `${c.particulateMatter10} ${u.particulateMatter10}` : null
     },
     {
-      key: 'o3',
-      label: 'Ozone (O₃)',
-      value: c.pollutantO3 !== undefined ? `${c.pollutantO3} ${u.pollutantO3}` : null
-    },
-    {
       key: 'no2',
       label: 'Nitrogen Dioxide (NO₂)',
       value: c.pollutantNO2 !== undefined ? `${c.pollutantNO2} ${u.pollutantNO2}` : null
     },
     {
-      key: 'co',
-      label: 'Carbon Monoxide (CO)',
-      value: c.pollutantCO !== undefined ? `${c.pollutantCO} ${u.pollutantCO}` : null
+      key: 'o3',
+      label: 'Ozone (O₃)',
+      value: c.pollutantO3 !== undefined ? `${c.pollutantO3} ${u.pollutantO3}` : null
     },
     {
       key: 'so2',
       label: 'Sulfur Dioxide (SO₂)',
       value: c.pollutantSO2 !== undefined ? `${c.pollutantSO2} ${u.pollutantSO2}` : null
+    },
+    {
+      key: 'co',
+      label: 'Carbon Monoxide (CO)',
+      value: c.pollutantCO !== undefined ? `${c.pollutantCO} ${u.pollutantCO}` : null
     }
   ]
 
@@ -179,22 +213,37 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
     })
   }
 
-  // 3. Pollen metrics (only displayed if returned by a paid Tomorrow.io plan)
+  // 3. Pollen metrics (Provided for free via Open-Meteo Air Quality API)
   const pollenCandidates: Array<{ key: string; label: string; value: string | null }> = [
     {
-      key: 'treePollen',
-      label: 'Tree pollen index',
-      value: c.treeIndex !== undefined && POLLEN_INDEX[c.treeIndex] ? POLLEN_INDEX[c.treeIndex] : null
-    },
-    {
-      key: 'weedPollen',
-      label: 'Weed pollen index',
-      value: c.weedIndex !== undefined && POLLEN_INDEX[c.weedIndex] ? POLLEN_INDEX[c.weedIndex] : null
-    },
-    {
       key: 'grassPollen',
-      label: 'Grass pollen index',
-      value: c.grassIndex !== undefined && POLLEN_INDEX[c.grassIndex] ? POLLEN_INDEX[c.grassIndex] : null
+      label: 'Grass pollen',
+      value: c.grassPollen !== undefined ? `${c.grassPollen} ${u.pollen}` : null
+    },
+    {
+      key: 'birchPollen',
+      label: 'Birch pollen',
+      value: c.birchPollen !== undefined ? `${c.birchPollen} ${u.pollen}` : null
+    },
+    {
+      key: 'alderPollen',
+      label: 'Alder pollen',
+      value: c.alderPollen !== undefined ? `${c.alderPollen} ${u.pollen}` : null
+    },
+    {
+      key: 'ragweedPollen',
+      label: 'Ragweed pollen',
+      value: c.ragweedPollen !== undefined ? `${c.ragweedPollen} ${u.pollen}` : null
+    },
+    {
+      key: 'olivePollen',
+      label: 'Olive pollen',
+      value: c.olivePollen !== undefined ? `${c.olivePollen} ${u.pollen}` : null
+    },
+    {
+      key: 'mugwortPollen',
+      label: 'Mugwort pollen',
+      value: c.mugwortPollen !== undefined ? `${c.mugwortPollen} ${u.pollen}` : null
     }
   ]
 
@@ -204,7 +253,7 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
 
   if (pollenItems.length > 0) {
     groups.push({
-      title: 'Pollen Indices',
+      title: 'Pollen Forecast',
       items: pollenItems
     })
   }

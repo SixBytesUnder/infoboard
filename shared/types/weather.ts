@@ -19,7 +19,14 @@ export interface CurrentWeather {
   conditionText: string
   updatedAt: string
 
-  // Premium tier metrics (only present if Tomorrow.io account tier permits)
+  // Astronomy
+  sunrise?: string
+  sunset?: string
+  sunshineDuration?: number
+
+  // Air Quality
+  usAqi?: number
+  europeanAqi?: number
   particulateMatter25?: number
   particulateMatter10?: number
   pollutantO3?: number
@@ -27,6 +34,14 @@ export interface CurrentWeather {
   pollutantCO?: number
   pollutantSO2?: number
   epaHealthConcern?: number
+
+  // Pollen (grains/m³)
+  grassPollen?: number
+  birchPollen?: number
+  alderPollen?: number
+  ragweedPollen?: number
+  olivePollen?: number
+  mugwortPollen?: number
   treeIndex?: number
   weedIndex?: number
   grassIndex?: number
@@ -39,6 +54,10 @@ export interface DayForecast {
   conditionText: string
   tempMax: number
   tempMin: number
+  sunrise?: string
+  sunset?: string
+  uvIndex?: number
+  precipitationProbability?: number
 }
 
 export interface WeatherPayload {

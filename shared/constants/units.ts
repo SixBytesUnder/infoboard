@@ -19,6 +19,8 @@ export interface WeatherUnitsMap {
   cloudCover: string
   precipitationProbability: string
   uvIndex: string
+  sunshineDuration: string
+  pollen: string
 }
 
 export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
@@ -34,15 +36,17 @@ export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
     solarGHI: 'W/m²',
     particulateMatter25: 'μg/m³',
     particulateMatter10: 'μg/m³',
-    pollutantO3: 'ppb',
-    pollutantNO2: 'ppb',
-    pollutantCO: 'ppb',
-    pollutantSO2: 'ppb',
+    pollutantO3: 'μg/m³',
+    pollutantNO2: 'μg/m³',
+    pollutantCO: 'μg/m³',
+    pollutantSO2: 'μg/m³',
     visibility: 'km',
     dewPoint: '°C',
     cloudCover: '%',
     precipitationProbability: '%',
-    uvIndex: ''
+    uvIndex: '',
+    sunshineDuration: 'hrs',
+    pollen: 'grains/m³'
   },
   imperial: {
     temperature: '°F',
@@ -54,22 +58,54 @@ export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
     pressureSurfaceLevel: 'inHg',
     pressureSeaLevel: 'inHg',
     solarGHI: 'Btu/ft²',
-    particulateMatter25: 'μg/ft³',
-    particulateMatter10: 'μg/ft³',
-    pollutantO3: 'ppb',
-    pollutantNO2: 'ppb',
-    pollutantCO: 'ppb',
-    pollutantSO2: 'ppb',
+    particulateMatter25: 'μg/m³',
+    particulateMatter10: 'μg/m³',
+    pollutantO3: 'μg/m³',
+    pollutantNO2: 'μg/m³',
+    pollutantCO: 'μg/m³',
+    pollutantSO2: 'μg/m³',
     visibility: 'mi',
     dewPoint: '°F',
     cloudCover: '%',
     precipitationProbability: '%',
-    uvIndex: ''
+    uvIndex: '',
+    sunshineDuration: 'hrs',
+    pollen: 'grains/m³'
   }
 }
 
 export const WEATHER_CODES: Record<number, string> = {
-  0: 'Unknown',
+  // Standard WMO Weather interpretation codes (Open-Meteo)
+  0: 'Clear sky',
+  1: 'Mainly clear',
+  2: 'Partly cloudy',
+  3: 'Overcast',
+  45: 'Fog',
+  48: 'Depositing rime fog',
+  51: 'Light drizzle',
+  53: 'Moderate drizzle',
+  55: 'Dense drizzle',
+  56: 'Light freezing drizzle',
+  57: 'Dense freezing drizzle',
+  61: 'Slight rain',
+  63: 'Moderate rain',
+  65: 'Heavy rain',
+  66: 'Light freezing rain',
+  67: 'Heavy freezing rain',
+  71: 'Slight snow fall',
+  73: 'Moderate snow fall',
+  75: 'Heavy snow fall',
+  77: 'Snow grains',
+  80: 'Slight rain showers',
+  81: 'Moderate rain showers',
+  82: 'Violent rain showers',
+  85: 'Slight snow showers',
+  86: 'Heavy snow showers',
+  95: 'Thunderstorm',
+  96: 'Thunderstorm with hail',
+  99: 'Thunderstorm with heavy hail',
+
+  // Legacy Tomorrow.io codes for backward compatibility
   1000: 'Clear',
   1001: 'Cloudy',
   1100: 'Mostly Clear',
@@ -116,6 +152,15 @@ export const EPA_HEALTH_CONCERN: Record<number, string> = {
   3: 'Unhealthy',
   4: 'Very Unhealthy',
   5: 'Hazardous'
+}
+
+export const EUROPEAN_AQI_LEVELS: Record<number, string> = {
+  0: 'Good',
+  1: 'Fair',
+  2: 'Moderate',
+  3: 'Poor',
+  4: 'Very Poor',
+  5: 'Extremely Poor'
 }
 
 export const POLLEN_INDEX: Record<number, string> = {

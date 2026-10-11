@@ -43,7 +43,7 @@
         </div>
 
         <div class="attribution-section">
-          <a href="https://www.tomorrow.io/" target="_blank" rel="noopener noreferrer" class="attribution-link">Powered by Tomorrow.io</a>
+          <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" class="attribution-link">Powered by Open-Meteo</a>
           <span class="updated-time">Updated: {{ weather.current.updatedAt }}</span>
         </div>
       </div>
