@@ -9,8 +9,38 @@
         @error="handleIconError"
       >
       <div class="forecast-temps">
-        <span class="temp-high">{{ day.tempMax }}°</span>
-        <span class="temp-low">{{ day.tempMin }}°</span>
+        <span class="temp-item temp-high" title="High temperature">
+          <svg
+            class="temp-icon temp-icon-high"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 19V5" />
+            <path d="m5 12 7-7 7 7" />
+          </svg>
+          <span>{{ day.tempMax }}°</span>
+        </span>
+        <span class="temp-item temp-low" title="Low temperature">
+          <svg
+            class="temp-icon temp-icon-low"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14" />
+            <path d="m19 12-7 7-7-7" />
+          </svg>
+          <span>{{ day.tempMin }}°</span>
+        </span>
       </div>
       <span class="condition-summary">{{ day.conditionText }}</span>
     </div>
@@ -77,9 +107,25 @@ const handleIconError = (e: Event) => {
 
 .forecast-temps {
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   font-size: 0.95rem;
   font-weight: 700;
+}
+
+.temp-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  white-space: nowrap;
+}
+
+.temp-icon {
+  width: 0.68rem;
+  height: 0.68rem;
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .temp-high {

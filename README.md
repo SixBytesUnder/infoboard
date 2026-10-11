@@ -183,6 +183,9 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.1.2
+- **Forecast Temperature Indicators:** Added sleek, lightweight vector indicator icons to the 7-day forecast cards to clearly distinguish daily high (upward arrow) and low (downward arrow) temperatures.
+
 ### v4.1.1
 - **Hardware-Optimized Background Crossfader:** Dual-slot ping-pong buffer with asynchronous off-thread image preloading and decoding (`img.decode()`), eliminating jank and frame drops on older tablets such as iPad Pro.
 - **Synchronized Image Dissolve:** Unified opacity crossfade for both the sharp foreground photo and ambient blurred backdrop, eliminating desynchronization, instant snapping, and black flashes.
