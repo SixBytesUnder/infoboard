@@ -4,7 +4,9 @@ export interface WeatherUnitsMap {
   humidity: string
   windSpeed: string
   windGust: string
+  windDirection: string
   pressureSurfaceLevel: string
+  pressureSeaLevel: string
   solarGHI: string
   particulateMatter25: string
   particulateMatter10: string
@@ -13,6 +15,10 @@ export interface WeatherUnitsMap {
   pollutantCO: string
   pollutantSO2: string
   visibility: string
+  dewPoint: string
+  cloudCover: string
+  precipitationProbability: string
+  uvIndex: string
 }
 
 export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
@@ -22,7 +28,9 @@ export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
     humidity: '%',
     windSpeed: 'm/s',
     windGust: 'm/s',
+    windDirection: '°',
     pressureSurfaceLevel: 'hPa',
+    pressureSeaLevel: 'hPa',
     solarGHI: 'W/m²',
     particulateMatter25: 'μg/m³',
     particulateMatter10: 'μg/m³',
@@ -30,7 +38,11 @@ export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
     pollutantNO2: 'ppb',
     pollutantCO: 'ppb',
     pollutantSO2: 'ppb',
-    visibility: 'km'
+    visibility: 'km',
+    dewPoint: '°C',
+    cloudCover: '%',
+    precipitationProbability: '%',
+    uvIndex: ''
   },
   imperial: {
     temperature: '°F',
@@ -38,7 +50,9 @@ export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
     humidity: '%',
     windSpeed: 'mph',
     windGust: 'mph',
+    windDirection: '°',
     pressureSurfaceLevel: 'inHg',
+    pressureSeaLevel: 'inHg',
     solarGHI: 'Btu/ft²',
     particulateMatter25: 'μg/ft³',
     particulateMatter10: 'μg/ft³',
@@ -46,7 +60,11 @@ export const WEATHER_UNITS: Record<'metric' | 'imperial', WeatherUnitsMap> = {
     pollutantNO2: 'ppb',
     pollutantCO: 'ppb',
     pollutantSO2: 'ppb',
-    visibility: 'mi'
+    visibility: 'mi',
+    dewPoint: '°F',
+    cloudCover: '%',
+    precipitationProbability: '%',
+    uvIndex: ''
   }
 }
 

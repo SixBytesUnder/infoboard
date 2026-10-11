@@ -38,7 +38,15 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
       humidity: 68,
       windSpeed: isImperial ? 8 : 3.6,
       windGust: isImperial ? 14 : 6.2,
+      windDirection: 180,
       pressureSurfaceLevel: isImperial ? 29.92 : 1014,
+      pressureSeaLevel: isImperial ? 30.01 : 1016,
+      precipitationProbability: 10,
+      visibility: isImperial ? 10 : 16,
+      cloudCover: 25,
+      dewPoint: isImperial ? 50 : 10,
+      uvIndex: 3,
+      uvHealthConcern: 1,
       solarGHI: 240,
       moonPhase: 2,
       particulateMatter25: 7.2,
@@ -77,7 +85,10 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
       forecast: mockForecast,
       locationName: publicConf.locationName,
       units,
-      fetchedAt: now.toISOString()
+      fetchedAt: now.toISOString(),
+      isPaidPlan: true,
+      hasAirQuality: true,
+      hasPollen: true
     }
   }
 
@@ -85,12 +96,24 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
     const fields = [
       'temperature',
       'temperatureApparent',
+      'temperatureMax',
+      'temperatureMin',
       'humidity',
       'windSpeed',
+      'windDirection',
       'windGust',
       'pressureSurfaceLevel',
+      'pressureSeaLevel',
+      'precipitationProbability',
+      'visibility',
+      'cloudCover',
+      'dewPoint',
+      'uvIndex',
+      'uvHealthConcern',
       'solarGHI',
       'moonPhase',
+      'weatherCode',
+      // Premium Tier Metrics (included if user account tier has access)
       'particulateMatter25',
       'particulateMatter10',
       'pollutantO3',
@@ -100,8 +123,7 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
       'epaHealthConcern',
       'treeIndex',
       'weedIndex',
-      'grassIndex',
-      'weatherCode'
+      'grassIndex'
     ]
 
     const response = await $fetch<TomorrowResponse>('https://api.tomorrow.io/v4/timelines', {
@@ -125,35 +147,61 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
     const values = currentInterval?.values || {}
 
     const round = (val: number | undefined) => {
-      if (val === undefined || Number.isNaN(val)) return 0
+      if (val === undefined || val === null || Number.isNaN(val)) return 0
       return weatherConf.roundTemp ? Math.round(val) : Math.round(val * 10) / 10
+    }
+
+    const roundOptional = (val: number | undefined) => {
+      if (val === undefined || val === null || Number.isNaN(val)) return undefined
+      return weatherConf.roundTemp ? Math.round(val) : Math.round(val * 10) / 10
+    }
+
+    const roundDecimals = (val: number | undefined, decimals = 0) => {
+      if (val === undefined || val === null || Number.isNaN(val)) return undefined
+      const factor = 10 ** decimals
+      return Math.round(val * factor) / factor
     }
 
     const weatherCode = values.weatherCode ?? 1000
     const now = dayjs()
 
+    // Determine whether this Tomorrow.io account tier provides air quality or pollen data
+    const hasAirQuality = values.particulateMatter25 !== undefined || values.epaHealthConcern !== undefined
+    const hasPollen = values.treeIndex !== undefined || values.grassIndex !== undefined || values.weedIndex !== undefined
+    const isPaidPlan = hasAirQuality || hasPollen
+
     const current: CurrentWeather = {
       temperature: round(values.temperature),
       temperatureApparent: round(values.temperatureApparent),
       humidity: Math.round(values.humidity ?? 0),
-      windSpeed: Math.round((values.windSpeed ?? 0) * 10) / 10,
-      windGust: Math.round((values.windGust ?? 0) * 10) / 10,
+      windSpeed: roundDecimals(values.windSpeed, 1) ?? 0,
+      windGust: roundDecimals(values.windGust, 1) ?? 0,
+      windDirection: roundDecimals(values.windDirection),
       pressureSurfaceLevel: Math.round(values.pressureSurfaceLevel ?? 1013),
-      solarGHI: Math.round(values.solarGHI ?? 0),
-      moonPhase: Math.round(values.moonPhase ?? 0),
-      particulateMatter25: Math.round((values.particulateMatter25 ?? 0) * 10) / 10,
-      particulateMatter10: Math.round((values.particulateMatter10 ?? 0) * 10) / 10,
-      pollutantO3: Math.round(values.pollutantO3 ?? 0),
-      pollutantNO2: Math.round(values.pollutantNO2 ?? 0),
-      pollutantCO: Math.round((values.pollutantCO ?? 0) * 10) / 10,
-      pollutantSO2: Math.round((values.pollutantSO2 ?? 0) * 10) / 10,
-      epaHealthConcern: Math.round(values.epaHealthConcern ?? 0),
-      treeIndex: Math.round(values.treeIndex ?? 0),
-      weedIndex: Math.round(values.weedIndex ?? 0),
-      grassIndex: Math.round(values.grassIndex ?? 0),
+      pressureSeaLevel: roundDecimals(values.pressureSeaLevel),
+      precipitationProbability: roundDecimals(values.precipitationProbability),
+      visibility: roundDecimals(values.visibility, 1),
+      cloudCover: roundDecimals(values.cloudCover),
+      dewPoint: roundOptional(values.dewPoint),
+      uvIndex: roundDecimals(values.uvIndex),
+      uvHealthConcern: values.uvHealthConcern !== undefined ? Math.round(values.uvHealthConcern) : undefined,
+      solarGHI: roundDecimals(values.solarGHI),
+      moonPhase: values.moonPhase !== undefined ? Math.round(values.moonPhase) : undefined,
       weatherCode,
       conditionText: WEATHER_CODES[weatherCode] || 'Unknown',
-      updatedAt: dayjs(currentInterval?.startTime || now.toISOString()).format('HH:mm:ss')
+      updatedAt: dayjs(currentInterval?.startTime || now.toISOString()).format('HH:mm:ss'),
+
+      // Premium metrics: only populated when actually returned by upstream plan
+      particulateMatter25: roundDecimals(values.particulateMatter25, 1),
+      particulateMatter10: roundDecimals(values.particulateMatter10, 1),
+      pollutantO3: roundDecimals(values.pollutantO3),
+      pollutantNO2: roundDecimals(values.pollutantNO2),
+      pollutantCO: roundDecimals(values.pollutantCO, 1),
+      pollutantSO2: roundDecimals(values.pollutantSO2, 1),
+      epaHealthConcern: values.epaHealthConcern !== undefined ? Math.round(values.epaHealthConcern) : undefined,
+      treeIndex: values.treeIndex !== undefined ? Math.round(values.treeIndex) : undefined,
+      weedIndex: values.weedIndex !== undefined ? Math.round(values.weedIndex) : undefined,
+      grassIndex: values.grassIndex !== undefined ? Math.round(values.grassIndex) : undefined
     }
 
     const forecastTimeline = timelines.find(t => t.timestep === '1d')
@@ -185,7 +233,10 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
       forecast,
       locationName: publicConf.locationName,
       units,
-      fetchedAt: now.toISOString()
+      fetchedAt: now.toISOString(),
+      isPaidPlan,
+      hasAirQuality,
+      hasPollen
     }
 
     lastKnownGoodWeather = payload

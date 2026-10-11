@@ -4,22 +4,32 @@ export interface CurrentWeather {
   humidity: number
   windSpeed: number
   windGust: number
+  windDirection?: number
   pressureSurfaceLevel: number
-  solarGHI: number
-  moonPhase: number
-  particulateMatter25: number
-  particulateMatter10: number
-  pollutantO3: number
-  pollutantNO2: number
-  pollutantCO: number
-  pollutantSO2: number
-  epaHealthConcern: number
-  treeIndex: number
-  weedIndex: number
-  grassIndex: number
+  pressureSeaLevel?: number
+  precipitationProbability?: number
+  visibility?: number
+  cloudCover?: number
+  dewPoint?: number
+  uvIndex?: number
+  uvHealthConcern?: number
+  solarGHI?: number
+  moonPhase?: number
   weatherCode: number
   conditionText: string
   updatedAt: string
+
+  // Premium tier metrics (only present if Tomorrow.io account tier permits)
+  particulateMatter25?: number
+  particulateMatter10?: number
+  pollutantO3?: number
+  pollutantNO2?: number
+  pollutantCO?: number
+  pollutantSO2?: number
+  epaHealthConcern?: number
+  treeIndex?: number
+  weedIndex?: number
+  grassIndex?: number
 }
 
 export interface DayForecast {
@@ -38,4 +48,7 @@ export interface WeatherPayload {
   units: 'metric' | 'imperial'
   fetchedAt: string
   isStale?: boolean
+  isPaidPlan?: boolean
+  hasAirQuality?: boolean
+  hasPollen?: boolean
 }

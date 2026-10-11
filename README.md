@@ -183,6 +183,11 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.2.0
+- **Adaptive Tomorrow.io Account Tier Handling:** Automatically detects whether the Tomorrow.io account tier supports air quality and pollen layers. On free accounts, unavailable metrics are omitted instead of falling back to misleading zeros (`0 μg/m³`, `Good`, or `None`). On paid accounts with air quality or pollen add-ons, all layers are rendered automatically with grouped section headers.
+- **Rich Free-Tier Atmospheric Metrics:** Expanded the "More" drawer with full support for free-tier atmospheric metrics, including Dew Point, Cloud Cover, Precipitation Chance, Wind Direction with compass bearings, Visibility, and UV Index.
+- **Accurate Forecast Highs & Lows:** Upstream daily forecast queries now include actual `temperatureMax` and `temperatureMin` fields directly from Tomorrow.io.
+
 ### v4.1.2
 - **Forecast Temperature Indicators:** Added sleek, lightweight vector indicator icons to the 7-day forecast cards to clearly distinguish daily high (upward arrow) and low (downward arrow) temperatures.
 
