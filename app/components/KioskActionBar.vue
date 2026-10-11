@@ -102,7 +102,7 @@ const { isFullscreen, toggleFullscreen } = useKioskState()
 }
 
 .control-btn {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
 .action-icon {

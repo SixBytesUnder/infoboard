@@ -45,7 +45,6 @@ html, body {
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
