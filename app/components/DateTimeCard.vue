@@ -1,7 +1,7 @@
 <template>
   <div class="glass-panel datetime-card">
-    <h1 class="time-display">{{ time }}</h1>
-    <p class="date-display">{{ date }}</p>
+    <h1 class="time-display" data-allow-mismatch="text">{{ time }}</h1>
+    <p class="date-display" data-allow-mismatch="text">{{ date }}</p>
   </div>
 </template>
 

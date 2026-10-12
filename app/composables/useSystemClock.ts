@@ -13,6 +13,15 @@ function tick() {
 }
 
 export function useSystemClock(timeFormat = 'HH:mm:ss', dateFormat = 'dddd, Do MMMM YYYY') {
+  if (import.meta.server) {
+    const serverNow = dayjs()
+    return {
+      now: ref(serverNow),
+      time: computed(() => serverNow.format(timeFormat)),
+      date: computed(() => serverNow.format(dateFormat))
+    }
+  }
+
   onMounted(() => {
     listenerCount++
     if (listenerCount === 1) {

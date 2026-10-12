@@ -262,6 +262,9 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.3.4
+- **SSR Hydration Text Mismatch Fix:** Suppressed text content mismatch warnings on `DateTimeCard`'s live clock using Vue 3.5's `data-allow-mismatch="text"`, and updated `useSystemClock` to evaluate dynamic timestamps per request during SSR to prevent stale module-level state.
+
 ### v4.3.3
 - **Production Server Deployment Guide:** Added step-by-step documentation for deploying Infoboard behind an Nginx reverse proxy with automated Let's Encrypt SSL/TLS via Certbot.
 
