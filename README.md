@@ -166,6 +166,85 @@ docker compose up -d --build
 
 ---
 
+## Production Server Deployment (Docker + Nginx Reverse Proxy + SSL)
+
+If deploying Infoboard on a VPS or dedicated Linux server alongside existing websites or web servers (such as host Nginx/Apache):
+
+### 1. Configure Port Binding in `.env`
+When host ports `80` or `3000` are already in use by host services, set `HOST_PORT` in `.env` to bind the container to loopback on an available port (e.g., `8086`):
+
+```bash
+# Add to .env
+HOST_PORT="127.0.0.1:8086"
+```
+
+Start the container in the background:
+```bash
+docker compose up -d --build
+```
+
+Verify that the local container is responding:
+```bash
+curl -I http://127.0.0.1:8086
+```
+
+### 2. Configure Nginx Reverse Proxy
+Create a new Nginx virtual host configuration:
+
+```bash
+sudo nano /etc/nginx/sites-available/infoboard.yourdomain.com
+```
+
+Add the following configuration (replace `infoboard.yourdomain.com` with your domain):
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name infoboard.yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8086;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable the site configuration, verify syntax, and reload Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/infoboard.yourdomain.com /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 3. Provision Free SSL Certificate (Certbot / Let's Encrypt)
+Ensure your domain's DNS `A` or `CNAME` record is pointed to your server's IP address. Then run Certbot:
+
+```bash
+sudo certbot --nginx -d infoboard.yourdomain.com
+```
+
+Certbot will automatically:
+- Verify domain ownership via ACME HTTP-01 challenge.
+- Download and install the SSL certificate.
+- Configure HTTP/2, secure cipher suites, and an automatic HTTP-to-HTTPS redirect (`301 Moved Permanently`).
+- Register background certificate auto-renewal.
+
+### 4. Verify HTTPS Deployment
+Test that the HTTPS site is reachable:
+
+```bash
+curl -I https://infoboard.yourdomain.com/
+```
+
+---
+
 ## Raspberry Pi Chromium Kiosk Autostart
 
 To automatically launch Infoboard fullscreen on Raspberry Pi OS without window frames or mouse cursor:
@@ -182,6 +261,9 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 ---
 
 ## Version History
+
+### v4.3.3
+- **Production Server Deployment Guide:** Added step-by-step documentation for deploying Infoboard behind an Nginx reverse proxy with automated Let's Encrypt SSL/TLS via Certbot.
 
 ### v4.3.2
 - **Configurable Docker Host Port Binding:** Made the host port binding in `docker-compose.yml` configurable via `HOST_PORT` (defaulting to `127.0.0.1:8086:3000`), resolving conflicts on servers running system web servers (like Nginx) or existing reverse proxies.
