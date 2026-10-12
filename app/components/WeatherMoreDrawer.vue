@@ -143,7 +143,7 @@ const groupedMetrics = computed<MetricGroup[]>(() => {
     {
       key: 'moonPhase',
       label: 'Moon phase',
-      value: c.moonPhase !== undefined && MOON_PHASES[c.moonPhase] ? MOON_PHASES[c.moonPhase] : null
+      value: c.moonPhase !== undefined ? (MOON_PHASES[c.moonPhase] ?? null) : null
     }
   ]
 

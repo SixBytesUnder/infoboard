@@ -183,6 +183,9 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.3.1
+- **Weather Drawer Type Safety Fix:** Fixed TypeScript type error in `WeatherMoreDrawer.vue` by nullish-coalescing indexed moon phase lookups to conform with strict metric candidate typing (`string | null`).
+
 ### v4.3.0
 - **Full Migration to Open-Meteo Weather API:** Migrated from Tomorrow.io to Open-Meteo, delivering 10,000 requests/day with zero API key requirement, eliminating rate limit risks on 24/7 displays.
 - **Complete Air Quality & Pollen Suite for Free:** Integrated Open-Meteo's Air Quality API, displaying live US Air Quality Index (AQI), European AQI, PM2.5, PM10, Nitrogen Dioxide (NO₂), Ozone (O₃), Sulfur Dioxide (SO₂), Carbon Monoxide (CO), and 6 pollen species forecasts (grass, birch, alder, ragweed, olive, mugwort).
