@@ -183,6 +183,9 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.3.2
+- **Configurable Docker Host Port Binding:** Made the host port binding in `docker-compose.yml` configurable via `HOST_PORT` (defaulting to `127.0.0.1:8086:3000`), resolving conflicts on servers running system web servers (like Nginx) or existing reverse proxies.
+
 ### v4.3.1
 - **Weather Drawer Type Safety Fix:** Fixed TypeScript type error in `WeatherMoreDrawer.vue` by nullish-coalescing indexed moon phase lookups to conform with strict metric candidate typing (`string | null`).
 
