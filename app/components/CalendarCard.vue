@@ -9,7 +9,7 @@
       :title="calendarTooltip"
       @click="isOpen = !isOpen"
     >
-      <img src="/images/calendar.svg" alt="Calendar" class="calendar-header-icon">
+      <img src="/images/calendar.svg" alt="" aria-hidden="true" class="calendar-header-icon">
       <template v-if="!isMinimal || isOpen">
         <span class="header-title">Upcoming Agenda</span>
 
@@ -26,7 +26,7 @@
           {{ calendar.events.length }} {{ calendar.events.length === 1 ? 'event' : 'events' }}
         </span>
 
-        <span class="chevron">{{ isOpen ? '▼' : '▶' }}</span>
+        <span class="chevron" aria-hidden="true">{{ isOpen ? '▼' : '▶' }}</span>
       </template>
     </button>
 
@@ -55,7 +55,7 @@
           </div>
 
           <div class="events-list">
-            <div v-for="(ev, idx) in dayEvents" :key="idx" class="event-item">
+            <div v-for="ev in dayEvents" :key="`${ev.startDate}_${ev.startTime}_${ev.title}`" class="event-item">
               <div class="event-time-col">
                 <span class="event-time" :class="{ 'all-day': ev.isAllDay }">
                   {{ ev.startTime }}
@@ -74,9 +74,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import dayjs from 'dayjs'
-import type { CalendarPayload, ClientDashboardConfig } from '~~/shared'
+import { toClientDashboardConfig, type CalendarPayload } from '~~/shared'
 
 const props = withDefaults(defineProps<{
   calendar: CalendarPayload | null
@@ -87,14 +87,18 @@ const props = withDefaults(defineProps<{
   buttonStyle: undefined
 })
 
-const runtimeConfig = useRuntimeConfig()
+const publicConfig = toClientDashboardConfig(useRuntimeConfig().public)
 
 const isMinimal = computed(() => {
-  const style = props.buttonStyle || (runtimeConfig.public as unknown as ClientDashboardConfig)?.calendar?.buttonStyle
+  const style = props.buttonStyle || publicConfig.calendar.buttonStyle
   return style === 'minimal'
 })
 
 const isOpen = ref(props.initialExpand)
+
+watch(() => props.initialExpand, (val) => {
+  isOpen.value = val
+})
 
 const calendarTooltip = computed(() => {
   if (!isMinimal.value || isOpen.value) return undefined

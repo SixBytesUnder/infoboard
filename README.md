@@ -262,6 +262,11 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.3.5
+- **Resource & Concurrency Hardening:** Fixed file handle closure in EXIF header reader (`try...finally`), guarded serial port initialization and close callbacks in the SDS011 driver against timeouts/disconnects, validated byte-range headers in the video stream endpoint, and switched iCal parsing to asynchronous `nodeIcal.async.parseICS`.
+- **Sensitive Credential Redaction:** Added `sanitizeErrorMessage` to mask API keys, tokens, and private calendar URLs from upstream error logs and client responses while preserving diagnostic error details.
+- **Vue 3.5 Reactivity, Performance & Accessibility:** Updated `useSystemClock` and `usePolling` to accept reactive getters (`MaybeRefOrGetter`), guarded polling state transitions with execution tokens, adopted `shallowRef` for large data payloads, synced native `fullscreenchange` state via `useState`, extracted modular composables/subcomponents (`useBackgroundMedia`, `TransitTubeSection`, `weatherMetrics`), and improved ARIA dialog/toggle semantics.
+
 ### v4.3.4
 - **SSR Hydration Text Mismatch Fix:** Suppressed text content mismatch warnings on `DateTimeCard`'s live clock using Vue 3.5's `data-allow-mismatch="text"`, and updated `useSystemClock` to evaluate dynamic timestamps per request during SSR to prevent stale module-level state.
 

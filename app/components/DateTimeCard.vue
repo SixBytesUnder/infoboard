@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<{
   dateFormat: 'dddd, Do MMMM YYYY'
 })
 
-const { time, date } = useSystemClock(props.timeFormat, props.dateFormat)
+const { time, date } = useSystemClock(() => props.timeFormat, () => props.dateFormat)
 </script>
 
 <style scoped>

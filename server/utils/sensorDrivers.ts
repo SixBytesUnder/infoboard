@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises'
+import type { SerialPort as SerialPortType } from 'serialport'
 import type { SensorReadings } from '~~/shared'
 
 let cachedSDS: { pm25: number; pm10: number; lastRead: number; isSimulated: boolean } | null = null
@@ -22,7 +23,7 @@ async function readSDSFromSerial(portPath: string, timeoutMs = 3500): Promise<{ 
   activeSdsPromise = (async () => {
     return new Promise<{ pm25: number; pm10: number } | null>((resolve) => {
       let isSettled = false
-      let portInstance: any = null
+      let portInstance: SerialPortType | null = null
       let buffer = Buffer.alloc(0)
 
       const cleanupAndResolve = (result: { pm25: number; pm10: number } | null) => {
@@ -30,10 +31,13 @@ async function readSDSFromSerial(portPath: string, timeoutMs = 3500): Promise<{ 
         isSettled = true
         clearTimeout(timer)
         if (portInstance && portInstance.isOpen) {
-          portInstance.close(() => resolve(result))
-        } else {
-          resolve(result)
+          try {
+            portInstance.close(() => {})
+          } catch {
+            // Ignore close errors if USB serial adapter was unplugged
+          }
         }
+        resolve(result)
       }
 
       const timer = setTimeout(() => {
@@ -41,6 +45,7 @@ async function readSDSFromSerial(portPath: string, timeoutMs = 3500): Promise<{ 
       }, timeoutMs)
 
       import('serialport').then(({ SerialPort }) => {
+        if (isSettled) return
         try {
           portInstance = new SerialPort({
             path: portPath,

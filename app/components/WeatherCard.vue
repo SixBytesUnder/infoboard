@@ -1,10 +1,12 @@
 <template>
   <div v-if="weather" class="glass-panel weather-card">
     <div class="weather-main">
-      <button 
-        type="button" 
-        class="weather-icon-btn" 
-        :title="'Toggle forecast for ' + weather.current.conditionText" 
+      <button
+        type="button"
+        class="weather-icon-btn"
+        :aria-expanded="showForecast"
+        :aria-label="'Toggle forecast for ' + weather.current.conditionText"
+        :title="'Toggle forecast for ' + weather.current.conditionText"
         @click="$emit('toggle-forecast')"
       >
         <img
@@ -17,7 +19,7 @@
 
       <div class="weather-info">
         <div class="location-row">
-          <img src="/images/pin.svg" alt="Location" class="pin-icon">
+          <img src="/images/pin.svg" alt="" aria-hidden="true" class="pin-icon">
           <span class="location-name">{{ weather.locationName }}</span>
           <span v-if="weather.isStale" class="stale-pill">
             <span class="stale-dot" />
@@ -36,6 +38,7 @@
             type="button"
             class="kiosk-btn more-btn"
             :class="{ active: showMore }"
+            :aria-expanded="showMore"
             @click="$emit('toggle-more')"
           >
             {{ showMore ? 'Less' : 'More' }}
@@ -55,10 +58,13 @@
 import { computed } from 'vue'
 import type { WeatherPayload } from '~~/shared'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   weather: WeatherPayload | null
   showMore: boolean
-}>()
+  showForecast?: boolean
+}>(), {
+  showForecast: false
+})
 
 defineEmits<{
   'toggle-forecast': []

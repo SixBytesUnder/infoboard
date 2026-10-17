@@ -1,14 +1,24 @@
-import { ref, onMounted, onScopeDispose, type Ref } from 'vue'
+import {
+  ref,
+  shallowRef,
+  watch,
+  toValue,
+  onMounted,
+  onScopeDispose,
+  type Ref,
+  type ShallowRef,
+  type MaybeRefOrGetter
+} from 'vue'
 
 export interface PollingOptions<T> {
   fn: (signal: AbortSignal) => Promise<T>
-  intervalMs: number
+  intervalMs: MaybeRefOrGetter<number>
   immediate?: boolean
   onError?: (err: Error) => void
 }
 
 export interface PollingReturn<T> {
-  data: Ref<T | null>
+  data: ShallowRef<T | null>
   pending: Ref<boolean>
   error: Ref<Error | null>
   refresh: () => Promise<void>
@@ -17,14 +27,14 @@ export interface PollingReturn<T> {
 }
 
 export function usePolling<T>(options: PollingOptions<T>): PollingReturn<T> {
-  const data = ref<T | null>(null) as Ref<T | null>
+  const data = shallowRef<T | null>(null)
   const pending = ref(false)
   const error = ref<Error | null>(null)
 
   let timerId: ReturnType<typeof setTimeout> | null = null
   let abortController: AbortController | null = null
   let isRunning = false
-  let isMounted = false
+  let executionToken = 0
 
   const clearExistingTimer = () => {
     if (timerId !== null) {
@@ -34,10 +44,12 @@ export function usePolling<T>(options: PollingOptions<T>): PollingReturn<T> {
   }
 
   const abortActiveRequest = () => {
+    executionToken++
     if (abortController) {
       abortController.abort()
       abortController = null
     }
+    pending.value = false
   }
 
   const execute = async () => {
@@ -49,31 +61,43 @@ export function usePolling<T>(options: PollingOptions<T>): PollingReturn<T> {
     }
 
     abortActiveRequest()
+    const currentToken = ++executionToken
     abortController = new AbortController()
     pending.value = true
     error.value = null
 
     try {
       const result = await options.fn(abortController.signal)
-      data.value = result
+      if (currentToken === executionToken) {
+        data.value = result
+      }
     } catch (err: unknown) {
-      if ((err as { name?: string }).name !== 'AbortError') {
+      if ((err as { name?: string }).name !== 'AbortError' && currentToken === executionToken) {
         const errorObj = err instanceof Error ? err : new Error(String(err))
         error.value = errorObj
         options.onError?.(errorObj)
       }
     } finally {
-      pending.value = false
-      scheduleNext()
+      if (currentToken === executionToken) {
+        pending.value = false
+        scheduleNext()
+      }
     }
   }
 
   const scheduleNext = () => {
     clearExistingTimer()
     if (isRunning && typeof window !== 'undefined') {
-      timerId = setTimeout(execute, options.intervalMs)
+      const delay = Math.max(toValue(options.intervalMs) || 1000, 1000)
+      timerId = setTimeout(execute, delay)
     }
   }
+
+  watch(() => toValue(options.intervalMs), () => {
+    if (isRunning && !pending.value) {
+      scheduleNext()
+    }
+  })
 
   const start = () => {
     if (isRunning) return
@@ -110,7 +134,6 @@ export function usePolling<T>(options: PollingOptions<T>): PollingReturn<T> {
   }
 
   onMounted(() => {
-    isMounted = true
     isRunning = true
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -124,7 +147,6 @@ export function usePolling<T>(options: PollingOptions<T>): PollingReturn<T> {
   })
 
   onScopeDispose(() => {
-    isMounted = false
     stop()
     if (typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', handleVisibilityChange)

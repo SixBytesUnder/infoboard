@@ -6,9 +6,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ClientDashboardConfig } from '~~/shared'
+import { toClientDashboardConfig } from '~~/shared'
 
-const config = useRuntimeConfig().public as unknown as ClientDashboardConfig
+const config = toClientDashboardConfig(useRuntimeConfig().public)
 
 const bodyClasses = computed(() => {
   const classes: string[] = []

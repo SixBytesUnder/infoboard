@@ -3,7 +3,7 @@
     <!-- DHT / Sense HAT Indoor Temp -->
     <div v-if="sensors?.temperature !== undefined" class="sensor-chip">
       <div class="sensor-icon-wrap">
-        <img src="/images/temperature.svg" alt="Temp" class="sensor-icon">
+        <img src="/images/temperature.svg" alt="Indoor temperature" class="sensor-icon">
       </div>
       <span class="sensor-value">{{ formatVal(sensors.temperature) }}°C</span>
     </div>
@@ -11,7 +11,7 @@
     <!-- DHT / Sense HAT Indoor Humidity -->
     <div v-if="sensors?.humidity !== undefined" class="sensor-chip">
       <div class="sensor-icon-wrap">
-        <img src="/images/humidity.svg" alt="Humidity" class="sensor-icon">
+        <img src="/images/humidity.svg" alt="Indoor humidity" class="sensor-icon">
       </div>
       <span class="sensor-value">{{ formatVal(sensors.humidity) }}%</span>
     </div>
@@ -30,10 +30,18 @@
         <img
           v-if="!sensors?.hasError || sensors?.pm25 !== undefined"
           :src="`/images/sds_${sensors.airQualityRating || 'smile'}.svg`"
-          :alt="sensors.airQualityRating || 'smile'"
+          :alt="airQualityLabel"
           class="sensor-icon sds-icon"
         >
-        <span v-else class="sensor-error-badge" :title="sensors.error || 'Sensor read error'">!</span>
+        <span
+          v-else
+          class="sensor-error-badge"
+          role="img"
+          :aria-label="sensors.error || 'Sensor read error'"
+          :title="sensors.error || 'Sensor read error'"
+        >
+          <span aria-hidden="true">!</span>
+        </span>
       </div>
       <div class="sds-text">
         <template v-if="sensors.pm25 !== undefined">
@@ -55,6 +63,18 @@ import type { SensorReadings } from '~~/shared'
 const props = defineProps<{
   sensors: SensorReadings | null
 }>()
+
+const AIR_QUALITY_LABELS: Record<string, string> = {
+  smile: 'Air quality: Good',
+  neutral: 'Air quality: Moderate',
+  sad: 'Air quality: Poor',
+  dead: 'Air quality: Very poor'
+}
+
+const airQualityLabel = computed(() => {
+  const rating = props.sensors?.airQualityRating || 'smile'
+  return AIR_QUALITY_LABELS[rating] || 'Air quality: Good'
+})
 
 const hasAnySensor = computed(() => {
   const s = props.sensors

@@ -58,9 +58,26 @@ export default defineEventHandler(async (event) => {
 
   // Support Byte-Range requests for MP4 video streaming
   if (mimeType.startsWith('video/') && rangeHeader) {
-    const parts = rangeHeader.replace(/bytes=/, '').split('-')
-    const start = Number.parseInt(parts[0] || '0', 10)
-    const end = parts[1] ? Number.parseInt(parts[1], 10) : fileSize - 1
+    const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim())
+    if (!match || (!match[1] && !match[2])) {
+      setResponseHeaders(event, { 'Content-Range': `bytes */${fileSize}` })
+      throw createError({ statusCode: 416, statusMessage: 'Range Not Satisfiable' })
+    }
+
+    const start = match[1] ? Number.parseInt(match[1], 10) : 0
+    const end = match[2] ? Math.min(Number.parseInt(match[2], 10), fileSize - 1) : fileSize - 1
+
+    if (
+      !Number.isFinite(start) ||
+      !Number.isFinite(end) ||
+      start < 0 ||
+      start > end ||
+      start >= fileSize
+    ) {
+      setResponseHeaders(event, { 'Content-Range': `bytes */${fileSize}` })
+      throw createError({ statusCode: 416, statusMessage: 'Range Not Satisfiable' })
+    }
+
     const chunkSize = end - start + 1
 
     setResponseStatus(event, 206)

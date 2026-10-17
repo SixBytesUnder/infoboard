@@ -39,15 +39,15 @@ function toDate(val: unknown): Date | null {
   return null
 }
 
-export function parseICalEvents(
+export async function parseICalEvents(
   rawIcs: string,
   limit = 10,
   horizonDays = 60,
   dateFormat = 'YYYY-MM-DD',
   timeFormat = 'HH:mm'
-): ParsedEventList {
+): Promise<ParsedEventList> {
   const eventsList: CalendarEvent[] = []
-  const parsedData = nodeIcal.sync.parseICS(rawIcs)
+  const parsedData = await nodeIcal.async.parseICS(rawIcs)
   const rangeStart = dayjs().startOf('day')
   const rangeEnd = dayjs().add(horizonDays, 'day').endOf('day')
 

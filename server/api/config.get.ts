@@ -1,9 +1,9 @@
-import type { ClientDashboardConfig } from '~~/shared'
+import { toClientDashboardConfig, type ClientDashboardConfig } from '~~/shared'
 
 export default defineEventHandler((event): ClientDashboardConfig => {
   const config = useRuntimeConfig(event)
   const env = process.env
-  const pub = config.public as unknown as ClientDashboardConfig
+  const pub = toClientDashboardConfig(config.public)
 
   return {
     ...pub,

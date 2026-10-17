@@ -26,6 +26,7 @@
           v-if="config.weather.enabled"
           :weather="weatherData"
           :show-more="showWeatherMore"
+          :show-forecast="showForecast"
           @toggle-forecast="showForecast = !showForecast"
           @toggle-more="showWeatherMore = !showWeatherMore"
         />
@@ -93,20 +94,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onScopeDispose, watch, useTemplateRef } from 'vue'
 import { usePolling } from '~/composables/usePolling'
-import type {
-  ClientDashboardConfig,
-  WeatherPayload,
-  TransitPayload,
-  CalendarPayload,
-  SensorReadings,
-  MediaAsset,
-  ExifMetadata
+import {
+  toClientDashboardConfig,
+  type ClientDashboardConfig,
+  type WeatherPayload,
+  type TransitPayload,
+  type CalendarPayload,
+  type SensorReadings,
+  type MediaAsset,
+  type ExifMetadata
 } from '~~/shared'
 
 const runtimeConfig = useRuntimeConfig()
-const config = ref<ClientDashboardConfig>(runtimeConfig.public as unknown as ClientDashboardConfig)
+const config = ref<ClientDashboardConfig>(toClientDashboardConfig(runtimeConfig.public))
 
 onMounted(async () => {
   try {
@@ -138,51 +140,72 @@ const showExifModal = ref(false)
 const exifData = ref<ExifMetadata | null>(null)
 const canSkipImage = ref(true)
 
-const bgRef = ref<{ nextImage: () => void; nextFolder: () => void } | null>(null)
+const bgRef = useTemplateRef<{ nextImage: () => void; nextFolder: () => void }>('bgRef')
 
 // 1. Weather Polling
 const { data: weatherData } = usePolling<WeatherPayload>({
-  fn: (signal) => $fetch<WeatherPayload>('/api/weather', { signal }),
-  intervalMs: config.value.weather.refreshMs
+  fn: signal => $fetch<WeatherPayload>('/api/weather', { signal }),
+  intervalMs: () => config.value.weather.refreshMs
 })
 
 // 2. Transit Polling
 const { data: transitData } = usePolling<TransitPayload>({
-  fn: (signal) => $fetch<TransitPayload>('/api/tfl', { signal }),
-  intervalMs: config.value.transit.refreshMs
+  fn: signal => $fetch<TransitPayload>('/api/tfl', { signal }),
+  intervalMs: () => config.value.transit.refreshMs
 })
 
 // 3. Calendar Polling
 const { data: calendarData } = usePolling<CalendarPayload>({
-  fn: (signal) => $fetch<CalendarPayload>('/api/calendar', { signal }),
-  intervalMs: config.value.calendar.refreshMs
+  fn: signal => $fetch<CalendarPayload>('/api/calendar', { signal }),
+  intervalMs: () => config.value.calendar.refreshMs
 })
 
 // 4. Sensors Polling
 const { data: sensorData } = usePolling<SensorReadings>({
-  fn: (signal) => $fetch<SensorReadings>('/api/sensors', { signal }),
-  intervalMs: config.value.sensor.refreshMs
+  fn: signal => $fetch<SensorReadings>('/api/sensors', { signal }),
+  intervalMs: () => config.value.sensor.refreshMs
 })
 
-// EXIF modal handler
+// EXIF modal handler with AbortController to avoid out-of-order responses
+let exifAbortController: AbortController | null = null
+
+const abortExifFetch = () => {
+  if (exifAbortController) {
+    exifAbortController.abort()
+    exifAbortController = null
+  }
+}
+
 const refreshExif = async () => {
+  abortExifFetch()
   if (!showExifModal.value || !activeAsset.value?.identifier) return
   if (activeAsset.value.type !== 'image') {
     showExifModal.value = false
     return
   }
 
+  const controller = new AbortController()
+  exifAbortController = controller
+
   try {
-    const data = await $fetch<ExifMetadata>(`/api/exif?file=${encodeURIComponent(activeAsset.value.identifier)}`)
-    exifData.value = data || {}
-  } catch (err) {
-    console.warn('Failed to load EXIF:', (err as Error).message)
-    exifData.value = {}
+    const data = await $fetch<ExifMetadata>(
+      `/api/exif?file=${encodeURIComponent(activeAsset.value.identifier)}`,
+      { signal: controller.signal }
+    )
+    if (exifAbortController === controller) {
+      exifData.value = data || {}
+    }
+  } catch (err: unknown) {
+    if ((err as { name?: string }).name !== 'AbortError' && exifAbortController === controller) {
+      console.warn('Failed to load EXIF:', (err as Error).message)
+      exifData.value = {}
+    }
   }
 }
 
 const toggleExifModal = async () => {
   if (showExifModal.value) {
+    abortExifFetch()
     showExifModal.value = false
     return
   }
@@ -196,6 +219,10 @@ watch(activeAsset, () => {
   if (showExifModal.value) {
     refreshExif()
   }
+})
+
+onScopeDispose(() => {
+  abortExifFetch()
 })
 </script>
 

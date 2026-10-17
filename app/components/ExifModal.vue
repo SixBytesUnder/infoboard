@@ -1,8 +1,20 @@
 <template>
-  <div class="glass-panel exif-panel">
+  <div
+    class="glass-panel exif-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="exif-modal-title"
+  >
     <div class="exif-header">
-      <span class="exif-title">EXIF Photo Info</span>
-      <button type="button" class="close-btn" @click="$emit('close')">✕</button>
+      <span id="exif-modal-title" class="exif-title">EXIF Photo Info</span>
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close EXIF photo info"
+        @click="$emit('close')"
+      >
+        <span aria-hidden="true">✕</span>
+      </button>
     </div>
 
     <div v-if="hasAnyData" class="exif-body">
@@ -43,16 +55,34 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onScopeDispose } from 'vue'
 import type { ExifMetadata } from '~~/shared'
 
 const props = defineProps<{
   exif: ExifMetadata | null
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
 }>()
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('keydown', handleKeydown)
+  }
+})
+
+onScopeDispose(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('keydown', handleKeydown)
+  }
+})
 
 const hasAnyData = computed(() => {
   if (!props.exif) return false

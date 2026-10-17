@@ -1,4 +1,5 @@
 import type { MediaAsset } from '~~/shared'
+import { sanitizeErrorMessage } from '../utils/sanitizeError'
 
 interface NasaApodBasicItem {
   date?: string
@@ -49,7 +50,8 @@ export default defineEventHandler(async (event): Promise<MediaAsset[]> => {
   const config = useRuntimeConfig(event)
   const mediaConf = config.media
   const query = getQuery(event)
-  const weatherTag = (query.weatherTag as string) || ''
+  const rawWeatherTag = Array.isArray(query.weatherTag) ? query.weatherTag[0] : query.weatherTag
+  const weatherTag = typeof rawWeatherTag === 'string' ? rawWeatherTag : ''
 
   const source = mediaConf.source
 
@@ -80,7 +82,7 @@ export default defineEventHandler(async (event): Promise<MediaAsset[]> => {
         return assets
       }
     } catch (err) {
-      console.warn('NASA APOD (science.nasa.gov) failed, using bundled fallback:', (err as Error).message)
+      console.warn('NASA APOD (science.nasa.gov) failed, using bundled fallback:', sanitizeErrorMessage(err))
     }
 
     // Fallback to bundled NASA asset
@@ -122,7 +124,7 @@ export default defineEventHandler(async (event): Promise<MediaAsset[]> => {
         credit: p.user?.name ? `Photo by ${p.user.name}` : undefined
       }))
     } catch (err) {
-      console.warn('Unsplash fetch failed:', (err as Error).message)
+      console.warn('Unsplash fetch failed:', sanitizeErrorMessage(err, [mediaConf.unsplashKey]))
       return [{ type: 'image', url: '/images/nasa.jpg', identifier: 'fallback', title: 'Unsplash Error' }]
     }
   }
@@ -154,7 +156,7 @@ export default defineEventHandler(async (event): Promise<MediaAsset[]> => {
         credit: p.photographer ? `Photo by ${p.photographer}` : undefined
       }))
     } catch (err) {
-      console.warn('Pexels fetch failed:', (err as Error).message)
+      console.warn('Pexels fetch failed:', sanitizeErrorMessage(err, [mediaConf.pexelsKey]))
       return [{ type: 'image', url: '/images/nasa.jpg', identifier: 'fallback', title: 'Pexels Error' }]
     }
   }
@@ -180,7 +182,7 @@ export default defineEventHandler(async (event): Promise<MediaAsset[]> => {
         title: p.title || 'Flickr Photo'
       }))
     } catch (err) {
-      console.warn('Flickr fetch failed:', (err as Error).message)
+      console.warn('Flickr fetch failed:', sanitizeErrorMessage(err, [mediaConf.flickrKey]))
       return [{ type: 'image', url: '/images/nasa.jpg', identifier: 'fallback', title: 'Flickr Error' }]
     }
   }

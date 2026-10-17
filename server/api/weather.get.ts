@@ -1,6 +1,7 @@
 import { WEATHER_CODES } from '~~/shared'
 import type { WeatherPayload, DayForecast, CurrentWeather } from '~~/shared'
 import dayjs from 'dayjs'
+import { sanitizeErrorMessage } from '../utils/sanitizeError'
 
 interface OpenMeteoCurrent {
   time: string
@@ -280,6 +281,8 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
     lastKnownGoodWeather = payload
     return payload
   } catch (err) {
+    const safeMsg = sanitizeErrorMessage(err, [weatherConf.apiKey])
+    console.warn('Weather fetch failed:', safeMsg)
     if (lastKnownGoodWeather) {
       return {
         ...lastKnownGoodWeather,
@@ -288,7 +291,7 @@ export default defineEventHandler(async (event): Promise<WeatherPayload> => {
     }
     throw createError({
       statusCode: 502,
-      statusMessage: `Weather upstream unavailable: ${(err as Error).message}`
+      statusMessage: `Weather upstream unavailable: ${safeMsg}`
     })
   }
 })

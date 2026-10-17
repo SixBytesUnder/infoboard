@@ -1,5 +1,6 @@
 export * from './constants/units'
 export * from './constants/tflPalette'
+export * from './constants/weatherMetrics'
 export * from './types/weather'
 export * from './types/transit'
 export * from './types/calendar'

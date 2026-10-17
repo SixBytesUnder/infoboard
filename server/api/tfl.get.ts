@@ -1,4 +1,5 @@
 import type { TransitPayload, TfLLineStatus } from '~~/shared'
+import { sanitizeErrorMessage } from '../utils/sanitizeError'
 
 interface RawTfLLine {
   id: string
@@ -32,18 +33,26 @@ export default defineEventHandler(async (event): Promise<TransitPayload> => {
   const busesMap: Record<string, Record<string, string[]>> = {}
 
   const rawLineModes = transitConf.lineModes as unknown
-  const lineModes: string[] = Array.isArray(rawLineModes)
-    ? (rawLineModes as string[])
-    : (typeof rawLineModes === 'string' ? (rawLineModes as string).split(',') : [])
-        .map((s: string) => s.trim())
-        .filter(Boolean)
+  const lineModes: string[] = (
+    Array.isArray(rawLineModes)
+      ? rawLineModes
+      : typeof rawLineModes === 'string'
+        ? rawLineModes.split(',')
+        : []
+  )
+    .map(s => String(s).trim())
+    .filter(Boolean)
 
   const rawBusStops = transitConf.busStops as unknown
-  const busStops: string[] = Array.isArray(rawBusStops)
-    ? (rawBusStops as string[])
-    : (typeof rawBusStops === 'string' ? (rawBusStops as string).split(',') : [])
-        .map((s: string) => s.trim())
-        .filter(Boolean)
+  const busStops: string[] = (
+    Array.isArray(rawBusStops)
+      ? rawBusStops
+      : typeof rawBusStops === 'string'
+        ? rawBusStops.split(',')
+        : []
+  )
+    .map(s => String(s).trim())
+    .filter(Boolean)
 
   try {
     // 1. Fetch Line statuses
@@ -66,7 +75,7 @@ export default defineEventHandler(async (event): Promise<TransitPayload> => {
           })
         }
       } catch (err) {
-        console.warn('TfL lines status fetch failed:', (err as Error).message)
+        console.warn('TfL lines status fetch failed:', sanitizeErrorMessage(err, [transitConf.tflAppKey, transitConf.tflAppId]))
       }
     }
 
@@ -74,7 +83,7 @@ export default defineEventHandler(async (event): Promise<TransitPayload> => {
     if (busStops.length > 0) {
       const arrivalsResults = await Promise.allSettled(
         busStops.map(stopId =>
-          $fetch<RawTfLArrival[]>(`https://api.tfl.gov.uk/StopPoint/${stopId}/Arrivals${authQuery}`, {
+          $fetch<RawTfLArrival[]>(`https://api.tfl.gov.uk/StopPoint/${encodeURIComponent(stopId)}/Arrivals${authQuery}`, {
             signal: AbortSignal.timeout(8000)
           })
         )
@@ -130,7 +139,7 @@ export default defineEventHandler(async (event): Promise<TransitPayload> => {
     lastKnownTransit = payload
     return payload
   } catch (err) {
-    const msg = (err as Error).message || 'TfL API request failed'
+    const msg = sanitizeErrorMessage(err, [transitConf.tflAppKey, transitConf.tflAppId]) || 'TfL API request failed'
     console.warn('TfL transit fetch failed:', msg)
 
     if (lastKnownTransit) {

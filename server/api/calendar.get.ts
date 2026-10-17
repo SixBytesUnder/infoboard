@@ -1,5 +1,6 @@
 import type { CalendarPayload } from '~~/shared'
 import { parseICalEvents } from '../utils/icalParser'
+import { sanitizeErrorMessage } from '../utils/sanitizeError'
 
 let lastKnownCalendar: CalendarPayload | null = null
 let lastFetchedTime = 0
@@ -45,7 +46,7 @@ export default defineEventHandler(async (event): Promise<CalendarPayload> => {
         })
       } catch (err) {
         if (retries > 0) {
-          console.warn(`Calendar fetch attempt failed, retrying in 1.5s... (${(err as Error).message})`)
+          console.warn(`Calendar fetch attempt failed, retrying in 1.5s... (${sanitizeErrorMessage(err)})`)
           await new Promise(resolve => setTimeout(resolve, 1500))
           return fetchIcsWithRetry(retries - 1)
         }
@@ -56,7 +57,7 @@ export default defineEventHandler(async (event): Promise<CalendarPayload> => {
     try {
       const rawIcs = await fetchIcsWithRetry(1)
 
-      const parsed = parseICalEvents(
+      const parsed = await parseICalEvents(
         rawIcs,
         calendarConf.maxEvents,
         60,
@@ -74,8 +75,9 @@ export default defineEventHandler(async (event): Promise<CalendarPayload> => {
       lastFetchedTime = Date.now()
       return payload
     } catch (err) {
-      const msg = (err as Error).message || 'Failed to fetch calendar'
-      console.warn(`Calendar fetch failed (${calendarConf.icalUrl}):`, msg)
+      const msg = sanitizeErrorMessage(err) || 'Failed to fetch calendar'
+      const safeUrl = sanitizeErrorMessage(calendarConf.icalUrl)
+      console.warn(`Calendar fetch failed (${safeUrl}):`, msg)
       const friendlyError = msg.includes('404')
         ? 'Calendar feed not found (HTTP 404). For Google Calendar, use the "Secret address in iCal format" from Settings.'
         : `Calendar sync error: ${msg}`

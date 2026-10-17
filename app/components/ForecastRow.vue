@@ -1,5 +1,5 @@
 <template>
-  <div v-if="forecast.length > 0" class="forecast-container">
+  <div v-if="forecast && forecast.length > 0" class="forecast-container">
     <div v-for="day in forecast" :key="day.date" class="glass-panel forecast-card">
       <span class="day-name">{{ day.dayName }}</span>
       <img
@@ -50,9 +50,11 @@
 <script setup lang="ts">
 import type { DayForecast } from '~~/shared'
 
-defineProps<{
-  forecast: DayForecast[]
-}>()
+withDefaults(defineProps<{
+  forecast?: DayForecast[]
+}>(), {
+  forecast: () => []
+})
 
 const handleIconError = (e: Event) => {
   const target = e.target as HTMLImageElement
