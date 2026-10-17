@@ -87,7 +87,9 @@ defineEmits<{
   'next-folder': []
 }>()
 
-const { isFullscreen, toggleFullscreen } = useKioskState()
+const kiosk = useKioskState()
+const isFullscreen = kiosk.isFullscreen
+const toggleFullscreen = kiosk.toggleFullscreen
 </script>
 
 <style scoped>

@@ -4,6 +4,134 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@unhead/vue": [
+        "./node_modules/@unhead/vue"
+      ],
+      "@nuxt/devtools": [
+        "./node_modules/@nuxt/devtools"
+      ],
+      "vue": [
+        "./node_modules/vue/dist/vue.d.ts"
+      ],
+      "@vue/runtime-core": [
+        "./node_modules/@vue/runtime-core/dist/runtime-core.d.ts"
+      ],
+      "@vue/runtime-dom": [
+        "./node_modules/@vue/runtime-dom/dist/runtime-dom.d.ts"
+      ],
+      "@vue/shared": [
+        "./node_modules/@vue/shared/dist/shared.d.ts"
+      ],
+      "@vue/reactivity": [
+        "./node_modules/@vue/reactivity/dist/reactivity.d.ts"
+      ],
+      "@vue/compiler-sfc": [
+        "./node_modules/@vue/compiler-sfc"
+      ],
+      "@nuxt/schema": [
+        "./node_modules/@nuxt/schema"
+      ],
+      "nuxt": [
+        "./node_modules/nuxt"
+      ],
+      "vite/client": [
+        "./node_modules/vite/client"
+      ],
+      "nitropack/types": [
+        "./node_modules/nitropack/dist/types/index.d.ts"
+      ],
+      "nitropack/runtime": [
+        "./node_modules/nitropack/runtime"
+      ],
+      "nitropack": [
+        "./node_modules/nitropack/dist/types/index.d.ts"
+      ],
+      "defu": [
+        "./node_modules/defu"
+      ],
+      "h3": [
+        "./node_modules/h3/dist/index.d.ts"
+      ],
+      "consola": [
+        "./node_modules/consola"
+      ],
+      "ofetch": [
+        "./node_modules/ofetch/dist/index.d.ts"
+      ],
+      "crossws": [
+        "./node_modules/crossws"
+      ],
+      "dayjs": [
+        "./node_modules/dayjs/index.d.ts"
+      ],
+      "~": [
+        "./app"
+      ],
+      "~/*": [
+        "./app/*"
+      ],
+      "@": [
+        "./app"
+      ],
+      "@/*": [
+        "./app/*"
+      ],
+      "~~": [
+        "."
+      ],
+      "~~/shared": [
+        "./shared/index.ts"
+      ],
+      "~~/*": [
+        "./*"
+      ],
+      "@@": [
+        "."
+      ],
+      "@@/*": [
+        "./*"
+      ],
+      "#shared": [
+        "./shared"
+      ],
+      "#shared/*": [
+        "./shared/*"
+      ],
+      "#server": [
+        "./server"
+      ],
+      "#server/*": [
+        "./server/*"
+      ],
+      "#app": [
+        "./node_modules/nuxt/dist/app"
+      ],
+      "#app/*": [
+        "./node_modules/nuxt/dist/app/*"
+      ],
+      "vue-demi": [
+        "./node_modules/nuxt/dist/app/compat/vue-demi"
+      ],
+      "#vue-router": [
+        "./node_modules/vue-router"
+      ],
+      "#unhead/composables": [
+        "./node_modules/nuxt/dist/head/runtime/composables"
+      ],
+      "#imports": [
+        "./.nuxt/imports"
+      ],
+      "#components": [
+        "./.nuxt/components"
+      ],
+      "#build": [
+        "./.nuxt"
+      ],
+      "#build/*": [
+        "./.nuxt/*"
+      ]
+    }
   }
 }
