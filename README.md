@@ -262,6 +262,9 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.3.7
+- **Flicker-Free Background Transitions for Low-Power / WebKit Devices:** Fixed background rotation on low-powered devices (such as older iPads) where outgoing images were unmounted before the incoming image bitmap was ready, causing a 1-2 second black screen gap. `BackgroundHost.vue` now verifies DOM `<img>` element attachment, full load, and asynchronous hardware decoding off-thread via `img.decode()` while the incoming slot is completely invisible (`opacity: 0`). The crossfade only commences once the new image is confirmed rendered, keeping the outgoing image solid underneath and eliminating intermediate black screens.
+
 ### v4.3.6
 - **Blurry Background Image Restoration:** Restored `BackgroundHost.vue` to its original implementation, fixing the double URI-encoding (`%2520`) regression that prevented the blurred background layer (`bg-image-blur`) from rendering.
 - **IDE TypeScript / Vue Language Server Diagnostics Fix:** Added explicit root-relative path mappings in `tsconfig.json` and simplified composable bindings in `DateTimeCard.vue` and `KioskActionBar.vue`, resolving all 52 IDE Problems across Vetur, Volar, and TypeScript.

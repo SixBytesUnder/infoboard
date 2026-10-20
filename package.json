@@ -1,6 +1,6 @@
 {
   "name": "infoboard",
-  "version": "4.3.6",
+  "version": "4.3.7",
   "private": true,
   "type": "module",
   "description": "24/7 Raspberry Pi Infoboard Kiosk built with Nuxt 4, Nitro, and TypeScript",

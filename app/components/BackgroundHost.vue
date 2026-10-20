@@ -28,10 +28,11 @@
       />
       <img
         v-if="slot.asset?.url"
+        :ref="el => setImgRef(slot.id, el)"
         :src="slot.asset.url"
         :alt="slot.asset.title || 'Background'"
         class="bg-image-contain"
-        decoding="async"
+        decoding="sync"
         @error="onImageError"
       >
     </div>
@@ -81,6 +82,11 @@ const currentIndex = ref<number>(0)
 const currentAsset = ref<MediaAsset | null>(null)
 const videoRef = ref<HTMLVideoElement | null>(null)
 
+const slotImgRefs: Record<number, HTMLImageElement | null> = { 0: null, 1: null }
+const setImgRef = (id: number, el: unknown) => {
+  slotImgRefs[id] = (el as HTMLImageElement) || null
+}
+
 let rotationTimer: ReturnType<typeof setTimeout> | null = null
 let transitionTimer: ReturnType<typeof setTimeout> | null = null
 let preloadTimeoutId: ReturnType<typeof setTimeout> | null = null
@@ -115,6 +121,12 @@ const cancelPreload = () => {
     activePreloadImg.src = ''
     activePreloadImg = null
   }
+  // Reset any unactivated incoming slot to prevent ghost renders
+  const incomingSlotIdx = (1 - activeSlotIndex.value) as 0 | 1
+  if (!slots.value[incomingSlotIdx].isActive) {
+    slots.value[incomingSlotIdx].asset = null
+    slots.value[incomingSlotIdx].isTop = false
+  }
 }
 
 const finalizeTransition = () => {
@@ -124,9 +136,8 @@ const finalizeTransition = () => {
   }
 
   const incomingSlotIdx = (1 - activeSlotIndex.value) as 0 | 1
-  if (slots.value[incomingSlotIdx].asset) {
+  if (slots.value[incomingSlotIdx].asset && slots.value[incomingSlotIdx].isActive) {
     activeSlotIndex.value = incomingSlotIdx
-    slots.value[incomingSlotIdx].isActive = true
     slots.value[incomingSlotIdx].isTop = false
 
     const oldSlotIdx = (1 - incomingSlotIdx) as 0 | 1
@@ -201,7 +212,7 @@ const preloadImage = (url: string, token: number): Promise<void> => {
         return reject(new Error('Image preload superseded'))
       }
 
-      // Off-thread bitmap decoding avoids UI frame stutter on older iPad Pro chips
+      // Off-thread bitmap decoding avoids UI frame stutter on older iPad chips
       if (typeof img.decode === 'function') {
         try {
           await img.decode()
@@ -225,6 +236,86 @@ const preloadImage = (url: string, token: number): Promise<void> => {
     }
 
     img.src = url
+  })
+}
+
+// Ensures the DOM <img> element has rendered, loaded, and decoded its bitmap before crossfading
+const waitForSlotImage = (slotIdx: 0 | 1, token: number): Promise<void> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      return resolve()
+    }
+
+    let checkCount = 0
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+    const cleanup = () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId)
+        timeoutId = null
+      }
+    }
+
+    // Safety fallback so transition never stalls indefinitely
+    timeoutId = setTimeout(() => {
+      cleanup()
+      resolve()
+    }, 8000)
+
+    const inspectElement = async () => {
+      if (token !== currentLoadToken) {
+        cleanup()
+        return resolve()
+      }
+
+      const img = slotImgRefs[slotIdx]
+      if (!img) {
+        checkCount++
+        if (checkCount < 30) {
+          requestAnimationFrame(inspectElement)
+        } else {
+          cleanup()
+          resolve()
+        }
+        return
+      }
+
+      const onReady = async () => {
+        cleanup()
+        if (token !== currentLoadToken) return resolve()
+
+        if (typeof img.decode === 'function') {
+          try {
+            await img.decode()
+          } catch {
+            // Ignore decode quirks if image is already loaded
+          }
+        }
+
+        if (token !== currentLoadToken) return resolve()
+        resolve()
+      }
+
+      if (img.complete && img.naturalWidth > 0) {
+        await onReady()
+      } else {
+        const handleLoad = async () => {
+          img.removeEventListener('load', handleLoad)
+          img.removeEventListener('error', handleError)
+          await onReady()
+        }
+        const handleError = () => {
+          img.removeEventListener('load', handleLoad)
+          img.removeEventListener('error', handleError)
+          cleanup()
+          resolve()
+        }
+        img.addEventListener('load', handleLoad, { once: true })
+        img.addEventListener('error', handleError, { once: true })
+      }
+    }
+
+    inspectElement()
   })
 }
 
@@ -269,6 +360,7 @@ const displayCurrent = async (isInitial = false) => {
   // Handle Image Asset
   const token = ++currentLoadToken
 
+  // 1. Offscreen memory preload & cache population
   try {
     await preloadImage(asset.url, token)
   } catch (err) {
@@ -283,11 +375,11 @@ const displayCurrent = async (isInitial = false) => {
 
   if (token !== currentLoadToken) return
 
-  // Settle any active transition cleanly before starting next
+  // Settle any active transition cleanly before mounting next
   finalizeTransition()
 
-  if (isInitial || !currentAsset.value) {
-    // Initial mount: load directly into slot 0 and fade in
+  if (isInitial || !currentAsset.value || currentAsset.value.type === 'video') {
+    // Initial mount: load directly into slot 0 and fade in once confirmed ready
     activeSlotIndex.value = 0
     slots.value[0].asset = asset
     slots.value[0].isTop = true
@@ -301,18 +393,22 @@ const displayCurrent = async (isInitial = false) => {
     persistActiveAsset(asset.identifier)
 
     await nextTick()
+    await waitForSlotImage(0, token)
+    if (token !== currentLoadToken) return
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (token !== currentLoadToken) return
         slots.value[0].isActive = true
         transitionTimer = setTimeout(() => {
           slots.value[0].isTop = false
+          transitionTimer = null
           scheduleNext()
-        }, 1200)
+        }, 1300)
       })
     })
   } else {
-    // Ping-pong crossfade: incoming slot fades in over outgoing slot
+    // Ping-pong crossfade: mount into incoming slot while completely hidden (opacity 0)
     const incomingSlotIdx = (1 - activeSlotIndex.value) as 0 | 1
     const outgoingSlotIdx = activeSlotIndex.value
 
@@ -321,12 +417,17 @@ const displayCurrent = async (isInitial = false) => {
     slots.value[incomingSlotIdx].isActive = false
     slots.value[outgoingSlotIdx].isTop = false
 
+    // Wait for the DOM element to mount, load, and decode its bitmap BEFORE starting any animation
     await nextTick()
+    await waitForSlotImage(incomingSlotIdx, token)
+    if (token !== currentLoadToken) return
+
+    // Now that the new image is 100% ready and decoded in DOM, start the smooth crossfade
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (token !== currentLoadToken) return
 
-        // Both blurred background & contained photo fade in simultaneously
+        // Both blurred background & contained photo fade in simultaneously over the solid outgoing image
         slots.value[incomingSlotIdx].isActive = true
 
         currentAsset.value = asset
@@ -334,7 +435,7 @@ const displayCurrent = async (isInitial = false) => {
         emit('update:is-video', false)
         persistActiveAsset(asset.identifier)
 
-        // After crossfade ends, unmount old slot to free WebKit bitmap memory
+        // Only after the crossfade has completely finished, retire the outgoing slot
         transitionTimer = setTimeout(() => {
           if (token !== currentLoadToken) return
           activeSlotIndex.value = incomingSlotIdx
@@ -346,7 +447,7 @@ const displayCurrent = async (isInitial = false) => {
 
           transitionTimer = null
           scheduleNext()
-        }, 1200)
+        }, 1300)
       })
     })
   }
@@ -397,6 +498,7 @@ const loadPlaylist = async (isBackgroundRefresh = false) => {
 
 const advanceNext = async (skipFolder = false) => {
   clearTimer()
+  cancelPreload()
   isPlayingVideo = false
 
   if (playlist.value.length === 0) {
