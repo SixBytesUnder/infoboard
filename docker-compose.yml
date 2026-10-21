@@ -11,6 +11,8 @@ services:
     env_file:
       - .env
     volumes:
+      # Mount host sysfs for hardware sensors (DHT IIO, Sense HAT IIO)
+      - /sys:/sys:ro
       # Optional: mount local media folder if using local background images/videos
       - ${HOST_MEDIA_DIR:-/media/photos}:/media/photos:ro
       # Optional: serial port for SDS011 sensor (uncomment if hardware present)

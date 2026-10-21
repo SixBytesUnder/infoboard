@@ -15,6 +15,63 @@ export async function readSysfsValue(path: string): Promise<number | null> {
   }
 }
 
+export async function findIioDeviceByName(namePrefixes: string[]): Promise<string | null> {
+  try {
+    const iioBasePath = '/sys/bus/iio/devices'
+    const iioDevices = await fs.readdir(iioBasePath)
+    for (const dev of iioDevices) {
+      if (!/^iio:device\d+$/.test(dev)) continue
+      const devPath = `${iioBasePath}/${dev}`
+      try {
+        const name = (await fs.readFile(`${devPath}/name`, 'utf8')).trim().toLowerCase()
+        if (namePrefixes.some(prefix => name.startsWith(prefix))) {
+          return devPath
+        }
+      } catch {
+        // Ignore read errors
+      }
+    }
+  } catch {
+    // IIO directory does not exist or unreadable
+  }
+  return null
+}
+
+export async function findIioDevicePathForI2C(busAddress: string, driverNames: string[] = []): Promise<string | null> {
+  const i2cDevPath = `/sys/bus/i2c/devices/${busAddress}`
+  try {
+    const entries = await fs.readdir(i2cDevPath)
+    const iioDir = entries.find(e => /^iio:device\d+$/.test(e))
+    if (iioDir) {
+      return `${i2cDevPath}/${iioDir}`
+    }
+  } catch {
+    // Continue to IIO scan fallback
+  }
+
+  // Fallback: scan /sys/bus/iio/devices directly by driver/chip name
+  try {
+    const iioBasePath = '/sys/bus/iio/devices'
+    const iioDevices = await fs.readdir(iioBasePath)
+    for (const dev of iioDevices) {
+      if (!/^iio:device\d+$/.test(dev)) continue
+      const devPath = `${iioBasePath}/${dev}`
+      try {
+        const name = (await fs.readFile(`${devPath}/name`, 'utf8')).trim().toLowerCase()
+        if (driverNames.includes(name)) {
+          return devPath
+        }
+      } catch {
+        // Ignore read errors
+      }
+    }
+  } catch {
+    // IIO directory does not exist or unreadable
+  }
+
+  return null
+}
+
 async function readSDSFromSerial(portPath: string, timeoutMs = 3500): Promise<{ pm25: number; pm10: number } | null> {
   if (activeSdsPromise) {
     return activeSdsPromise
@@ -142,7 +199,7 @@ export async function readSensorData(config: {
 
   // 1. Try reading DHT via Linux IIO sysfs
   if (config.dhtEnabled) {
-    const dhtPath = '/sys/bus/iio/devices/iio:device0'
+    const dhtPath = (await findIioDeviceByName(['dht11', 'dht22'])) || '/sys/bus/iio/devices/iio:device0'
     const isDetected = await fs.access(dhtPath).then(() => true).catch(() => false)
     if (isDetected) {
       const iioTemp = await readSysfsValue(`${dhtPath}/in_temp_input`)
@@ -165,24 +222,30 @@ export async function readSensorData(config: {
 
   // 2. Try reading Sense HAT via Linux IIO / i2c sysfs
   if (config.senseHatEnabled) {
-    const hatPressurePath = '/sys/bus/i2c/devices/1-005c/iio:device1'
-    const isDetected = await fs.access(hatPressurePath).then(() => true).catch(() => false)
-    if (isDetected) {
-      const hatPressure = await readSysfsValue(`${hatPressurePath}/in_pressure_input`)
-      const hatTemp = await readSysfsValue('/sys/bus/i2c/devices/1-005f/iio:device0/in_temp_input')
-      const hatHumidity = await readSysfsValue('/sys/bus/i2c/devices/1-005f/iio:device0/in_humidityrelative_input')
+    const hatPressurePath = await findIioDevicePathForI2C('1-005c', ['lps25h', 'st_pressure'])
+    const hatTempHumidityPath = await findIioDevicePathForI2C('1-005f', ['hts221'])
 
-      if (hatPressure !== null) {
-        pressure = Math.round(hatPressure * 10) // convert to hPa
-      } else {
-        hasError = true
-        error = error ? `${error}, Sense HAT pressure read failed` : 'Sense HAT pressure read failed'
+    if (hatPressurePath || hatTempHumidityPath) {
+      if (hatPressurePath) {
+        const hatPressure = await readSysfsValue(`${hatPressurePath}/in_pressure_input`)
+        if (hatPressure !== null) {
+          pressure = Math.round(hatPressure * 10) // convert to hPa
+        } else {
+          hasError = true
+          error = error ? `${error}, Sense HAT pressure read failed` : 'Sense HAT pressure read failed'
+        }
       }
-      if (hatTemp !== null && temperature === undefined) {
-        temperature = Math.round(hatTemp / 1000)
-      }
-      if (hatHumidity !== null && humidity === undefined) {
-        humidity = Math.round(hatHumidity / 1000)
+
+      if (hatTempHumidityPath) {
+        const hatTemp = await readSysfsValue(`${hatTempHumidityPath}/in_temp_input`)
+        const hatHumidity = await readSysfsValue(`${hatTempHumidityPath}/in_humidityrelative_input`)
+
+        if (hatTemp !== null && temperature === undefined) {
+          temperature = Math.round(hatTemp / 1000)
+        }
+        if (hatHumidity !== null && humidity === undefined) {
+          humidity = Math.round(hatHumidity / 1000)
+        }
       }
     } else {
       isSimulated = true

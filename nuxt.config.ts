@@ -97,7 +97,7 @@ export default defineNuxtConfig({
       dhtEnabled: (process.env.NUXT_SENSOR_DHT_ENABLED || 'false') === 'true',
       dhtType: (process.env.NUXT_SENSOR_DHT_TYPE || '22') === '11' ? 'dht11' : 'dht22',
       dhtPin: Number(process.env.NUXT_SENSOR_DHT_PIN || 4),
-      senseHatEnabled: (process.env.NUXT_SENSOR_SENSEHAT_ENABLED || 'false') === 'true',
+      senseHatEnabled: (process.env.NUXT_SENSOR_SENSE_HAT_ENABLED || process.env.NUXT_SENSOR_SENSEHAT_ENABLED || 'false') === 'true',
       sdsEnabled: (process.env.NUXT_SENSOR_SDS_ENABLED || 'false') === 'true',
       sdsPort: process.env.NUXT_SENSOR_SDS_PORT || '/dev/ttyUSB0'
     },
@@ -142,9 +142,9 @@ export default defineNuxtConfig({
         weatherTagged: (process.env.NUXT_MEDIA_WEATHER_TAGGED || 'true') === 'true'
       },
       sensor: {
-        dhtEnabled: (process.env.NUXT_SENSOR_DHT_ENABLED || 'false') === 'true',
-        senseHatEnabled: (process.env.NUXT_SENSOR_SENSEHAT_ENABLED || 'false') === 'true',
-        sdsEnabled: (process.env.NUXT_SENSOR_SDS_ENABLED || 'false') === 'true',
+        dhtEnabled: (process.env.NUXT_PUBLIC_SENSOR_DHT_ENABLED || process.env.NUXT_SENSOR_DHT_ENABLED || 'false') === 'true',
+        senseHatEnabled: (process.env.NUXT_PUBLIC_SENSOR_SENSE_HAT_ENABLED || process.env.NUXT_SENSOR_SENSE_HAT_ENABLED || process.env.NUXT_SENSOR_SENSEHAT_ENABLED || 'false') === 'true',
+        sdsEnabled: (process.env.NUXT_PUBLIC_SENSOR_SDS_ENABLED || process.env.NUXT_SENSOR_SDS_ENABLED || 'false') === 'true',
         refreshMs: Number(process.env.NUXT_SENSOR_REFRESH_MS || 300000)
       }
     }

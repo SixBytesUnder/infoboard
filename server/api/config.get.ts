@@ -24,6 +24,12 @@ export default defineEventHandler((event): ClientDashboardConfig => {
       ...pub.calendar,
       enabled: (env.NUXT_CALENDAR_ENABLED || env.NUXT_PUBLIC_CALENDAR_ENABLED || String(pub.calendar.enabled)) === 'true',
       buttonStyle: ((env.NUXT_CALENDAR_BUTTON_STYLE || env.NUXT_PUBLIC_CALENDAR_BUTTON_STYLE || env.NUXT_CALENDAR_DISPLAY_MODE || env.NUXT_PUBLIC_CALENDAR_DISPLAY_MODE || pub.calendar?.buttonStyle || 'verbose').toLowerCase() === 'minimal' ? 'minimal' : 'verbose') as 'verbose' | 'minimal'
+    },
+    sensor: {
+      ...pub.sensor,
+      dhtEnabled: (env.NUXT_SENSOR_DHT_ENABLED || env.NUXT_PUBLIC_SENSOR_DHT_ENABLED || String(pub.sensor.dhtEnabled)) === 'true',
+      senseHatEnabled: (env.NUXT_SENSOR_SENSE_HAT_ENABLED || env.NUXT_SENSOR_SENSEHAT_ENABLED || env.NUXT_PUBLIC_SENSOR_SENSE_HAT_ENABLED || env.NUXT_PUBLIC_SENSOR_SENSEHAT_ENABLED || String(pub.sensor.senseHatEnabled)) === 'true',
+      sdsEnabled: (env.NUXT_SENSOR_SDS_ENABLED || env.NUXT_PUBLIC_SENSOR_SDS_ENABLED || String(pub.sensor.sdsEnabled)) === 'true'
     }
   }
 })

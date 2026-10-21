@@ -121,7 +121,7 @@ All settings can be placed in your `.env` file using `NUXT_` prefixed environmen
 | `NUXT_MEDIA_ALLOW_VIDEO`       | `false`                                   | Enable MP4 video playback                                 |
 | `NUXT_MEDIA_VIDEO_MUTED`       | `true`                                    | Default video audio state                                 |
 | `NUXT_SENSOR_DHT_ENABLED`      | `false`                                   | Read DHT11/22 via Linux sysfs                             |
-| `NUXT_SENSOR_SENSEHAT_ENABLED` | `false`                                   | Read Raspberry Pi Sense HAT via sysfs                     |
+| `NUXT_SENSOR_SENSE_HAT_ENABLED` | `false`                                  | Read Raspberry Pi Sense HAT via sysfs (`NUXT_SENSOR_SENSEHAT_ENABLED` also supported) |
 | `NUXT_SENSOR_SDS_ENABLED`      | `false`                                   | Read SDS011 air quality via serial port                   |
 
 ---
@@ -261,6 +261,11 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 ---
 
 ## Version History
+
+### v4.3.8
+- **Sense HAT & Hardware Sensor Docker Integration:** Mounted host `/sys` as read-only (`/sys:/sys:ro`) in `docker-compose.yml` to allow Docker containers to read Linux IIO sysfs device nodes.
+- **Dynamic IIO Device Resolution:** Replaced static sysfs path lookups (`iio:device0`, `iio:device1`) with dynamic IIO device discovery scanning for LPS25H (pressure) and HTS221 (humidity/temperature), preventing failures when device probe order changes.
+- **Runtime Configuration Fallback:** Added explicit fallback support for both `NUXT_SENSOR_SENSE_HAT_ENABLED` and `NUXT_SENSOR_SENSEHAT_ENABLED` across Nitro runtime config, `/api/config`, and `/api/sensors`.
 
 ### v4.3.7
 - **Flicker-Free Background Transitions for Low-Power / WebKit Devices:** Fixed background rotation on low-powered devices (such as older iPads) where outgoing images were unmounted before the incoming image bitmap was ready, causing a 1-2 second black screen gap. `BackgroundHost.vue` now verifies DOM `<img>` element attachment, full load, and asynchronous hardware decoding off-thread via `img.decode()` while the incoming slot is completely invisible (`opacity: 0`). The crossfade only commences once the new image is confirmed rendered, keeping the outgoing image solid underneath and eliminating intermediate black screens.
