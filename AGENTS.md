@@ -8,7 +8,7 @@ Whenever a feature, bug fix, or any change that warrants a version change is mad
    - **MAJOR (`X.0.0`)**: Breaking API changes, architectural overhauls.
 2. Update **`package.json`** with the new version.
 3. Update **`package-lock.json`** to keep the root version synchronized.
-4. Add a short entry to the `## Version History` section in **`README.md`**.
+4. Add a short entry to **`CHANGELOG.md`**.
 
 ## Git Commit Workflow
 - Always commit to Git using **Conventional Commits** specification (`feat:`, `fix:`, `perf:`, `refactor:`, `docs:`, `chore:`, etc.) immediately after a given feature is completely developed and verified.

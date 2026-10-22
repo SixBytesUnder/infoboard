@@ -19,7 +19,7 @@
   - **Detailed Microclimate Metrics:** Expandable indicators including barometric pressure, sea level pressure, wind speed/gust/direction, solar radiation (GHI), sunshine duration, sunrise/sunset, moon phase, PM2.5, PM10, US AQI, European AQI, NO2, O3, SO2, CO, and 6 pollen species forecasts (grass, birch, alder, ragweed, olive, mugwort).
   - **Transport for London (TfL):** Real-time line statuses with official brand colors (Tube, Overground, DLR, Elizabeth line, Tram), plus live bus arrivals grouped by stop point.
   - **Calendar Agenda:** iCal ingestion with full RFC-5545 recurrence rule (RRULE) expansion, exception dates, 60-day horizon, and relative dates ("Today", "Tomorrow").
-  - **Local Hardware Sensors:** Kernel-level sysfs / iio support for DHT11/22 and Sense HAT, serial communication for Nova SDS011 air quality sensor, with automated simulation fallbacks.
+  - **Local Hardware Sensors:** Direct user-space I2C driver for Raspberry Pi Sense HAT (HTS221, LPS25H) with ribbon-cable thermal calibration, Linux sysfs for DHT11/22, serial driver for Nova SDS011 air quality, and automatic development simulation fallbacks. See [Sense HAT Setup Guide](docs/SENSE_HAT.md).
   - **Dynamic Backgrounds:** Local directory traversal, MP4 video streaming with byte-range support, NASA Astronomy Picture of the Day (APOD), and weather-tagged photos from Unsplash, Pexels, and Flickr.
 
 ---
@@ -126,44 +126,90 @@ All settings can be placed in your `.env` file using `NUXT_` prefixed environmen
 | `NUXT_SENSOR_SENSE_HAT_PRESSURE_OFFSET_HPA` | `0.0`                        | Barometric pressure elevation offset in hPa               |
 | `NUXT_SENSOR_SDS_ENABLED`      | `false`                                   | Read SDS011 air quality via serial port                   |
 
+> [!TIP]
+> For hardware wiring, Raspberry Pi host I2C configuration, calibration formulas, and troubleshooting for the physical Sense HAT, see the standalone [Sense HAT Setup Guide](docs/SENSE_HAT.md).
+
 ---
 
-## Deployment on Raspberry Pi
+## Deployment & Operations
 
-### Option A: Docker (Recommended)
+### First-Time Installation (Fresh Setup via Docker)
 
-Running the pre-built container ensures consistent dependencies and low memory usage.
+Running Infoboard inside Docker is the recommended approach. It packages all native I2C bindings, node-gyp dependencies, and runtime tools into a self-contained container, eliminating host configuration issues.
 
 ```bash
-# 1. On your Raspberry Pi, clone or copy the repository
-cd /srv/infoboard
+# 1. On your Raspberry Pi or target machine, clone the repository
+git clone https://github.com/SixBytesUnder/infoboard.git
+cd infoboard
 
-# 2. Configure .env with your credentials
+# 2. Copy the configuration template
 cp .env.example .env
-vim .env
 
-# 3. Start container in background
-docker compose up -d --build
+# 3. Edit .env with your configuration
+nano .env   # Configure weather coordinates, transit stops, calendar, or sensor toggles
 ```
 
-### Cross-Compiling for Raspberry Pi (Docker Buildx)
+> [!TIP]
+> **Port Configuration:**
+> - By default, Infoboard binds to `127.0.0.1:8086` so it can sit securely behind a reverse proxy (e.g. Nginx).
+> - For a **standalone Raspberry Pi** accessible directly on your home LAN without a reverse proxy, set `HOST_PORT="80"` in `.env`.
 
-To avoid heavy memory and CPU usage during compilation on 1GB/2GB Raspberry Pi units, build the container image on your workstation (Mac, Linux, or Windows WSL) using Docker Buildx and deploy the image:
+> [!NOTE]
+> **Hardware Sensors (Sense HAT):**
+> If you are connecting a physical Raspberry Pi Sense HAT, follow the [Sense HAT Setup Guide](docs/SENSE_HAT.md) to enable host I2C (`/dev/i2c-1`) and set `NUXT_SENSOR_SENSE_HAT_ENABLED=true` in `.env` before starting the container.
 
 ```bash
-# Enable multi-architecture builder
-docker buildx create --name pibuilder --use
-docker buildx inspect --bootstrap
-
-# Build and push directly for ARM64 target (Raspberry Pi 3/4/5)
-docker buildx build \
-  --platform linux/arm64 \
-  -t your-registry/infoboard:latest \
-  --push .
-
-# On the Raspberry Pi, simply run:
-docker pull your-registry/infoboard:latest
+# 4. Build and start the container in the background
 docker compose up -d --build
+
+# 5. Check container logs to verify startup
+docker compose logs -f infoboard
+```
+
+Visit `http://<your-pi-ip>:8086` (or `http://<your-pi-ip>` if using port 80) in your web browser.
+
+---
+
+### Updating Production (Pulling Latest Git Changes)
+
+When you make changes or want to update your target machine to the latest commit from Git, run these commands directly on the target machine:
+
+```bash
+# 1. Navigate to the Infoboard directory
+cd /path/to/infoboard
+
+# 2. Pull latest changes from the Git repository
+git pull
+
+# 3. Rebuild and restart the container (downtime is only a few seconds during swap)
+docker compose up -d --build
+
+# 4. (Recommended) Reclaim disk space by pruning old dangling build layers
+docker image prune -f
+```
+
+---
+
+### Alternative: Bare-Metal Setup (Without Docker)
+
+If you prefer to run Infoboard directly with Node.js on the host operating system:
+
+```bash
+# First-time installation
+git clone https://github.com/SixBytesUnder/infoboard.git
+cd infoboard
+cp .env.example .env
+nano .env
+npm install
+npm run build
+node .output/server/index.mjs
+
+# Updating bare-metal production
+git pull
+npm install
+npm run build
+# Restart your process manager (e.g. PM2 or systemd)
+pm2 restart infoboard
 ```
 
 ---
@@ -264,72 +310,7 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
-### v4.4.1
-- **Alpine Docker `i2c-bus` Native Build & Runtime Resolution Fix:** Added `linux-headers` (`<linux/types.h>`) to the Alpine builder stage in `Dockerfile` so `node-gyp` compiles `i2c-bus` instead of silently skipping it as an optional dependency. Explicitly preserved `i2c-bus`, `bindings`, and `file-uri-to-path` in `.output/server/node_modules/` and configured `NODE_PATH` / `/app/node_modules` symlink in the production runner image.
-
-### v4.4.0
-- **Direct User-Space I2C Sense HAT Hardware Driver:** Integrated physical Raspberry Pi Sense HAT environmental sensors directly via user-space I2C on `/dev/i2c-1` querying `HTS221` (`0x5f`, relative humidity and temperature) and `LPS25H` (`0x5c`, barometric pressure and temperature). Avoids kernel IIO driver loading (`hts221_i2c`, `lps25h_i2c`) and eliminates `EBUSY` bus contention.
-- **Physical Calibration for Ribbon Cable Isolation:** Specifically tailored for ribbon-cable-tethered setups isolated from the Raspberry Pi 4 SoC. Does not factor in Pi CPU thermal throttling math. Applies configurable PCB self-heating offset `NUXT_SENSOR_SENSE_HAT_TEMP_OFFSET` (default: `-1.8`°C) to the averaged raw sensor temperature ($T_{calibrated} = T_{raw} + offset$).
-- **Magnus-Tetens Humidity Compensation:** Derives actual dew point from warmed sensor readings ($T_{raw}$, $RH_{raw}$), then recalculates true ambient relative humidity ($RH_{ambient}$) at the calibrated ambient temperature, clamped between 0% and 100%.
-- **Barometric Pressure & Elevation Calibration:** Reads barometric pressure in hPa directly from the `LPS25H` 24-bit register with optional elevation offset `NUXT_SENSOR_SENSE_HAT_PRESSURE_OFFSET_HPA` (default: `0.0`).
-- **In-Memory Server-Side Caching & Local Dev Fallback:** Implements a 4-second in-memory server cache and concurrency lock to protect `/dev/i2c-1` from high-frequency frontend polling saturation. Gracefully falls back to simulated room telemetry when physical hardware or `/dev/i2c-1` is missing (e.g. local dev).
-- **Docker Compose & Container Permissions:** Updated `docker-compose.yml` to pass device `/dev/i2c-1:/dev/i2c-1` with supplementary `group_add: 988`, and updated `Dockerfile` to grant the non-root `1001:1001` runner user membership in the `i2c` group with lean multistage packaging.
-
-### v4.3.8
-- **Sense HAT & Hardware Sensor Docker Integration:** Mounted host `/sys` as read-only (`/sys:/sys:ro`) in `docker-compose.yml` to allow Docker containers to read Linux IIO sysfs device nodes.
-- **Dynamic IIO Device Resolution:** Replaced static sysfs path lookups (`iio:device0`, `iio:device1`) with dynamic IIO device discovery scanning for LPS25H (pressure) and HTS221 (humidity/temperature), preventing failures when device probe order changes.
-- **Runtime Configuration Fallback:** Added explicit fallback support for both `NUXT_SENSOR_SENSE_HAT_ENABLED` and `NUXT_SENSOR_SENSEHAT_ENABLED` across Nitro runtime config, `/api/config`, and `/api/sensors`.
-
-### v4.3.7
-- **Flicker-Free Background Transitions for Low-Power / WebKit Devices:** Fixed background rotation on low-powered devices (such as older iPads) where outgoing images were unmounted before the incoming image bitmap was ready, causing a 1-2 second black screen gap. `BackgroundHost.vue` now verifies DOM `<img>` element attachment, full load, and asynchronous hardware decoding off-thread via `img.decode()` while the incoming slot is completely invisible (`opacity: 0`). The crossfade only commences once the new image is confirmed rendered, keeping the outgoing image solid underneath and eliminating intermediate black screens.
-
-### v4.3.6
-- **Blurry Background Image Restoration:** Restored `BackgroundHost.vue` to its original implementation, fixing the double URI-encoding (`%2520`) regression that prevented the blurred background layer (`bg-image-blur`) from rendering.
-- **IDE TypeScript / Vue Language Server Diagnostics Fix:** Added explicit root-relative path mappings in `tsconfig.json` and simplified composable bindings in `DateTimeCard.vue` and `KioskActionBar.vue`, resolving all 52 IDE Problems across Vetur, Volar, and TypeScript.
-
-### v4.3.5
-- **Resource & Concurrency Hardening:** Fixed file handle closure in EXIF header reader (`try...finally`), guarded serial port initialization and close callbacks in the SDS011 driver against timeouts/disconnects, validated byte-range headers in the video stream endpoint, and switched iCal parsing to asynchronous `nodeIcal.async.parseICS`.
-- **Sensitive Credential Redaction:** Added `sanitizeErrorMessage` to mask API keys, tokens, and private calendar URLs from upstream error logs and client responses while preserving diagnostic error details.
-- **Vue 3.5 Reactivity, Performance & Accessibility:** Updated `useSystemClock` and `usePolling` to accept reactive getters (`MaybeRefOrGetter`), guarded polling state transitions with execution tokens, adopted `shallowRef` for large data payloads, synced native `fullscreenchange` state via `useState`, extracted modular subcomponents (`TransitTubeSection`, `weatherMetrics`), and improved ARIA dialog/toggle semantics.
-
-### v4.3.4
-- **SSR Hydration Text Mismatch Fix:** Suppressed text content mismatch warnings on `DateTimeCard`'s live clock using Vue 3.5's `data-allow-mismatch="text"`, and updated `useSystemClock` to evaluate dynamic timestamps per request during SSR to prevent stale module-level state.
-
-### v4.3.3
-- **Production Server Deployment Guide:** Added step-by-step documentation for deploying Infoboard behind an Nginx reverse proxy with automated Let's Encrypt SSL/TLS via Certbot.
-
-### v4.3.2
-- **Configurable Docker Host Port Binding:** Made the host port binding in `docker-compose.yml` configurable via `HOST_PORT` (defaulting to `127.0.0.1:8086:3000`), resolving conflicts on servers running system web servers (like Nginx) or existing reverse proxies.
-
-### v4.3.1
-- **Weather Drawer Type Safety Fix:** Fixed TypeScript type error in `WeatherMoreDrawer.vue` by nullish-coalescing indexed moon phase lookups to conform with strict metric candidate typing (`string | null`).
-
-### v4.3.0
-- **Full Migration to Open-Meteo Weather API:** Migrated from Tomorrow.io to Open-Meteo, delivering 10,000 requests/day with zero API key requirement, eliminating rate limit risks on 24/7 displays.
-- **Complete Air Quality & Pollen Suite for Free:** Integrated Open-Meteo's Air Quality API, displaying live US Air Quality Index (AQI), European AQI, PM2.5, PM10, Nitrogen Dioxide (NO₂), Ozone (O₃), Sulfur Dioxide (SO₂), Carbon Monoxide (CO), and 6 pollen species forecasts (grass, birch, alder, ragweed, olive, mugwort).
-- **Expanded Solar & Astronomical Metrics:** Added sunshine duration, daylight duration, sunrise/sunset times, sea level pressure, and precision synodic moon phase calculations.
-- **WMO Weather Interpretation Icons:** Added support for all 28 WMO weather interpretation codes (0–99) mapped to crisp white SVG weather glyphs.
-
-### v4.2.0
-- **Adaptive Tomorrow.io Account Tier Handling:** Automatically detects whether the Tomorrow.io account tier supports air quality and pollen layers. On free accounts, unavailable metrics are omitted instead of falling back to misleading zeros (`0 μg/m³`, `Good`, or `None`). On paid accounts with air quality or pollen add-ons, all layers are rendered automatically with grouped section headers.
-- **Rich Free-Tier Atmospheric Metrics:** Expanded the "More" drawer with full support for free-tier atmospheric metrics, including Dew Point, Cloud Cover, Precipitation Chance, Wind Direction with compass bearings, Visibility, and UV Index.
-- **Accurate Forecast Highs & Lows:** Upstream daily forecast queries now include actual `temperatureMax` and `temperatureMin` fields directly from Tomorrow.io.
-
-### v4.1.2
-- **Forecast Temperature Indicators:** Added sleek, lightweight vector indicator icons to the 7-day forecast cards to clearly distinguish daily high (upward arrow) and low (downward arrow) temperatures.
-
-### v4.1.1
-- **Hardware-Optimized Background Crossfader:** Dual-slot ping-pong buffer with asynchronous off-thread image preloading and decoding (`img.decode()`), eliminating jank and frame drops on older tablets such as iPad Pro.
-- **Synchronized Image Dissolve:** Unified opacity crossfade for both the sharp foreground photo and ambient blurred backdrop, eliminating desynchronization, instant snapping, and black flashes.
-- **Removed Blur Scaling:** Removed transform scaling from blurred backdrop; uses viewport bleed margins to eliminate edge artifacts cleanly.
-- **Zero-Leak Memory Management:** Decoded bitmap textures and DOM nodes are explicitly unmounted upon crossfade completion, maintaining constant $O(1)$ memory usage across thousands of rotations.
-
-### v4.1.0
-- **Progressive Web App (PWA):** Web App Manifests, service worker offline shell precaching, standalone kiosk display mode, and client registration.
-- **Refreshed Dashboard Iconography:** 512×512 PNG, multi-resolution 256×256 ICO, and adaptive maskable launcher icons representing the four core modules (Clock, Weather, Sensors, Calendar).
-
-### v4.0.0
-- Baseline Infoboard v4 release built with Nuxt 4, Nitro, Vue 3, and TypeScript.
+For release notes, migration guides, and changelog history across all versions, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
