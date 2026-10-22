@@ -17,8 +17,11 @@ services:
       - ${HOST_MEDIA_DIR:-/media/photos}:/media/photos:ro
       # Optional: serial port for SDS011 sensor (uncomment if hardware present)
       # - /dev/ttyUSB0:/dev/ttyUSB0
-    # devices:
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
       # - /dev/ttyUSB0:/dev/ttyUSB0
+    group_add:
+      - 988
     environment:
       - NODE_ENV=production
       - HOST=0.0.0.0

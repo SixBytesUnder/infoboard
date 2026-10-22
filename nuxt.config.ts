@@ -98,6 +98,8 @@ export default defineNuxtConfig({
       dhtType: (process.env.NUXT_SENSOR_DHT_TYPE || '22') === '11' ? 'dht11' : 'dht22',
       dhtPin: Number(process.env.NUXT_SENSOR_DHT_PIN || 4),
       senseHatEnabled: (process.env.NUXT_SENSOR_SENSE_HAT_ENABLED || process.env.NUXT_SENSOR_SENSEHAT_ENABLED || 'false') === 'true',
+      senseHatTempOffset: Number(process.env.SENSE_HAT_TEMP_OFFSET || process.env.NUXT_SENSOR_SENSE_HAT_TEMP_OFFSET || -1.8),
+      senseHatPressureOffsetHpa: Number(process.env.SENSE_HAT_PRESSURE_OFFSET_HPA || process.env.NUXT_SENSOR_SENSE_HAT_PRESSURE_OFFSET_HPA || 0.0),
       sdsEnabled: (process.env.NUXT_SENSOR_SDS_ENABLED || 'false') === 'true',
       sdsPort: process.env.NUXT_SENSOR_SDS_PORT || '/dev/ttyUSB0'
     },

@@ -121,7 +121,9 @@ All settings can be placed in your `.env` file using `NUXT_` prefixed environmen
 | `NUXT_MEDIA_ALLOW_VIDEO`       | `false`                                   | Enable MP4 video playback                                 |
 | `NUXT_MEDIA_VIDEO_MUTED`       | `true`                                    | Default video audio state                                 |
 | `NUXT_SENSOR_DHT_ENABLED`      | `false`                                   | Read DHT11/22 via Linux sysfs                             |
-| `NUXT_SENSOR_SENSE_HAT_ENABLED` | `false`                                  | Read Raspberry Pi Sense HAT via sysfs (`NUXT_SENSOR_SENSEHAT_ENABLED` also supported) |
+| `NUXT_SENSOR_SENSE_HAT_ENABLED` | `false`                                  | Read Raspberry Pi Sense HAT via user-space I2C (`/dev/i2c-1`) |
+| `SENSE_HAT_TEMP_OFFSET`        | `-1.8`                                    | Onboard self-heating temp offset in °C (ribbon cable setup)|
+| `SENSE_HAT_PRESSURE_OFFSET_HPA`| `0.0`                                     | Barometric pressure elevation offset in hPa               |
 | `NUXT_SENSOR_SDS_ENABLED`      | `false`                                   | Read SDS011 air quality via serial port                   |
 
 ---
@@ -261,6 +263,14 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 ---
 
 ## Version History
+
+### v4.4.0
+- **Direct User-Space I2C Sense HAT Hardware Driver:** Integrated physical Raspberry Pi Sense HAT environmental sensors directly via user-space I2C on `/dev/i2c-1` querying `HTS221` (`0x5f`, relative humidity and temperature) and `LPS25H` (`0x5c`, barometric pressure and temperature). Avoids kernel IIO driver loading (`hts221_i2c`, `lps25h_i2c`) and eliminates `EBUSY` bus contention.
+- **Physical Calibration for Ribbon Cable Isolation:** Specifically tailored for ribbon-cable-tethered setups isolated from the Raspberry Pi 4 SoC. Does not factor in Pi CPU thermal throttling math. Applies configurable PCB self-heating offset `SENSE_HAT_TEMP_OFFSET` (default: `-1.8`°C) to the averaged raw sensor temperature ($T_{calibrated} = T_{raw} + offset$).
+- **Magnus-Tetens Humidity Compensation:** Derives actual dew point from warmed sensor readings ($T_{raw}$, $RH_{raw}$), then recalculates true ambient relative humidity ($RH_{ambient}$) at the calibrated ambient temperature, clamped between 0% and 100%.
+- **Barometric Pressure & Elevation Calibration:** Reads barometric pressure in hPa directly from the `LPS25H` 24-bit register with optional elevation offset `SENSE_HAT_PRESSURE_OFFSET_HPA` (default: `0.0`).
+- **In-Memory Server-Side Caching & Local Dev Fallback:** Implements a 4-second in-memory server cache and concurrency lock to protect `/dev/i2c-1` from high-frequency frontend polling saturation. Gracefully falls back to simulated room telemetry when physical hardware or `/dev/i2c-1` is missing (e.g. local dev).
+- **Docker Compose & Container Permissions:** Updated `docker-compose.yml` to pass device `/dev/i2c-1:/dev/i2c-1` with supplementary `group_add: 988`, and updated `Dockerfile` to grant the non-root `1001:1001` runner user membership in the `i2c` group with lean multistage packaging.
 
 ### v4.3.8
 - **Sense HAT & Hardware Sensor Docker Integration:** Mounted host `/sys` as read-only (`/sys:/sys:ro`) in `docker-compose.yml` to allow Docker containers to read Linux IIO sysfs device nodes.

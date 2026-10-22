@@ -1,6 +1,6 @@
 {
   "name": "infoboard",
-  "version": "4.3.8",
+  "version": "4.4.0",
   "private": true,
   "type": "module",
   "description": "24/7 Raspberry Pi Infoboard Kiosk built with Nuxt 4, Nitro, and TypeScript",
@@ -10,6 +10,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "test": "node --test tests/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@types/i2c-bus": "^5.1.2",
     "@types/node": "^26.6.4",
     "typescript": "^7.0.2",
     "vue-tsc": "^3.3.12"
@@ -30,6 +32,10 @@
   "allowScripts": {
     "esbuild@0.28.2": true,
     "@serialport/bindings-cpp@13.0.0": true,
-    "exifreader@4.46.0": true
+    "exifreader@4.46.0": true,
+    "i2c-bus@5.2.3": true
+  },
+  "optionalDependencies": {
+    "i2c-bus": "^5.2.3"
   }
 }

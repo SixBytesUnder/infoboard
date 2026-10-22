@@ -3,7 +3,10 @@ import { readSensorData } from '../utils/sensorDrivers'
 
 export default defineEventHandler(async (event): Promise<SensorReadings> => {
   const config = useRuntimeConfig(event)
-  const sensorConf = config.sensor
+  const sensorConf = config.sensor as typeof config.sensor & {
+    senseHatTempOffset?: number
+    senseHatPressureOffsetHpa?: number
+  }
   const env = process.env
 
   const isSenseHatEnabled = Boolean(
@@ -26,11 +29,27 @@ export default defineEventHandler(async (event): Promise<SensorReadings> => {
     env.NUXT_PUBLIC_SENSOR_SDS_ENABLED === 'true'
   )
 
+  const senseHatTempOffset = Number(
+    sensorConf.senseHatTempOffset ??
+    env.SENSE_HAT_TEMP_OFFSET ??
+    env.NUXT_SENSOR_SENSE_HAT_TEMP_OFFSET ??
+    -1.8
+  )
+
+  const senseHatPressureOffsetHpa = Number(
+    sensorConf.senseHatPressureOffsetHpa ??
+    env.SENSE_HAT_PRESSURE_OFFSET_HPA ??
+    env.NUXT_SENSOR_SENSE_HAT_PRESSURE_OFFSET_HPA ??
+    0.0
+  )
+
   return await readSensorData({
     dhtEnabled: isDhtEnabled,
     dhtPin: sensorConf.dhtPin,
     dhtType: (sensorConf.dhtType === 'dht11' ? 'dht11' : 'dht22') as 'dht11' | 'dht22',
     senseHatEnabled: isSenseHatEnabled,
+    senseHatTempOffset,
+    senseHatPressureOffsetHpa,
     sdsEnabled: isSdsEnabled,
     sdsPort: sensorConf.sdsPort
   })

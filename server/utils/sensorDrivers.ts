@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import type { SerialPort as SerialPortType } from 'serialport'
 import type { SensorReadings } from '~~/shared'
+import { readSenseHatFromI2C } from './senseHatDriver.ts'
 
 let cachedSDS: { pm25: number; pm10: number; lastRead: number; isSimulated: boolean } | null = null
 let activeSdsPromise: Promise<{ pm25: number; pm10: number } | null> | null = null
@@ -185,6 +186,8 @@ export async function readSensorData(config: {
   dhtPin: number
   dhtType: 'dht11' | 'dht22'
   senseHatEnabled: boolean
+  senseHatTempOffset?: number
+  senseHatPressureOffsetHpa?: number
   sdsEnabled: boolean
   sdsPort: string
 }): Promise<SensorReadings> {
@@ -220,34 +223,23 @@ export async function readSensorData(config: {
     }
   }
 
-  // 2. Try reading Sense HAT via Linux IIO / i2c sysfs
+  // 2. Try reading Sense HAT via direct user-space I2C (/dev/i2c-1)
   if (config.senseHatEnabled) {
-    const hatPressurePath = await findIioDevicePathForI2C('1-005c', ['lps25h', 'st_pressure'])
-    const hatTempHumidityPath = await findIioDevicePathForI2C('1-005f', ['hts221'])
+    const senseHatReading = await readSenseHatFromI2C({
+      tempOffset: config.senseHatTempOffset,
+      pressureOffsetHpa: config.senseHatPressureOffsetHpa
+    })
 
-    if (hatPressurePath || hatTempHumidityPath) {
-      if (hatPressurePath) {
-        const hatPressure = await readSysfsValue(`${hatPressurePath}/in_pressure_input`)
-        if (hatPressure !== null) {
-          pressure = Math.round(hatPressure * 10) // convert to hPa
-        } else {
-          hasError = true
-          error = error ? `${error}, Sense HAT pressure read failed` : 'Sense HAT pressure read failed'
-        }
-      }
-
-      if (hatTempHumidityPath) {
-        const hatTemp = await readSysfsValue(`${hatTempHumidityPath}/in_temp_input`)
-        const hatHumidity = await readSysfsValue(`${hatTempHumidityPath}/in_humidityrelative_input`)
-
-        if (hatTemp !== null && temperature === undefined) {
-          temperature = Math.round(hatTemp / 1000)
-        }
-        if (hatHumidity !== null && humidity === undefined) {
-          humidity = Math.round(hatHumidity / 1000)
-        }
+    if (senseHatReading) {
+      temperature = senseHatReading.temperature
+      humidity = senseHatReading.humidity
+      pressure = senseHatReading.pressure
+      // Physical hardware reading succeeded; clear simulated state if no other active sensor forced it
+      if (!config.sdsEnabled || (cachedSDS && !cachedSDS.isSimulated)) {
+        isSimulated = false
       }
     } else {
+      // Automatic fallback when /dev/i2c-1 is missing, unresponsive, or running in local development
       isSimulated = true
       pressure = 1013 + Math.round(Math.sin(Date.now() / 120000) * 6)
       if (temperature === undefined) temperature = 21.5
