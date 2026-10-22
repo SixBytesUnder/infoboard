@@ -264,6 +264,9 @@ infoboard = chromium-browser --kiosk --noerrdialogs --disable-infobars --check-f
 
 ## Version History
 
+### v4.4.1
+- **Alpine Docker `i2c-bus` Native Build & Runtime Resolution Fix:** Added `linux-headers` (`<linux/types.h>`) to the Alpine builder stage in `Dockerfile` so `node-gyp` compiles `i2c-bus` instead of silently skipping it as an optional dependency. Explicitly preserved `i2c-bus`, `bindings`, and `file-uri-to-path` in `.output/server/node_modules/` and configured `NODE_PATH` / `/app/node_modules` symlink in the production runner image.
+
 ### v4.4.0
 - **Direct User-Space I2C Sense HAT Hardware Driver:** Integrated physical Raspberry Pi Sense HAT environmental sensors directly via user-space I2C on `/dev/i2c-1` querying `HTS221` (`0x5f`, relative humidity and temperature) and `LPS25H` (`0x5c`, barometric pressure and temperature). Avoids kernel IIO driver loading (`hts221_i2c`, `lps25h_i2c`) and eliminates `EBUSY` bus contention.
 - **Physical Calibration for Ribbon Cable Isolation:** Specifically tailored for ribbon-cable-tethered setups isolated from the Raspberry Pi 4 SoC. Does not factor in Pi CPU thermal throttling math. Applies configurable PCB self-heating offset `NUXT_SENSOR_SENSE_HAT_TEMP_OFFSET` (default: `-1.8`°C) to the averaged raw sensor temperature ($T_{calibrated} = T_{raw} + offset$).

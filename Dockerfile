@@ -7,7 +7,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Install build dependencies for native node-gyp bindings (e.g. i2c-bus, @serialport)
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ linux-headers
 
 COPY package.json package-lock.json* ./
 
@@ -16,9 +16,10 @@ RUN npm install
 
 COPY . .
 
-# Build self-contained Nitro output
+# Build self-contained Nitro output and ensure compiled i2c-bus native addon & runtime helpers are preserved
 ENV NODE_ENV=production
-RUN npm run build
+RUN npm run build && \
+    cp -r node_modules/i2c-bus node_modules/bindings node_modules/file-uri-to-path .output/server/node_modules/
 
 # Stage 2: Runtime
 FROM node:22-alpine AS runner
@@ -28,6 +29,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
+ENV NODE_PATH=/app/.output/server/node_modules
 
 # Add runtime tools and configure non-root user (1001:1001) with i2c group membership (GID 988)
 RUN apk add --no-cache tzdata && \
@@ -38,6 +40,7 @@ RUN apk add --no-cache tzdata && \
 
 # Copy the standalone Nitro output
 COPY --from=builder --chown=infoboard:nodejs /app/.output ./.output
+RUN ln -s /app/.output/server/node_modules /app/node_modules
 
 # Copy public static files if needed
 COPY --from=builder --chown=infoboard:nodejs /app/public ./public
