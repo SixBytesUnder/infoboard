@@ -31,15 +31,15 @@ export default defineEventHandler(async (event): Promise<SensorReadings> => {
 
   const senseHatTempOffset = Number(
     sensorConf.senseHatTempOffset ??
-    env.SENSE_HAT_TEMP_OFFSET ??
     env.NUXT_SENSOR_SENSE_HAT_TEMP_OFFSET ??
+    env.SENSE_HAT_TEMP_OFFSET ??
     -1.8
   )
 
   const senseHatPressureOffsetHpa = Number(
     sensorConf.senseHatPressureOffsetHpa ??
-    env.SENSE_HAT_PRESSURE_OFFSET_HPA ??
     env.NUXT_SENSOR_SENSE_HAT_PRESSURE_OFFSET_HPA ??
+    env.SENSE_HAT_PRESSURE_OFFSET_HPA ??
     0.0
   )
 
