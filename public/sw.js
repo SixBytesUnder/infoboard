@@ -1,4 +1,4 @@
-const CACHE_NAME = 'infoboard-shell-v1'
+const CACHE_NAME = 'infoboard-shell-v2'
 
 const PRECACHE_ASSETS = [
   '/',
@@ -44,6 +44,24 @@ self.addEventListener('fetch', (event) => {
 
   // Only handle GET requests
   if (request.method !== 'GET') {
+    return
+  }
+
+  // Ignore non-HTTP(S) schemes (e.g. chrome-extension://) and cross-origin requests
+  if ((url.protocol !== 'http:' && url.protocol !== 'https:') || url.origin !== self.location.origin) {
+    return
+  }
+
+  // Bypass Vite dev server / HMR modules and un-hashed dev transforms
+  if (
+    url.pathname.startsWith('/_nuxt/@') ||
+    url.pathname.startsWith('/__vite') ||
+    url.searchParams.has('token') ||
+    url.searchParams.has('v') ||
+    url.searchParams.has('t') ||
+    url.searchParams.has('import') ||
+    url.searchParams.has('direct')
+  ) {
     return
   }
 

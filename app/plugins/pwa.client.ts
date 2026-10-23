@@ -1,5 +1,30 @@
 export default defineNuxtPlugin(() => {
   if (import.meta.client && 'serviceWorker' in navigator) {
+    // In development mode, unregister any active Service Worker and purge shell caches
+    // so Vite HMR and /_nuxt/ dev module requests are never intercepted or cached.
+    if (import.meta.dev) {
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister()
+          }
+        })
+        .catch(() => {})
+
+      if ('caches' in window) {
+        caches.keys()
+          .then((keys) => {
+            for (const key of keys) {
+              if (key.startsWith('infoboard-shell-')) {
+                caches.delete(key)
+              }
+            }
+          })
+          .catch(() => {})
+      }
+      return
+    }
+
     const registerSw = () => {
       navigator.serviceWorker.register('/sw.js', { scope: '/' })
         .then((registration) => {
@@ -27,7 +52,7 @@ export default defineNuxtPlugin(() => {
     }
 
     // Listen for PWA install prompt event
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener('beforeinstallprompt', () => {
       console.info('[PWA] App is installable! beforeinstallprompt event captured.')
     })
 

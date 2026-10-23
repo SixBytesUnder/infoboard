@@ -4,6 +4,11 @@ All notable changes and release notes for Infoboard are documented in this file.
 
 ---
 
+## v4.4.3
+- **Dev Environment Service Worker & HMR Fix:** Updated [`app/plugins/pwa.client.ts`](app/plugins/pwa.client.ts) to skip Service Worker registration in development (`import.meta.dev`), automatically unregister stale Service Workers, and purge `infoboard-shell-*` caches so Vite HMR and `/_nuxt/` dev modules are never intercepted.
+- **Service Worker Origin & Protocol Hardening:** Updated [`public/sw.js`](public/sw.js) (bumped to `infoboard-shell-v2`) to ignore non-HTTP(S) schemes (e.g. `chrome-extension://`), cross-origin requests, and Vite dev transform/HMR parameters.
+- **Explicit Nitro External for `i2c-bus`:** Marked `i2c-bus` as external under `nitro.rollupConfig.external` in [`nuxt.config.ts`](nuxt.config.ts), silencing the Rollup build warning on non-Linux dev machines while preserving native addon resolution in production.
+
 ## v4.4.2
 - **Documentation Modularization & Git Production Workflow:** Moved comprehensive version history into this dedicated `CHANGELOG.md`.
 - **Dedicated Hardware Sensor Documentation:** Created [`docs/SENSE_HAT.md`](docs/SENSE_HAT.md) covering fresh Raspberry Pi OS host setup, direct user-space I2C bus wiring, ribbon cable calibration formulas, GID mapping, and troubleshooting.

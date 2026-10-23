@@ -12,7 +12,10 @@ export default defineNuxtConfig({
     typeCheck: false
   },
   nitro: {
-    compressPublicAssets: true
+    compressPublicAssets: true,
+    rollupConfig: {
+      external: ['i2c-bus']
+    }
   },
   routeRules: {
     '/sw.js': {
