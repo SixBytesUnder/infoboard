@@ -3,15 +3,20 @@
     <!-- Video Player -->
     <video
       v-if="currentAsset?.type === 'video'"
+      :key="currentAsset.url"
       ref="videoRef"
       class="bg-video-contain"
       autoplay
       playsinline
+      webkit-playsinline
+      preload="auto"
       :muted="isMuted"
       :src="currentAsset.url"
       @play="onVideoPlay"
+      @playing="onVideoPlay"
       @ended="onVideoEnded"
       @error="onVideoError"
+      @stalled="onVideoStalled"
     />
 
     <!-- Dual-Layer Ping-Pong Crossfading Image Slots -->
@@ -32,7 +37,7 @@
         :src="slot.asset.url"
         :alt="slot.asset.title || 'Background'"
         class="bg-image-contain"
-        decoding="sync"
+        decoding="async"
         @error="onImageError"
       >
     </div>
@@ -40,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onScopeDispose, watch } from 'vue'
+import { ref, shallowRef, nextTick, onMounted, onScopeDispose, watch } from 'vue'
 import type { MediaAsset, BackgroundBatch } from '~~/shared'
 
 const props = withDefaults(defineProps<{
@@ -70,6 +75,10 @@ interface ImageSlot {
   isTop: boolean
 }
 
+const PLAYLIST_WINDOW_SIZE = 250
+const VIDEO_STARTUP_TIMEOUT_MS = 15000
+const STORAGE_KEY_ASSET = 'infoboard_active_media_id'
+
 // Fixed 2-slot ping-pong buffer to guarantee zero DOM or bitmap memory growth
 const slots = ref<[ImageSlot, ImageSlot]>([
   { id: 0, asset: null, isActive: false, isTop: false },
@@ -77,9 +86,11 @@ const slots = ref<[ImageSlot, ImageSlot]>([
 ])
 
 const activeSlotIndex = ref<0 | 1>(0)
-const playlist = ref<MediaAsset[]>([])
+const playlist = shallowRef<MediaAsset[]>([])
+const totalCatalogCount = ref<number>(0)
+const hasMoreInCatalog = ref<boolean>(false)
 const currentIndex = ref<number>(0)
-const currentAsset = ref<MediaAsset | null>(null)
+const currentAsset = shallowRef<MediaAsset | null>(null)
 const videoRef = ref<HTMLVideoElement | null>(null)
 
 const slotImgRefs: Record<number, HTMLImageElement | null> = { 0: null, 1: null }
@@ -90,11 +101,10 @@ const setImgRef = (id: number, el: unknown) => {
 let rotationTimer: ReturnType<typeof setTimeout> | null = null
 let transitionTimer: ReturnType<typeof setTimeout> | null = null
 let preloadTimeoutId: ReturnType<typeof setTimeout> | null = null
+let videoWatchdogTimer: ReturnType<typeof setTimeout> | null = null
 let activePreloadImg: HTMLImageElement | null = null
 let isPlayingVideo = false
 let currentLoadToken = 0
-
-const STORAGE_KEY_ASSET = 'infoboard_active_media_id'
 
 const getSafeBackgroundUrl = (url?: string) => {
   if (!url) return 'none'
@@ -106,6 +116,27 @@ const clearTimer = () => {
   if (rotationTimer !== null) {
     clearTimeout(rotationTimer)
     rotationTimer = null
+  }
+}
+
+const clearVideoWatchdog = () => {
+  if (videoWatchdogTimer !== null) {
+    clearTimeout(videoWatchdogTimer)
+    videoWatchdogTimer = null
+  }
+}
+
+// Explicitly release iOS/iPadOS WebKit AVPlayer hardware decoder and active byte-range streams
+const releaseVideoElement = (el?: HTMLVideoElement | null) => {
+  clearVideoWatchdog()
+  const target = el || videoRef.value
+  if (!target) return
+  try {
+    target.pause()
+    target.removeAttribute('src')
+    target.load()
+  } catch {
+    // Ignore cleanup errors
   }
 }
 
@@ -150,7 +181,8 @@ const finalizeTransition = () => {
 
 const scheduleNext = () => {
   clearTimer()
-  if (isPlayingVideo || props.magicMirror || props.source === 'single' || playlist.value.length <= 1) return
+  const totalAvailable = Math.max(totalCatalogCount.value, playlist.value.length)
+  if (isPlayingVideo || props.magicMirror || props.source === 'single' || totalAvailable <= 1) return
 
   rotationTimer = setTimeout(() => {
     advanceNext(false)
@@ -165,6 +197,17 @@ const persistActiveAsset = (identifier?: string) => {
       // LocalStorage restricted or quota exceeded
     }
   }
+}
+
+const getSavedAssetId = (): string => {
+  if (typeof window !== 'undefined' && props.source === 'local') {
+    try {
+      return localStorage.getItem(STORAGE_KEY_ASSET) || ''
+    } catch {
+      return ''
+    }
+  }
+  return ''
 }
 
 const preloadImage = (url: string, token: number): Promise<void> => {
@@ -319,8 +362,68 @@ const waitForSlotImage = (slotIdx: 0 | 1, token: number): Promise<void> => {
   })
 }
 
+const startVideoPlayback = async (asset: MediaAsset, token: number) => {
+  clearVideoWatchdog()
+
+  // Watchdog: if video fails to start playing within 15s (e.g. stalled or unsupported codec), skip it
+  videoWatchdogTimer = setTimeout(() => {
+    if (token === currentLoadToken && currentAsset.value?.type === 'video' && !isPlayingVideo) {
+      console.warn(`Video playback timed out (${asset.url}), skipping to next item`)
+      onVideoError()
+    }
+  }, VIDEO_STARTUP_TIMEOUT_MS)
+
+  await nextTick()
+  if (token !== currentLoadToken) return
+
+  const videoEl = videoRef.value
+  if (!videoEl) return
+
+  // Configure muted & inline attributes explicitly before play() for iOS/iPadOS Safari WebKit
+  videoEl.defaultMuted = props.isMuted
+  videoEl.muted = props.isMuted
+  videoEl.playsInline = true
+  if (props.isMuted) {
+    videoEl.setAttribute('muted', '')
+  } else {
+    videoEl.removeAttribute('muted')
+  }
+  videoEl.setAttribute('playsinline', '')
+  videoEl.setAttribute('webkit-playsinline', '')
+
+  try {
+    const playPromise = videoEl.play()
+    if (playPromise !== undefined && typeof playPromise.then === 'function') {
+      await playPromise
+    }
+  } catch (err) {
+    if (token !== currentLoadToken) return
+    const errName = (err as { name?: string })?.name || ''
+    if (errName === 'AbortError') {
+      return
+    }
+
+    // If unmuted autoplay was blocked by browser policy, fall back to muted playback
+    if (errName === 'NotAllowedError' && !videoEl.muted) {
+      try {
+        videoEl.defaultMuted = true
+        videoEl.muted = true
+        videoEl.setAttribute('muted', '')
+        await videoEl.play()
+        return
+      } catch {
+        // Fall through to skip
+      }
+    }
+
+    console.warn(`Video play() rejected (${asset.url}):`, (err as Error)?.message || errName)
+    onVideoError()
+  }
+}
+
 const displayCurrent = async (isInitial = false) => {
   if (playlist.value.length === 0) {
+    releaseVideoElement()
     currentAsset.value = null
     cancelPreload()
     finalizeTransition()
@@ -335,6 +438,7 @@ const displayCurrent = async (isInitial = false) => {
 
   const asset = playlist.value[currentIndex.value]
   if (!asset) {
+    releaseVideoElement()
     currentAsset.value = null
     emit('update:active-asset', null)
     emit('update:is-video', false)
@@ -345,15 +449,21 @@ const displayCurrent = async (isInitial = false) => {
   if (asset.type === 'video') {
     cancelPreload()
     finalizeTransition()
+    if (currentAsset.value?.type === 'video' && currentAsset.value.url !== asset.url) {
+      releaseVideoElement()
+    }
     slots.value[0].asset = null
     slots.value[0].isActive = false
     slots.value[1].asset = null
     slots.value[1].isActive = false
 
+    const token = ++currentLoadToken
     currentAsset.value = asset
     emit('update:active-asset', asset)
     emit('update:is-video', true)
     persistActiveAsset(asset.identifier)
+
+    await startVideoPlayback(asset, token)
     return
   }
 
@@ -378,8 +488,13 @@ const displayCurrent = async (isInitial = false) => {
   // Settle any active transition cleanly before mounting next
   finalizeTransition()
 
-  if (isInitial || !currentAsset.value || currentAsset.value.type === 'video') {
-    // Initial mount: load directly into slot 0 and fade in once confirmed ready
+  const wasVideo = currentAsset.value?.type === 'video'
+  if (wasVideo) {
+    releaseVideoElement()
+  }
+
+  if (isInitial || !currentAsset.value || wasVideo) {
+    // Initial mount or transition from video: load directly into slot 0 and fade in once confirmed ready
     activeSlotIndex.value = 0
     slots.value[0].asset = asset
     slots.value[0].isTop = true
@@ -453,41 +568,55 @@ const displayCurrent = async (isInitial = false) => {
   }
 }
 
-const loadPlaylist = async (isBackgroundRefresh = false) => {
+interface LoadPlaylistOptions {
+  isBackgroundRefresh?: boolean
+  startId?: string
+  afterId?: string
+  skipFolderFrom?: string
+}
+
+const loadPlaylist = async (options: LoadPlaylistOptions = {}) => {
   try {
     let items: MediaAsset[] = []
 
     if (props.source === 'local' || props.source === 'single') {
-      const res = await $fetch<BackgroundBatch>('/api/backgrounds')
+      const params = new URLSearchParams()
+      params.set('limit', String(PLAYLIST_WINDOW_SIZE))
+
+      if (options.skipFolderFrom) {
+        params.set('skipFolderFrom', options.skipFolderFrom)
+      } else if (options.afterId) {
+        params.set('afterId', options.afterId)
+      } else {
+        const startId = options.startId ?? (!options.isBackgroundRefresh ? getSavedAssetId() : '')
+        if (startId) {
+          params.set('startId', startId)
+        }
+      }
+
+      const res = await $fetch<BackgroundBatch>(`/api/backgrounds?${params.toString()}`)
       items = res.items || []
+      totalCatalogCount.value = res.totalCount ?? items.length
+      hasMoreInCatalog.value = Boolean(res.hasMore)
     } else {
       const query = props.weatherTag ? `?weatherTag=${encodeURIComponent(props.weatherTag)}` : ''
       items = await $fetch<MediaAsset[]>(`/api/photos${query}`)
+      totalCatalogCount.value = items.length
+      hasMoreInCatalog.value = false
     }
 
     if (items.length > 0) {
       playlist.value = items
-      emit('update:can-skip', items.length > 1)
-      if (!isBackgroundRefresh) {
-        let startIdx = 0
-        if (typeof window !== 'undefined' && props.source === 'local') {
-          try {
-            const savedId = localStorage.getItem(STORAGE_KEY_ASSET)
-            if (savedId) {
-              const foundIdx = items.findIndex(it => it.identifier === savedId)
-              if (foundIdx !== -1) {
-                startIdx = foundIdx
-              }
-            }
-          } catch {
-            // LocalStorage restricted
-          }
-        }
-        currentIndex.value = startIdx
+      const totalAvailable = Math.max(totalCatalogCount.value, items.length)
+      emit('update:can-skip', totalAvailable > 1)
+      if (!options.isBackgroundRefresh) {
+        currentIndex.value = 0
         displayCurrent(true)
       }
     } else {
       playlist.value = []
+      totalCatalogCount.value = 0
+      hasMoreInCatalog.value = false
       emit('update:can-skip', false)
     }
   } catch (err) {
@@ -498,6 +627,7 @@ const loadPlaylist = async (isBackgroundRefresh = false) => {
 
 const advanceNext = async (skipFolder = false) => {
   clearTimer()
+  clearVideoWatchdog()
   cancelPreload()
   isPlayingVideo = false
 
@@ -514,12 +644,12 @@ const advanceNext = async (skipFolder = false) => {
     const curFolder = currentAsset.value?.folder || '[root]'
     let targetIndex = -1
 
-    for (let offset = 1; offset < playlist.value.length; offset++) {
-      const candidateIdx = (currentIndex.value + offset) % playlist.value.length
-      const candidate = playlist.value[candidateIdx]
+    // Search forward in the current in-memory window first
+    for (let idx = currentIndex.value + 1; idx < playlist.value.length; idx++) {
+      const candidate = playlist.value[idx]
       const candidateFolder = candidate?.folder || '[root]'
       if (candidateFolder !== curFolder) {
-        targetIndex = candidateIdx
+        targetIndex = idx
         break
       }
     }
@@ -529,14 +659,50 @@ const advanceNext = async (skipFolder = false) => {
       displayCurrent(false)
       return
     }
+
+    // If the entire catalog is already in memory, wrap around from the start of the window
+    if (!hasMoreInCatalog.value) {
+      for (let idx = 0; idx < currentIndex.value; idx++) {
+        const candidate = playlist.value[idx]
+        const candidateFolder = candidate?.folder || '[root]'
+        if (candidateFolder !== curFolder) {
+          targetIndex = idx
+          break
+        }
+      }
+      if (targetIndex !== -1) {
+        currentIndex.value = targetIndex
+        displayCurrent(false)
+        return
+      }
+    } else if (props.source === 'local' && currentAsset.value?.identifier) {
+      // Ask the server for the 250-item window starting at the next folder
+      await loadPlaylist({
+        isBackgroundRefresh: true,
+        skipFolderFrom: currentAsset.value.identifier
+      })
+      if (playlist.value.length > 0) {
+        currentIndex.value = 0
+        displayCurrent(false)
+        return
+      }
+    }
   }
 
-  // Next image / sequential item
-  const nextIdx = (currentIndex.value + 1) % playlist.value.length
+  // Next sequential item
+  const nextIdx = currentIndex.value + 1
 
-  // If completing a full loop of the entire playlist, refresh from server
-  if (nextIdx === 0 && props.source === 'local') {
-    await loadPlaylist(true)
+  if (nextIdx >= playlist.value.length) {
+    if (props.source === 'local') {
+      const lastItem = playlist.value[playlist.value.length - 1]
+      await loadPlaylist({
+        isBackgroundRefresh: true,
+        afterId: lastItem?.identifier
+      })
+    }
+    currentIndex.value = 0
+    displayCurrent(false)
+    return
   }
 
   currentIndex.value = nextIdx
@@ -546,17 +712,42 @@ const advanceNext = async (skipFolder = false) => {
 const onVideoPlay = () => {
   isPlayingVideo = true
   clearTimer()
+  clearVideoWatchdog()
 }
 
 const onVideoEnded = () => {
   isPlayingVideo = false
+  clearVideoWatchdog()
   advanceNext(false)
 }
 
 const onVideoError = () => {
   console.warn('Video failed to play, skipping to next media item')
   isPlayingVideo = false
-  advanceNext(false)
+  clearVideoWatchdog()
+  releaseVideoElement()
+  clearTimer()
+  rotationTimer = setTimeout(() => {
+    advanceNext(false)
+  }, 500)
+}
+
+const onVideoStalled = () => {
+  // If video stalls and hasn't recovered after 12s, advance to the next item
+  clearVideoWatchdog()
+  const stalledTime = videoRef.value?.currentTime ?? 0
+  videoWatchdogTimer = setTimeout(() => {
+    const videoEl = videoRef.value
+    if (
+      currentAsset.value?.type === 'video' &&
+      videoEl &&
+      (videoEl.paused || videoEl.readyState < 3) &&
+      Math.abs(videoEl.currentTime - stalledTime) < 0.1
+    ) {
+      console.warn('Video stream stalled on device, skipping to next media item')
+      onVideoError()
+    }
+  }, 12000)
 }
 
 const onImageError = () => {
@@ -571,14 +762,38 @@ const handleVisibilityChange = () => {
   if (typeof document === 'undefined') return
   if (document.hidden) {
     clearTimer()
+    clearVideoWatchdog()
     cancelPreload()
     finalizeTransition()
   } else {
     if (currentAsset.value?.type === 'image') {
       scheduleNext()
+    } else if (currentAsset.value?.type === 'video' && videoRef.value?.paused) {
+      startVideoPlayback(currentAsset.value, currentLoadToken)
     }
   }
 }
+
+// Keep active <video> muted state synchronized with KioskActionBar mute toggle
+watch(() => props.isMuted, (muted) => {
+  const videoEl = videoRef.value
+  if (videoEl) {
+    videoEl.defaultMuted = muted
+    videoEl.muted = muted
+    if (muted) {
+      videoEl.setAttribute('muted', '')
+    } else {
+      videoEl.removeAttribute('muted')
+    }
+  }
+})
+
+// Watch source changes (e.g. when /api/config resolves on mount)
+watch(() => props.source, (newSource, oldSource) => {
+  if (newSource && newSource !== oldSource && !props.magicMirror) {
+    loadPlaylist()
+  }
+})
 
 // Watch weather tag changes for dynamic tagged photo sources
 watch(() => props.weatherTag, (newTag, oldTag) => {
@@ -598,6 +813,7 @@ watch(() => props.intervalSeconds, () => {
 watch(() => props.magicMirror, (val) => {
   if (val) {
     clearTimer()
+    releaseVideoElement()
     cancelPreload()
     finalizeTransition()
     slots.value[0].asset = null
@@ -621,6 +837,7 @@ onMounted(async () => {
 
 onScopeDispose(() => {
   clearTimer()
+  releaseVideoElement()
   cancelPreload()
   if (transitionTimer !== null) {
     clearTimeout(transitionTimer)
@@ -693,5 +910,10 @@ defineExpose({
   pointer-events: none;
   -webkit-touch-callout: none;
   user-select: none;
+}
+
+.bg-video-contain {
+  z-index: 3;
+  background-color: #0b0c0e;
 }
 </style>

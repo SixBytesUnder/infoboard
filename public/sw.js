@@ -1,4 +1,4 @@
-const CACHE_NAME = 'infoboard-shell-v2'
+const CACHE_NAME = 'infoboard-shell-v3'
 
 const PRECACHE_ASSETS = [
   '/',
@@ -65,12 +65,24 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Bypass video streaming & partial content range requests
-  if (request.headers.get('range') || url.pathname.includes('/stream')) {
+  // Bypass all media streaming, partial content range requests, and large playlist/EXIF payloads
+  // Service Worker interception of <video> requests breaks byte-range streaming in iOS/iPadOS WebKit,
+  // and cloning multi-megabyte media/playlist payloads exhausts old iPad memory and CacheStorage quotas.
+  if (
+    request.headers.get('range') ||
+    request.destination === 'video' ||
+    request.destination === 'audio' ||
+    url.pathname.startsWith('/api/media/') ||
+    url.pathname.startsWith('/api/backgrounds') ||
+    url.pathname.startsWith('/api/photos') ||
+    url.pathname.startsWith('/api/exif') ||
+    url.pathname.includes('/stream') ||
+    /\.(mp4|webm|mov|m4v)$/i.test(url.pathname)
+  ) {
     return
   }
 
-  // API endpoints: Network-first with cache fallback
+  // Lightweight JSON API endpoints: Network-first with cache fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request)
@@ -78,7 +90,7 @@ self.addEventListener('fetch', (event) => {
           if (response && response.status === 200) {
             const clone = response.clone()
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, clone)
+              cache.put(request, clone).catch(() => {})
             })
           }
           return response
@@ -103,16 +115,15 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Static assets (scripts, styles, fonts, images): Cache-first or Stale-While-Revalidate
+  // Static app shell assets (scripts, styles, icons, manifest): Stale-While-Revalidate
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch in background to update cache for next time
         fetch(request)
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
               caches.open(CACHE_NAME).then((cache) => {
-                cache.put(request, networkResponse)
+                cache.put(request, networkResponse).catch(() => {})
               })
             }
           })
@@ -124,7 +135,7 @@ self.addEventListener('fetch', (event) => {
         if (networkResponse && networkResponse.status === 200) {
           const clone = networkResponse.clone()
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, clone)
+            cache.put(request, clone).catch(() => {})
           })
         }
         return networkResponse

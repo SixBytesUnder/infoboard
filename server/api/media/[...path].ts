@@ -2,23 +2,16 @@ import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
 import path from 'node:path'
 import { isPathInsideDirectory, sanitizeSubPath } from '../../utils/sandbox'
-
-const MIME_MAP: Record<string, string> = {
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.gif': 'image/gif',
-  '.avif': 'image/avif',
-  '.mp4': 'video/mp4',
-  '.webm': 'video/webm',
-  '.mov': 'video/quicktime',
-  '.m4v': 'video/mp4'
-}
+import { parseByteRange, resolveMimeType } from '../../utils/mediaStream'
 
 export default defineEventHandler(async (event) => {
+  const method = event.method || 'GET'
+  if (method !== 'GET' && method !== 'HEAD') {
+    throw createError({ statusCode: 405, statusMessage: 'Method Not Allowed' })
+  }
+
   const config = useRuntimeConfig(event)
-  const baseDir = config.media.localDir
+  const baseDir = process.env.NUXT_MEDIA_LOCAL_DIR || config.media.localDir
 
   if (!baseDir) {
     throw createError({ statusCode: 404, statusMessage: 'Media directory not configured' })
@@ -51,33 +44,30 @@ export default defineEventHandler(async (event) => {
   }
 
   const ext = path.extname(fullPath).toLowerCase()
-  const mimeType = MIME_MAP[ext] || 'application/octet-stream'
+  const userAgent = getHeader(event, 'user-agent') || ''
+  const mimeType = resolveMimeType(ext, userAgent)
   const fileSize = stats.size
+  const isVideo = mimeType.startsWith('video/')
 
   const rangeHeader = getHeader(event, 'range')
 
-  // Support Byte-Range requests for MP4 video streaming
-  if (mimeType.startsWith('video/') && rangeHeader) {
-    const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim())
-    if (!match || (!match[1] && !match[2])) {
-      setResponseHeaders(event, { 'Content-Range': `bytes */${fileSize}` })
+  // Support Byte-Range requests for video streaming (and any ranged media request)
+  if (rangeHeader && (isVideo || fileSize > 0)) {
+    if (fileSize === 0) {
+      setResponseHeaders(event, { 'Content-Range': 'bytes */0' })
       throw createError({ statusCode: 416, statusMessage: 'Range Not Satisfiable' })
     }
 
-    const start = match[1] ? Number.parseInt(match[1], 10) : 0
-    const end = match[2] ? Math.min(Number.parseInt(match[2], 10), fileSize - 1) : fileSize - 1
-
-    if (
-      !Number.isFinite(start) ||
-      !Number.isFinite(end) ||
-      start < 0 ||
-      start > end ||
-      start >= fileSize
-    ) {
-      setResponseHeaders(event, { 'Content-Range': `bytes */${fileSize}` })
+    const range = parseByteRange(rangeHeader, fileSize)
+    if (!range) {
+      setResponseHeaders(event, {
+        'Content-Range': `bytes */${fileSize}`,
+        'Accept-Ranges': 'bytes'
+      })
       throw createError({ statusCode: 416, statusMessage: 'Range Not Satisfiable' })
     }
 
+    const { start, end } = range
     const chunkSize = end - start + 1
 
     setResponseStatus(event, 206)
@@ -85,18 +75,45 @@ export default defineEventHandler(async (event) => {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': chunkSize.toString(),
-      'Content-Type': mimeType
+      'Content-Type': mimeType,
+      'Cache-Control': 'public, max-age=3600'
     })
 
-    return sendStream(event, fs.createReadStream(fullPath, { start, end }))
+    if (method === 'HEAD') {
+      event.node.res.end()
+      return
+    }
+
+    const stream = fs.createReadStream(fullPath, { start, end })
+    event.node.res.once('close', () => {
+      if (!stream.destroyed) {
+        stream.destroy()
+      }
+    })
+
+    return sendStream(event, stream)
   }
 
-  // Standard full-file response
+  // Standard full-file response (always advertise Accept-Ranges: bytes so iOS/Safari knows seeking is supported)
+  setResponseStatus(event, 200)
   setResponseHeaders(event, {
+    'Accept-Ranges': 'bytes',
     'Content-Length': fileSize.toString(),
     'Content-Type': mimeType,
-    'Cache-Control': 'public, max-age=86400, immutable'
+    'Cache-Control': isVideo ? 'public, max-age=3600' : 'public, max-age=86400, immutable'
   })
 
-  return sendStream(event, fs.createReadStream(fullPath))
+  if (method === 'HEAD') {
+    event.node.res.end()
+    return
+  }
+
+  const stream = fs.createReadStream(fullPath)
+  event.node.res.once('close', () => {
+    if (!stream.destroyed) {
+      stream.destroy()
+    }
+  })
+
+  return sendStream(event, stream)
 })

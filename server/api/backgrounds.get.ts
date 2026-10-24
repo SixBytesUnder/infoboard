@@ -2,9 +2,23 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import type { BackgroundBatch, MediaAsset } from '~~/shared'
 import { isPathInsideDirectory } from '../utils/sandbox'
+import { sliceCircular } from '../utils/mediaStream'
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'])
 const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mov', '.m4v'])
+
+const SCAN_CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+interface CachedCatalog {
+  baseDir: string
+  allowVideo: boolean
+  timestamp: number
+  items: MediaAsset[]
+  uniqueFolders: string[]
+}
+
+let cachedCatalog: CachedCatalog | null = null
+let activeScanPromise: Promise<CachedCatalog> | null = null
 
 function naturalSort(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
@@ -77,11 +91,50 @@ async function scanDirectoryRecursive(
   return allAssets
 }
 
+async function getCatalog(baseDir: string, allowVideo: boolean, forceRefresh = false): Promise<CachedCatalog> {
+  const now = Date.now()
+  if (
+    !forceRefresh &&
+    cachedCatalog &&
+    cachedCatalog.baseDir === baseDir &&
+    cachedCatalog.allowVideo === allowVideo &&
+    now - cachedCatalog.timestamp < SCAN_CACHE_TTL_MS
+  ) {
+    return cachedCatalog
+  }
+
+  if (activeScanPromise) {
+    return activeScanPromise
+  }
+
+  activeScanPromise = (async () => {
+    try {
+      const items = await scanDirectoryRecursive(baseDir, '', allowVideo)
+      const uniqueFolders = Array.from(new Set(items.map(it => it.folder || '[root]')))
+      const nextCatalog: CachedCatalog = {
+        baseDir,
+        allowVideo,
+        timestamp: Date.now(),
+        items,
+        uniqueFolders
+      }
+      cachedCatalog = nextCatalog
+      return nextCatalog
+    } finally {
+      activeScanPromise = null
+    }
+  })()
+
+  return activeScanPromise
+}
+
 export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
   const config = useRuntimeConfig(event)
+  const env = process.env
   const mediaConf = config.media
+  const allowVideo = (env.NUXT_MEDIA_ALLOW_VIDEO || env.NUXT_PUBLIC_MEDIA_ALLOW_VIDEO || String(mediaConf.allowVideo)) === 'true'
 
-  const baseDir = mediaConf.localDir
+  const baseDir = env.NUXT_MEDIA_LOCAL_DIR || mediaConf.localDir
   if (!baseDir) {
     return {
       items: [
@@ -92,7 +145,9 @@ export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
           title: 'Default Background',
           folder: '[default]'
         }
-      ]
+      ],
+      totalCount: 1,
+      hasMore: false
     }
   }
 
@@ -105,9 +160,13 @@ export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
   }
 
   try {
-    const items = await scanDirectoryRecursive(baseDir, '', mediaConf.allowVideo)
+    const query = getQuery(event)
+    const forceRefresh = query.refresh === '1' || query.refresh === 'true'
+    const catalog = await getCatalog(baseDir, allowVideo, forceRefresh)
+    const allItems = catalog.items
+    const totalCount = allItems.length
 
-    if (items.length === 0) {
+    if (totalCount === 0) {
       return {
         items: [
           {
@@ -117,16 +176,61 @@ export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
             title: 'No media found in folder',
             folder: '[default]'
           }
-        ]
+        ],
+        totalCount: 1,
+        hasMore: false
       }
     }
 
-    const uniqueFolders = Array.from(new Set(items.map(it => it.folder || '[root]')))
+    const rawLimit = typeof query.limit === 'string' ? Number.parseInt(query.limit, 10) : 0
+    const startId = typeof query.startId === 'string' ? query.startId : ''
+    const afterId = typeof query.afterId === 'string' ? query.afterId : ''
+    const skipFolderFrom = typeof query.skipFolderFrom === 'string' ? query.skipFolderFrom : ''
+
+    let startIndex = 0
+
+    if (skipFolderFrom) {
+      const fromIdx = allItems.findIndex(it => it.identifier === skipFolderFrom)
+      if (fromIdx !== -1) {
+        const currentFolder = allItems[fromIdx]?.folder || '[root]'
+        for (let offset = 1; offset < totalCount; offset++) {
+          const candidateIdx = (fromIdx + offset) % totalCount
+          const candidateFolder = allItems[candidateIdx]?.folder || '[root]'
+          if (candidateFolder !== currentFolder) {
+            startIndex = candidateIdx
+            break
+          }
+        }
+      }
+    } else if (afterId) {
+      const afterIdx = allItems.findIndex(it => it.identifier === afterId)
+      if (afterIdx !== -1) {
+        startIndex = (afterIdx + 1) % totalCount
+      }
+    } else if (startId) {
+      const foundIdx = allItems.findIndex(it => it.identifier === startId)
+      if (foundIdx !== -1) {
+        startIndex = foundIdx
+      }
+    }
+
+    const items = rawLimit > 0
+      ? sliceCircular(allItems, startIndex, Math.min(rawLimit, totalCount))
+      : (startIndex > 0 ? sliceCircular(allItems, startIndex, totalCount) : allItems)
+
+    const uniqueFolders = catalog.uniqueFolders
+    const currentFolder = items[0]?.folder || '[root]'
+    const curFolderIdx = uniqueFolders.indexOf(currentFolder)
+    const nextFolder = curFolderIdx !== -1
+      ? (uniqueFolders[(curFolderIdx + 1) % uniqueFolders.length] || currentFolder)
+      : (uniqueFolders[1] || uniqueFolders[0])
 
     return {
       items,
-      currentFolder: items[0]?.folder,
-      nextFolder: uniqueFolders[1] || uniqueFolders[0]
+      totalCount,
+      hasMore: totalCount > items.length,
+      currentFolder,
+      nextFolder
     }
   } catch (err) {
     console.warn('Local background scan error:', (err as Error).message)
@@ -139,7 +243,9 @@ export default defineEventHandler(async (event): Promise<BackgroundBatch> => {
           title: 'Fallback Background',
           folder: '[fallback]'
         }
-      ]
+      ],
+      totalCount: 1,
+      hasMore: false
     }
   }
 })

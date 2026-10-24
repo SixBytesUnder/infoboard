@@ -11,6 +11,12 @@ export default defineNuxtConfig({
     strict: true,
     typeCheck: false
   },
+  vite: {
+    build: {
+      target: ['es2019', 'safari12', 'ios12'],
+      cssTarget: ['safari12', 'ios12']
+    }
+  },
   nitro: {
     compressPublicAssets: true,
     rollupConfig: {

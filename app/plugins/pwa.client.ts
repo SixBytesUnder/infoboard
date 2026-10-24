@@ -25,9 +25,23 @@ export default defineNuxtPlugin(() => {
       return
     }
 
+    // Proactively purge legacy caches (v1/v2) that may have cached /api/media/ or /api/backgrounds
+    if ('caches' in window) {
+      caches.keys()
+        .then((keys) => {
+          for (const key of keys) {
+            if (key.startsWith('infoboard-shell-') && key !== 'infoboard-shell-v3') {
+              caches.delete(key)
+            }
+          }
+        })
+        .catch(() => {})
+    }
+
     const registerSw = () => {
       navigator.serviceWorker.register('/sw.js', { scope: '/' })
         .then((registration) => {
+          registration.update().catch(() => {})
           // Check for service worker updates periodically
           registration.addEventListener('updatefound', () => {
             const installing = registration.installing

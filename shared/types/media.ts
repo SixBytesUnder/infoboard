@@ -23,6 +23,8 @@ export interface ExifMetadata {
 
 export interface BackgroundBatch {
   items: MediaAsset[]
+  totalCount?: number
+  hasMore?: boolean
   currentFolder?: string
   nextFolder?: string
 }
