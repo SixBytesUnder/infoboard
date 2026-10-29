@@ -156,7 +156,7 @@ nano .env   # Configure weather coordinates, transit stops, calendar, or sensor 
 
 > [!NOTE]
 > **Hardware Sensors (Sense HAT):**
-> If you are connecting a physical Raspberry Pi Sense HAT, follow the [Sense HAT Setup Guide](docs/SENSE_HAT.md) to enable host I2C (`/dev/i2c-1`) and set `NUXT_SENSOR_SENSE_HAT_ENABLED=true` in `.env` before starting the container.
+> By default, `/dev/i2c-1` device passthrough is commented out in [`docker-compose.yml`](docker-compose.yml) so the container starts cleanly on servers and machines without Raspberry Pi I2C hardware. If you are connecting a physical Raspberry Pi Sense HAT, uncomment the `devices` section (`/dev/i2c-1:/dev/i2c-1`) in [`docker-compose.yml`](docker-compose.yml), follow the [Sense HAT Setup Guide](docs/SENSE_HAT.md) to enable host I2C (`/dev/i2c-1`), and set `NUXT_SENSOR_SENSE_HAT_ENABLED=true` in `.env` before starting the container.
 
 ```bash
 # 4. Build and start the container in the background

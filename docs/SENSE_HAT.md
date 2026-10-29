@@ -103,8 +103,8 @@ dtparam=i2c_arm=on
 
 Infoboard's [`Dockerfile`](../Dockerfile) and [`docker-compose.yml`](../docker-compose.yml) are pre-configured to build native `i2c-bus` bindings in Alpine Linux and run securely as non-root user `1001:1001` with I2C group permissions.
 
-### Step 3.1: Verify `docker-compose.yml` Device & Group
-In [`docker-compose.yml`](../docker-compose.yml), confirm the device mapping and supplementary group:
+### Step 3.1: Enable `docker-compose.yml` Device & Verify Group
+In [`docker-compose.yml`](../docker-compose.yml), uncomment the `devices` mapping for `/dev/i2c-1` and confirm the supplementary group:
 ```yaml
 services:
   infoboard:

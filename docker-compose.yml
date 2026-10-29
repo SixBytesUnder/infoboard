@@ -17,9 +17,10 @@ services:
       - ${HOST_MEDIA_DIR:-/media/photos}:/media/photos:ro
       # Optional: serial port for SDS011 sensor (uncomment if hardware present)
       # - /dev/ttyUSB0:/dev/ttyUSB0
-    devices:
-      - /dev/i2c-1:/dev/i2c-1
-      # - /dev/ttyUSB0:/dev/ttyUSB0
+    # Optional: uncomment to pass hardware devices (Raspberry Pi Sense HAT I2C or SDS011 serial)
+    # devices:
+    #   - /dev/i2c-1:/dev/i2c-1
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
     group_add:
       - 988
     environment:

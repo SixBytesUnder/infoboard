@@ -4,6 +4,9 @@ All notable changes and release notes for Infoboard are documented in this file.
 
 ---
 
+## v4.4.5
+- **Optional `/dev/i2c-1` Device Mapping in Docker Compose:** Commented out `devices: - /dev/i2c-1:/dev/i2c-1` by default in [`docker-compose.yml`](docker-compose.yml) and updated [`README.md`](README.md) and [`docs/SENSE_HAT.md`](docs/SENSE_HAT.md) so containers build and start cleanly on non-Raspberry Pi hosts or systems without I2C enabled.
+
 ## v4.4.4
 - **Service Worker Media Streaming & Cache Quota Fix:** Updated [`public/sw.js`](public/sw.js) (bumped to `infoboard-shell-v3`) and [`app/plugins/pwa.client.ts`](app/plugins/pwa.client.ts) to completely bypass `/api/media/`, `/api/backgrounds`, `/api/photos`, `/api/exif`, and video/audio requests. Previously, when `a91b694` activated the Service Worker, `sw.js` only bypassed `/stream` instead of `/api/media/`, causing WebKit/iPad `<video>` byte-range streaming to fail and exhausting device memory/CacheStorage by cloning multi-megabyte media and playlist responses.
 - **RFC 7233 Video Streaming, `HEAD` Probe & `.mov` Compatibility:** Replaced `server/api/media/[...path].get.ts` with [`server/api/media/[...path].ts`](server/api/media/[...path].ts) and [`server/utils/mediaStream.ts`](server/utils/mediaStream.ts) to support `HEAD` requests (required by iOS/iPadOS `AVFoundation`), advertise `Accept-Ranges: bytes` on all responses, properly parse suffix byte-ranges (`bytes=-N` for MP4 `moov` atoms at end of file) and multi-range headers, clean up file streams on client disconnect, and serve `.mov` containers appropriately across Safari and Chromium/Firefox.
