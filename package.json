@@ -15,25 +15,25 @@
   },
   "dependencies": {
     "dayjs": "^1.11.13",
-    "exifreader": "^4.30.0",
+    "exifreader": "^4.52.0",
     "node-ical": "^0.27.3",
-    "nuxt": "^4.6.2",
+    "nuxt": "^4.6.3",
     "serialport": "^13.0.0",
-    "vue": "^3.5.13",
-    "vue-router": "^5.3.1",
-    "zod": "^4.6.6"
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/i2c-bus": "^5.1.2",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.6",
     "typescript": "^7.0.2",
-    "vue-tsc": "^3.3.12"
+    "vue-tsc": "^3.3.13"
   },
   "allowScripts": {
     "esbuild@0.28.2": true,
     "@serialport/bindings-cpp@13.0.0": true,
-    "exifreader@4.46.0": true,
-    "i2c-bus@5.2.3": true
+    "i2c-bus@5.2.3": true,
+    "exifreader@4.52.0": true
   },
   "optionalDependencies": {
     "i2c-bus": "^5.2.3"
